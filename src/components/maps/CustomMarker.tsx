@@ -8,9 +8,10 @@ interface CustomMarkerProps {
     title?: string;
     onClick?: () => void;
     isTemporary?: boolean; // New prop to identify temporary markers
+    icon?: string | google.maps.Icon | google.maps.Symbol; // Allow custom icons
 }
 
-export function CustomMarker({ position, title, onClick, isTemporary = false }: CustomMarkerProps) {
+export function CustomMarker({ position, title, onClick, isTemporary = false, icon }: CustomMarkerProps) {
     const [marker, setMarker] = useState<google.maps.marker.AdvancedMarkerElement | null>(null);
     const markerRef = useRef<HTMLDivElement | null>(null);
 
@@ -96,12 +97,13 @@ export function CustomMarker({ position, title, onClick, isTemporary = false }: 
     }, [marker]);
 
     // For non-temporary markers or fallback, use standard Marker
-    if (!isTemporary) {
+    if (!isTemporary || icon) {
         return (
             <MarkerF
                 position={position}
                 title={title}
                 onClick={onClick}
+                icon={icon} // Use custom icon if provided
             />
         );
     }

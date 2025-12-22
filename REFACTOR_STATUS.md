@@ -4,15 +4,82 @@ The Github repository for this project is at: https://github.com/rgriola/merkel-
 The current produciton version is at: https://merkelvision.com/landing.html
 Merkel Vision is name of the public facing application.
 
-**Last Updated**: 2025-12-21 19:22:00 EST  
-**Phase**: Phase 6 - Save/Edit Workflows & Map Integration + Security Hardening + UX Polish (🚧 IN PROGRESS - 88%)  
-**Overall Progress**: ~92% Complete
+**Last Updated**: 2025-12-22 12:00:00 EST  
+**Phase**: Phase 6 - Location Management Features (🚧 IN PROGRESS - 95%)  
+**Overall Progress**: ~95% Complete
 
 > [!WARNING]
 > **Migration Alert**: Schema has been significantly enhanced beyond legacy Merkel-Vision. Some fields are NEW and will require implementation. Full schema comparison completed - see `MIGRATION_READINESS.md`.
 
 > [!NOTE]
-> **Session Update**: Completed critical security fixes and UX improvements. Authentication fully hardened with session validation and route protection. Navigation now context-aware based on auth status. Footer hidden for app users (max screen space). Ready to continue Phase 6 development.
+> **Session Update (Dec 22, 2024)**: Save Location Panel completely overhauled. Fixed critical bugs where UserSave fields weren't saving. Implemented full ImageKit photo upload with compression. Added Google Places address component parsing. Created custom temporary marker with camera icon. Improved map UX with smooth animations and better click-to-save workflow.
+
+## Recent Changes (Dec 22, 2024) - Save Location Panel Overhaul
+
+### Fixed Critical Bugs
+- **API UserSave Bug**: API was only saving `caption` field to `user_saves` table - now saves ALL fields (tags, isFavorite, personalRating, color)
+- **Missing Address Components**: Form was missing street, number, city, state, zipcode fields - now auto-filled from Google Places
+- **No Photo Upload**: ImageKit integration was completely missing - now fully implemented with drag-and-drop
+
+### New Features
+- **ImageKit Photo Upload**:
+  - Drag-and-drop interface with live previews
+  - Automatic compression to 1.5MB max file size
+  - Canvas-based client-side compression (maintains quality)
+  - Max 20 photos per location
+  - Photo metadata saved to database
+- **Address Component Parsing**:
+  - Created `parseAddressComponents()` utility
+  - Auto-fills street, number, city, state, zip from Google Geocoding
+  - All address fields readonly (from Google data)
+- **Form Enhancements**:
+  - Character counters on textareas (caption: 200 chars, production notes: 500 chars)
+  - Tag management system (max 20 tags, 25 chars each)
+  - Badge display for tags with remove buttons
+  - Rating selector (0-5 stars)
+  - Marker color picker
+  - Favorite checkbox
+- **Custom Temporary Marker**:
+  - Red square with camera icon (SVG-based)
+  - Bottom pointer pin
+  - Same size as default Google marker
+  - Distinguishes temp vs saved markers
+
+### Map UX Improvements
+- **Auto-zoom to Street Level**: Map clicks now zoom to level 16 for better detail
+- **Smooth Animations**: Using `map.setOptions()` for combined pan + zoom animations
+- **InfoWindow Positioning**: Added 40px offset above marker to prevent overlap
+- **Clean Workflow**:
+  - Clicking new location auto-closes SaveLocationPanel
+  - Removes all temporary markers on new click (only one temp marker at a time)
+  - Closing InfoWindow X also closes SaveLocationPanel
+  - Temporary markers cleaned up automatically
+
+### API Endpoints Created
+- `POST /api/imagekit/auth` - ImageKit authentication for client uploads
+- `GET /api/photos?placeId=xxx` - Fetch photos for location
+- `POST /api/photos` - Save photo metadata after upload
+- `DELETE /api/photos/[id]` - Delete photo from ImageKit and database
+
+### Files Created
+- `/src/components/ui/ImageKitUploader.tsx` - Photo upload component
+- `/src/app/api/imagekit/auth/route.ts` - ImageKit auth endpoint
+- `/src/app/api/photos/route.ts` - Photo CRUD API
+- `/src/app/api/photos/[id]/route.ts` - Photo deletion
+- `/src/lib/address-utils.ts` - Google address parser
+
+### Files Modified
+- `/src/components/panels/SaveLocationPanel.tsx` - Complete overhaul with all fields
+- `/src/app/api/locations/route.ts` - Fixed UserSave creation to include all fields
+- `/src/hooks/useSaveLocation.ts` - Added photo handling and all UserSave fields
+- `/src/app/map/page.tsx` - Address component parsing, improved click workflow
+- `/src/lib/maps-utils.ts` - Added address component fields to LocationData
+- `/src/components/maps/CustomMarker.tsx` - Custom temporary marker (red square with camera)
+- `/src/components/maps/InfoWindow.tsx` - Added 40px pixel offset
+
+---
+
+## Recent Changes (Dec 21, 2024)
 
 ---
 

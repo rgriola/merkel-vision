@@ -51,14 +51,18 @@ interface SaveLocationPanelProps {
 }
 
 const LOCATION_TYPES = [
-    "restaurant",
-    "cafe",
-    "park",
-    "museum",
-    "hotel",
-    "landmark",
-    "store",
-    "other",
+    "BROLL",
+    "STORY",
+    "INTERVIEW",
+    "LIVE ANCHOR",
+    "REPORTER LIVE",
+    "STAKEOUT",
+    "DRONE",
+    "SCENE",
+    "OTHER",
+    "HQ",
+    "BUREAU",
+    "REMOTE STAFF",
 ];
 
 const MARKER_COLORS = [
@@ -187,21 +191,11 @@ export function SaveLocationPanel({
 
     return (
         <div className="flex flex-col h-full">
-            {/* Header */}
-            <div className="p-4 border-b">
-                <h2 className="text-lg font-semibold">Save New Location</h2>
-                <p className="text-sm text-muted-foreground">
-                    Add details and production notes for this location
-                </p>
-            </div>
-
             {/* Form - Scrollable */}
             <div className="flex-1 overflow-y-auto p-4">
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                    {/* Basic Information */}
+                    {/* Location Fields */}
                     <div className="space-y-4">
-                        <h3 className="text-sm font-semibold">Basic Information</h3>
-
                         <div className="space-y-3">
                             <div>
                                 <Label htmlFor="name">Location Name *</Label>
@@ -231,7 +225,8 @@ export function SaveLocationPanel({
                                 </div>
                             </div>
 
-                            {/* Address Components (auto-filled from Google) */}
+                            {/* Address Components - Hidden for now */}
+                            {/* 
                             <div className="grid grid-cols-2 gap-3">
                                 <div>
                                     <Label htmlFor="number">Street Number</Label>
@@ -283,6 +278,7 @@ export function SaveLocationPanel({
                                     readOnly
                                 />
                             </div>
+                            */}
 
                             {/* GPS Coordinates Display */}
                             <div className="grid grid-cols-2 gap-3 p-3 bg-muted/50 rounded-md border">
@@ -344,6 +340,56 @@ export function SaveLocationPanel({
                                         </SelectContent>
                                     </Select>
                                 </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Production Details */}
+                    <div className="space-y-4">
+                        <h3 className="text-sm font-semibold">Production Details (Optional)</h3>
+
+                        <div className="space-y-3">
+                            <div>
+                                <Label htmlFor="entryPoint">Entry Point</Label>
+                                <Input
+                                    id="entryPoint"
+                                    {...form.register("entryPoint")}
+                                    placeholder="Main entrance"
+                                />
+                            </div>
+
+                            <div>
+                                <Label htmlFor="parking">Parking</Label>
+                                <Input
+                                    id="parking"
+                                    {...form.register("parking")}
+                                    placeholder="Parking info"
+                                />
+                            </div>
+
+                            <div>
+                                <Label htmlFor="access">Access</Label>
+                                <Input
+                                    id="access"
+                                    {...form.register("access")}
+                                    placeholder="How to access"
+                                />
+                            </div>
+
+                            <div>
+                                <div className="flex justify-between items-center">
+                                    <Label htmlFor="productionNotes">Production Notes</Label>
+                                    <span className="text-xs text-muted-foreground">
+                                        {productionNotesCount}/500 characters
+                                    </span>
+                                </div>
+                                <Textarea
+                                    id="productionNotes"
+                                    {...form.register("productionNotes")}
+                                    placeholder="Special considerations..."
+                                    rows={3}
+                                    maxLength={500}
+                                />
                             </div>
                         </div>
                     </div>
@@ -441,56 +487,6 @@ export function SaveLocationPanel({
                                     />
                                     <span className="text-sm">Favorite</span>
                                 </label>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Production Details */}
-                    <div className="space-y-4">
-                        <h3 className="text-sm font-semibold">Production Details (Optional)</h3>
-
-                        <div className="space-y-3">
-                            <div>
-                                <Label htmlFor="entryPoint">Entry Point</Label>
-                                <Input
-                                    id="entryPoint"
-                                    {...form.register("entryPoint")}
-                                    placeholder="Main entrance"
-                                />
-                            </div>
-
-                            <div>
-                                <Label htmlFor="parking">Parking</Label>
-                                <Input
-                                    id="parking"
-                                    {...form.register("parking")}
-                                    placeholder="Parking info"
-                                />
-                            </div>
-
-                            <div>
-                                <Label htmlFor="access">Access</Label>
-                                <Input
-                                    id="access"
-                                    {...form.register("access")}
-                                    placeholder="How to access"
-                                />
-                            </div>
-
-                            <div>
-                                <div className="flex justify-between items-center">
-                                    <Label htmlFor="productionNotes">Production Notes</Label>
-                                    <span className="text-xs text-muted-foreground">
-                                        {productionNotesCount}/500 characters
-                                    </span>
-                                </div>
-                                <Textarea
-                                    id="productionNotes"
-                                    {...form.register("productionNotes")}
-                                    placeholder="Special considerations..."
-                                    rows={3}
-                                    maxLength={500}
-                                />
                             </div>
                         </div>
                     </div>
