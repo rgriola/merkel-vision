@@ -24,6 +24,7 @@ interface SaveLocationData {
     isFavorite?: boolean;
     personalRating?: number;
     color?: string;
+    photos?: any[]; // ImageKit photo data
 }
 
 export function useSaveLocation() {
@@ -42,6 +43,11 @@ export function useSaveLocation() {
             delete (apiData as any).lat;
             delete (apiData as any).lng;
 
+            // Extract photos to handle separately
+            const photos = data.photos;
+            delete (apiData as any).photos;
+
+            // Save location first
             const response = await fetch('/api/locations', {
                 method: 'POST',
                 headers: {
@@ -56,7 +62,28 @@ export function useSaveLocation() {
                 throw new Error(error.message || 'Failed to save location');
             }
 
-            return response.json();
+            const result = await response.json();
+
+            // Save photos if provided
+            if (photos && photos.length > 0) {
+                const photoPromises = photos.map(photo =>
+                    fetch('/api/photos', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        credentials: 'include',
+                        body: JSON.stringify({
+                            placeId: data.placeId,
+                            ...photo,
+                        }),
+                    })
+                );
+
+                await Promise.all(photoPromises);
+            }
+
+            return result;
         },
         onSuccess: (data) => {
             // Invalidate and refetch locations

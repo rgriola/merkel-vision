@@ -80,6 +80,12 @@ export interface LocationData {
     type?: string;
     rating?: number;
     photoUrls?: string[];
+    // Address components
+    street?: string;
+    number?: string;
+    city?: string;
+    state?: string;
+    zipcode?: string;
 }
 
 export function extractPlaceData(

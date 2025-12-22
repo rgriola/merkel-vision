@@ -10,6 +10,7 @@ import { RightSidebar } from '@/components/layout/RightSidebar';
 import { SaveLocationPanel } from '@/components/panels/SaveLocationPanel';
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
 import { LocationData, getUserLocation } from '@/lib/maps-utils';
+import { parseAddressComponents } from '@/lib/address-utils';
 
 interface MarkerData {
     id: string;
@@ -77,7 +78,7 @@ function MapPageInner() {
                         }
                     }
 
-                    // Extract a readable name from the address
+                    // Extract readable name
                     const streetNumber = addressResult.address_components?.find(c =>
                         c.types.includes('street_number')
                     )?.long_name;
@@ -92,6 +93,9 @@ function MapPageInner() {
                         name = addressResult.formatted_address.split(',')[0] || 'Selected Location';
                     }
 
+                    // Parse address components
+                    const addressComponents = parseAddressComponents(addressResult.address_components);
+
                     locationData = {
                         placeId: addressResult.place_id,
                         name: name,
@@ -99,6 +103,7 @@ function MapPageInner() {
                         latitude: position.lat,
                         longitude: position.lng,
                         plusCode: plusCode,
+                        ...addressComponents, // Add parsed address components
                     };
                 }
 
@@ -212,6 +217,9 @@ function MapPageInner() {
                     name = addressResult.formatted_address.split(',')[0] || 'Current Location';
                 }
 
+                // Parse address components
+                const addressComponents = parseAddressComponents(addressResult.address_components);
+
                 const locationData: LocationData = {
                     placeId: addressResult.place_id,
                     name: name,
@@ -219,6 +227,7 @@ function MapPageInner() {
                     latitude: userLocation.lat,
                     longitude: userLocation.lng,
                     plusCode: plusCode,
+                    ...addressComponents, // Add parsed address components
                 };
 
                 // Create a special marker for the clicked user location
@@ -433,6 +442,11 @@ function MapPageInner() {
                             address: locationToSave.data?.address,
                             lat: locationToSave.position.lat,
                             lng: locationToSave.position.lng,
+                            street: locationToSave.data?.street,
+                            number: locationToSave.data?.number,
+                            city: locationToSave.data?.city,
+                            state: locationToSave.data?.state,
+                            zipcode: locationToSave.data?.zipcode,
                         }}
                         onSuccess={() => {
                             // Close sidebar

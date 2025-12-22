@@ -12,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { useSaveLocation } from "@/hooks/useSaveLocation";
 import { MapPin, Tag, X, Zap } from "lucide-react";
+import { ImageKitUploader } from "@/components/ui/ImageKitUploader";
 
 const saveLocationSchema = z.object({
     placeId: z.string().min(1, "Place ID is required"),
@@ -21,14 +22,21 @@ const saveLocationSchema = z.object({
     lng: z.number(),
     type: z.string().optional(),
 
+    // Address components
+    street: z.string().optional(),
+    number: z.string().optional(),
+    city: z.string().optional(),
+    state: z.string().optional(),
+    zipcode: z.string().optional(),
+
     // Production details
-    productionNotes: z.string().optional(),
+    productionNotes: z.string().max(500).optional(),
     entryPoint: z.string().optional(),
     parking: z.string().optional(),
     access: z.string().optional(),
 
     // User save details
-    caption: z.string().optional(),
+    caption: z.string().max(200).optional(),
     isFavorite: z.boolean().optional(),
     personalRating: z.number().min(0).max(5).optional(),
     color: z.string().optional(),
@@ -70,6 +78,7 @@ export function SaveLocationPanel({
 }: SaveLocationPanelProps) {
     const [tags, setTags] = useState<string[]>([]);
     const [tagInput, setTagInput] = useState("");
+    const [photos, setPhotos] = useState<any[]>([]);
 
     const saveLocation = useSaveLocation();
 
@@ -82,6 +91,11 @@ export function SaveLocationPanel({
             lat: initialData?.lat || 0,
             lng: initialData?.lng || 0,
             type: initialData?.type || "",
+            street: initialData?.street || "",
+            number: initialData?.number || "",
+            city: initialData?.city || "",
+            state: initialData?.state || "",
+            zipcode: initialData?.zipcode || "",
             isFavorite: initialData?.isFavorite || false,
             personalRating: initialData?.personalRating || 0,
             color: initialData?.color || "#EF4444",
@@ -99,6 +113,11 @@ export function SaveLocationPanel({
                 lat: initialData.lat || 0,
                 lng: initialData.lng || 0,
                 type: initialData.type || "",
+                street: initialData.street || "",
+                number: initialData.number || "",
+                city: initialData.city || "",
+                state: initialData.state || "",
+                zipcode: initialData.zipcode || "",
                 isFavorite: initialData.isFavorite || false,
                 personalRating: initialData.personalRating || 0,
                 color: initialData.color || "#EF4444",
@@ -112,11 +131,13 @@ export function SaveLocationPanel({
             {
                 ...data,
                 tags: tags.length > 0 ? tags : undefined,
+                photos: photos.length > 0 ? photos : undefined,
             },
             {
                 onSuccess: () => {
                     form.reset();
                     setTags([]);
+                    setPhotos([]);
                     onSuccess?.();
                 },
             }
@@ -125,7 +146,6 @@ export function SaveLocationPanel({
 
     const handleQuickSave = () => {
         const data = form.getValues();
-        // Quick save: only save essential info
         saveLocation.mutate(
             {
                 placeId: data.placeId,
@@ -134,15 +154,14 @@ export function SaveLocationPanel({
                 lat: data.lat,
                 lng: data.lng,
                 type: data.type,
-                // Mark as quick save for reminder email
                 isPermanent: false,
             },
             {
                 onSuccess: () => {
-                    // TODO: Trigger reminder email on backend
                     console.log("Quick save successful - reminder email queued");
                     form.reset();
                     setTags([]);
+                    setPhotos([]);
                     onSuccess?.();
                 },
             }
@@ -150,15 +169,21 @@ export function SaveLocationPanel({
     };
 
     const handleAddTag = () => {
-        if (tagInput.trim() && !tags.includes(tagInput.trim())) {
+        if (tagInput.trim() && !tags.includes(tagInput.trim()) && tags.length < 20) {
             setTags([...tags, tagInput.trim()]);
             setTagInput("");
+        } else if (tags.length >= 20) {
+            // Show error toast if needed
         }
     };
 
     const handleRemoveTag = (tagToRemove: string) => {
         setTags(tags.filter((tag) => tag !== tagToRemove));
     };
+
+    // Character count helpers
+    const captionCount = form.watch("caption")?.length || 0;
+    const productionNotesCount = form.watch("productionNotes")?.length || 0;
 
     return (
         <div className="flex flex-col h-full">
@@ -193,17 +218,70 @@ export function SaveLocationPanel({
                             </div>
 
                             <div>
-                                <Label htmlFor="address">Address</Label>
+                                <Label htmlFor="address">Full Address (from Google)</Label>
                                 <div className="relative">
                                     <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
                                     <Input
                                         id="address"
                                         {...form.register("address")}
-                                        placeholder="123 Main St"
+                                        placeholder="123 Main St, New York, NY 10001"
                                         className="pl-9"
                                         readOnly
                                     />
                                 </div>
+                            </div>
+
+                            {/* Address Components (auto-filled from Google) */}
+                            <div className="grid grid-cols-2 gap-3">
+                                <div>
+                                    <Label htmlFor="number">Street Number</Label>
+                                    <Input
+                                        id="number"
+                                        {...form.register("number")}
+                                        placeholder="123"
+                                        readOnly
+                                    />
+                                </div>
+                                <div>
+                                    <Label htmlFor="street">Street Name</Label>
+                                    <Input
+                                        id="street"
+                                        {...form.register("street")}
+                                        placeholder="Main St"
+                                        readOnly
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-3 gap-3">
+                                <div className="col-span-2">
+                                    <Label htmlFor="city">City</Label>
+                                    <Input
+                                        id="city"
+                                        {...form.register("city")}
+                                        placeholder="New York"
+                                        readOnly
+                                    />
+                                </div>
+                                <div>
+                                    <Label htmlFor="state">State</Label>
+                                    <Input
+                                        id="state"
+                                        {...form.register("state")}
+                                        placeholder="NY"
+                                        readOnly
+                                    />
+                                </div>
+                            </div>
+
+                            <div>
+                                <Label htmlFor="zipcode">ZIP Code</Label>
+                                <Input
+                                    id="zipcode"
+                                    {...form.register("zipcode")}
+                                    placeholder="10001"
+                                    readOnly
+                                />
                             </div>
 
                             {/* GPS Coordinates Display */}
@@ -275,17 +353,23 @@ export function SaveLocationPanel({
                         <h3 className="text-sm font-semibold">Personal Notes</h3>
 
                         <div>
-                            <Label htmlFor="caption">Caption / Notes</Label>
+                            <div className="flex justify-between items-center">
+                                <Label htmlFor="caption">Caption / Notes</Label>
+                                <span className="text-xs text-muted-foreground">
+                                    {captionCount}/200 characters
+                                </span>
+                            </div>
                             <Textarea
                                 id="caption"
                                 {...form.register("caption")}
                                 placeholder="Add your notes..."
                                 rows={2}
+                                maxLength={200}
                             />
                         </div>
 
                         <div>
-                            <Label htmlFor="tags">Tags</Label>
+                            <Label htmlFor="tags">Tags (max 20)</Label>
                             <div className="flex gap-2">
                                 <Input
                                     id="tags"
@@ -298,11 +382,15 @@ export function SaveLocationPanel({
                                         }
                                     }}
                                     placeholder="Add tags..."
+                                    maxLength={25}
                                 />
                                 <Button type="button" onClick={handleAddTag} variant="outline" size="icon">
                                     <Tag className="w-4 h-4" />
                                 </Button>
                             </div>
+                            <p className="text-xs text-muted-foreground mt-1">
+                                {tags.length}/20 tags • Max 25 characters per tag
+                            </p>
                             {tags.length > 0 && (
                                 <div className="flex flex-wrap gap-2 mt-2">
                                     {tags.map((tag) => (
@@ -390,15 +478,32 @@ export function SaveLocationPanel({
                             </div>
 
                             <div>
-                                <Label htmlFor="productionNotes">Production Notes</Label>
+                                <div className="flex justify-between items-center">
+                                    <Label htmlFor="productionNotes">Production Notes</Label>
+                                    <span className="text-xs text-muted-foreground">
+                                        {productionNotesCount}/500 characters
+                                    </span>
+                                </div>
                                 <Textarea
                                     id="productionNotes"
                                     {...form.register("productionNotes")}
                                     placeholder="Special considerations..."
-                                    rows={2}
+                                    rows={3}
+                                    maxLength={500}
                                 />
                             </div>
                         </div>
+                    </div>
+
+                    {/* Photo Upload */}
+                    <div className="space-y-4">
+                        <h3 className="text-sm font-semibold">Photos (Optional)</h3>
+                        <ImageKitUploader
+                            placeId={form.watch("placeId")}
+                            onPhotosChange={setPhotos}
+                            maxPhotos={20}
+                            maxFileSize={1.5}
+                        />
                     </div>
                 </form>
             </div>

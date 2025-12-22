@@ -205,12 +205,31 @@ export async function POST(request: NextRequest) {
             return apiError('Location already saved', 400, 'ALREADY_SAVED');
         }
 
-        // Create UserSave
+        // Extract UserSave fields from body
+        const { tags, isFavorite, personalRating, color } = body;
+
+        // Validate tags if provided
+        if (tags && Array.isArray(tags)) {
+            if (tags.length > 20) {
+                return apiError('Maximum 20 tags allowed', 400, 'VALIDATION_ERROR');
+            }
+            for (const tag of tags) {
+                if (typeof tag !== 'string' || tag.length > 25) {
+                    return apiError('Tags must be strings with max 25 characters', 400, 'VALIDATION_ERROR');
+                }
+            }
+        }
+
+        // Create UserSave with all fields
         const userSave = await prisma.userSave.create({
             data: {
                 userId: user.id,
                 locationId: location.id,
                 caption,
+                tags: tags ? tags : undefined, // Prisma will convert array to JSON
+                isFavorite: isFavorite || false,
+                personalRating: personalRating || undefined,
+                color: color || undefined,
             },
             include: {
                 location: true,
