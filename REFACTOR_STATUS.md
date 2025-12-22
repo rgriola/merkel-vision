@@ -16,12 +16,32 @@ Merkel Vision is name of the public facing application.
 
 ## Recent Changes (Dec 22, 2024) - Save Location Panel Overhaul
 
-### Fixed Critical Bugs
+### Afternoon Session - UI Refinements & Per-Photo Captions
+
+**SaveLocationPanel UI Improvements**:
+- Updated location types to production-specific categories: BROLL, STORY, INTERVIEW, LIVE ANCHOR, REPORTER LIVE, STAKEOUT, DRONE, SCENE, OTHER, HQ, BUREAU, REMOTE STAFF
+- Hid individual address component fields (street, number, city, state, zip) - still saved to DB, just not displayed for cleaner UI
+- Removed redundant section headers:
+  - "Save New Location" (redundant with sidebar title)
+  - "Basic Information" (implied)
+  - "Personal Notes" (implied)
+- Reordered sections: Production Details now appears before Personal Notes for better workflow
+
+**Per-Photo Captions**:
+- Removed general Caption/Notes textarea (wasn't being used properly)
+- Implemented per-photo captions in ImageKitUploader
+- Each photo now has its own caption input field (100 character limit)
+- Caption data saves to `photos.caption` column in database
+- Caption input appears below each photo thumbnail
+
+### Morning Session - Core Implementation
+
+**Fixed Critical Bugs**:
 - **API UserSave Bug**: API was only saving `caption` field to `user_saves` table - now saves ALL fields (tags, isFavorite, personalRating, color)
 - **Missing Address Components**: Form was missing street, number, city, state, zipcode fields - now auto-filled from Google Places
 - **No Photo Upload**: ImageKit integration was completely missing - now fully implemented with drag-and-drop
 
-### New Features
+**New Features**:
 - **ImageKit Photo Upload**:
   - Drag-and-drop interface with live previews
   - Automatic compression to 1.5MB max file size

@@ -249,6 +249,14 @@ export function ImageKitUploader({
         onPhotosChange?.(newPhotos);
     };
 
+    // Handle caption update
+    const handleCaptionChange = (index: number, caption: string) => {
+        const newPhotos = [...photos];
+        newPhotos[index] = { ...newPhotos[index], caption };
+        setPhotos(newPhotos);
+        onPhotosChange?.(newPhotos);
+    };
+
     return (
         <div className="space-y-4">
             {/* Drop Zone */}
@@ -304,32 +312,39 @@ export function ImageKitUploader({
                 <div className="grid grid-cols-2 gap-3">
                     {photos.map((photo, index) => (
                         <div key={index} className="relative group">
-                            <div className="aspect-square rounded-lg overflow-hidden border bg-muted">
+                            <div className="aspect-square rounded-lg overflow-hidden border bg-muted group">
                                 <img
                                     src={photo.url}
                                     alt={photo.originalFilename}
                                     className="w-full h-full object-cover"
                                 />
+                                <Button
+                                    type="button"
+                                    variant="destructive"
+                                    size="icon"
+                                    className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity w-6 h-6"
+                                    onClick={() => handleRemove(index)}
+                                >
+                                    <X className="w-4 h-4" />
+                                </Button>
                             </div>
-                            <Button
-                                type="button"
-                                variant="destructive"
-                                size="icon"
-                                className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity w-6 h-6"
-                                onClick={() => handleRemove(index)}
-                            >
-                                <X className="w-4 h-4" />
-                            </Button>
+                            {/* Caption input */}
+                            <input
+                                type="text"
+                                placeholder="Add caption (optional)"
+                                value={photo.caption || ''}
+                                onChange={(e) => handleCaptionChange(index, e.target.value)}
+                                maxLength={100}
+                                className="w-full mt-2 text-xs px-2 py-1 border rounded focus:outline-none focus:ring-1 focus:ring-primary"
+                            />
                             <p className="text-xs text-muted-foreground mt-1 truncate">
-                                {photo.originalFilename}
-                            </p>
-                            <p className="text-xs text-muted-foreground">
-                                {(photo.fileSize / 1024).toFixed(0)} KB
+                                {photo.originalFilename} • {(photo.fileSize / 1024).toFixed(0)} KB
                             </p>
                         </div>
                     ))}
                 </div>
-            )}
-        </div>
+            )
+            }
+        </div >
     );
 }

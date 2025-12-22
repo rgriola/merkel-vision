@@ -396,24 +396,6 @@ export function SaveLocationPanel({
 
                     {/* Personal Notes */}
                     <div className="space-y-4">
-                        <h3 className="text-sm font-semibold">Personal Notes</h3>
-
-                        <div>
-                            <div className="flex justify-between items-center">
-                                <Label htmlFor="caption">Caption / Notes</Label>
-                                <span className="text-xs text-muted-foreground">
-                                    {captionCount}/200 characters
-                                </span>
-                            </div>
-                            <Textarea
-                                id="caption"
-                                {...form.register("caption")}
-                                placeholder="Add your notes..."
-                                rows={2}
-                                maxLength={200}
-                            />
-                        </div>
-
                         <div>
                             <Label htmlFor="tags">Tags (max 20)</Label>
                             <div className="flex gap-2">
