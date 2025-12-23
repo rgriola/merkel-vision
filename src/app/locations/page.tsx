@@ -73,76 +73,90 @@ function LocationsPageInner() {
     };
 
     return (
-        <div className="container mx-auto px-4 py-8 max-w-7xl">
-            {/* Header */}
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
-                <div>
-                    <h1 className="text-3xl font-bold">My Locations</h1>
-                    <p className="text-muted-foreground mt-1">
-                        {filteredLocations.length} saved location{filteredLocations.length !== 1 ? 's' : ''}
-                    </p>
-                </div>
-                <Button size="lg" onClick={() => setShowSaveDialog(true)}>
-                    <Plus className="w-5 h-5 mr-2" />
-                    Add Location
-                </Button>
-            </div>
-
-            {/* Filters */}
-            <div className="mb-6">
-                <LocationFilters
-                    onSearchChange={setSearch}
-                    onTypeChange={setTypeFilter}
-                    onFavoritesToggle={setFavoritesOnly}
-                    onSortChange={setSortBy}
-                />
-            </div>
-
-            {/* Error State */}
-            {error && (
-                <div className="bg-destructive/10 text-destructive px-4 py-3 rounded-lg mb-6">
-                    <p className="font-medium">Error loading locations</p>
-                    <p className="text-sm">{error.message}</p>
-                </div>
-            )}
-
-            {/* List/Map Tabs */}
-            <Tabs defaultValue="list" className="space-y-6">
-                <TabsList className="grid w-full max-w-md grid-cols-2">
-                    <TabsTrigger value="list" className="flex items-center gap-2">
-                        <List className="w-4 h-4" />
-                        List View
-                    </TabsTrigger>
-                    <TabsTrigger value="map" className="flex items-center gap-2">
-                        <MapIcon className="w-4 h-4" />
-                        Map View
-                    </TabsTrigger>
-                </TabsList>
-
-                {/* List View */}
-                <TabsContent value="list" className="space-y-6">
-                    <LocationList
-                        locations={filteredLocations}
-                        isLoading={isLoading}
-                        onEdit={setEditLocation}
-                        onDelete={handleDelete}
-                        onShare={setShareLocation}
-                    />
-                </TabsContent>
-
-                {/* Map View */}
-                <TabsContent value="map" className="space-y-6">
-                    <div className="border rounded-lg p-8 text-center bg-muted/50 min-h-[500px] flex items-center justify-center">
+        <div className="fixed inset-0 top-16 flex flex-col">
+            {/* Fixed Controls Section */}
+            <div className="flex-shrink-0 bg-background border-b">
+                <div className="container mx-auto px-4 py-6 max-w-7xl">
+                    {/* Header */}
+                    {/* Header */}
+                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
                         <div>
-                            <MapIcon className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-                            <h3 className="text-lg font-semibold mb-2">Map View Coming Soon</h3>
-                            <p className="text-muted-foreground max-w-md">
-                                The map view with clustered markers will be implemented next.
+                            <h1 className="text-3xl font-bold">My Locations</h1>
+                            <p className="text-muted-foreground mt-1">
+                                {filteredLocations.length} saved location{filteredLocations.length !== 1 ? 's' : ''}
                             </p>
                         </div>
+                        <Button size="lg" onClick={() => setShowSaveDialog(true)}>
+                            <Plus className="w-5 h-5 mr-2" />
+                            Add Location
+                        </Button>
                     </div>
-                </TabsContent>
-            </Tabs>
+
+                    {/* Filters */}
+                    <div className="mb-4">
+                        <LocationFilters
+                            onSearchChange={setSearch}
+                            onTypeChange={setTypeFilter}
+                            onFavoritesToggle={setFavoritesOnly}
+                            onSortChange={setSortBy}
+                        />
+                    </div>
+
+                    {/* Error State */}
+                    {error && (
+                        <div className="bg-destructive/10 text-destructive px-4 py-3 rounded-lg mb-4">
+                            <p className="font-medium">Error loading locations</p>
+                            <p className="text-sm">{error.message}</p>
+                        </div>
+                    )}
+
+                    {/* Tabs Header */}
+                    <Tabs defaultValue="list" className="w-full">
+                        <TabsList className="grid w-full max-w-md grid-cols-2">
+                            <TabsTrigger value="list" className="flex items-center gap-2">
+                                <List className="w-4 h-4" />
+                                List View
+                            </TabsTrigger>
+                            <TabsTrigger value="map" className="flex items-center gap-2">
+                                <MapIcon className="w-4 h-4" />
+                                Map View
+                            </TabsTrigger>
+                        </TabsList>
+                    </Tabs>
+                </div>
+            </div>
+
+            {/* Scrollable Content Area */}
+            <div className="flex-1 overflow-y-auto">
+                <div className="container mx-auto px-4 py-6 max-w-7xl">
+                    <Tabs defaultValue="list" className="w-full">
+
+                        {/* List View */}
+                        <TabsContent value="list" className="mt-0">
+                            <LocationList
+                                locations={filteredLocations}
+                                isLoading={isLoading}
+                                onEdit={setEditLocation}
+                                onDelete={handleDelete}
+                                onShare={setShareLocation}
+                            />
+                        </TabsContent>
+
+                        {/* Map View */}
+                        <TabsContent value="map" className="mt-0">
+                            <div className="border rounded-lg p-8 text-center bg-muted/50 min-h-[500px] flex items-center justify-center">
+                                <div>
+                                    <MapIcon className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                                    <h3 className="text-lg font-semibold mb-2">Map View Coming Soon</h3>
+                                    <p className="text-muted-foreground max-w-md">
+                                        The map view with clustered markers will be implemented next.
+                                    </p>
+                                </div>
+                            </div>
+                        </TabsContent>
+                    </Tabs>
+                </div>
+            </div>
 
             {/* Save Dialog */}
             <SaveLocationDialog

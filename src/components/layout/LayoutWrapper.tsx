@@ -15,10 +15,10 @@ interface LayoutWrapperProps {
 export function LayoutWrapper({ children }: LayoutWrapperProps) {
     const { user } = useAuth();
 
-    // Authenticated users get fixed full-height layout (no scrollbar)
+    // Authenticated users get full-height layout
     if (user) {
         return (
-            <div className="flex h-screen flex-col overflow-hidden">
+            <div className="flex min-h-screen flex-col">
                 {children}
             </div>
         );

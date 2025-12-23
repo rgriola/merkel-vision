@@ -1,5 +1,7 @@
 "use client";
 
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { MapPin, Save, Image as ImageIcon, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -8,6 +10,14 @@ import { useAuth } from "@/lib/auth-context";
 
 export default function Home() {
   const { user } = useAuth();
+  const router = useRouter();
+
+  // Redirect authenticated users to map page
+  useEffect(() => {
+    if (user) {
+      router.push("/map");
+    }
+  }, [user, router]);
 
   return (
     <div className="flex flex-col">

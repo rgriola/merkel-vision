@@ -387,9 +387,9 @@ function MapPageInner() {
     }, [selectedMarker, isSidebarOpen]);
 
     return (
-        <div className="h-screen flex flex-col">
-            {/* Header with Search */}
-            <div className="bg-white shadow-md p-4 z-10">
+        <div className="fixed inset-0 top-16 flex flex-col">
+            {/* Search Bar - Fixed below header */}
+            <div className="bg-white shadow-md p-4 z-10 flex-shrink-0">
                 <div className="max-w-4xl mx-auto flex gap-4 items-center">
                     <div className="flex-1">
                         <PlacesAutocomplete
