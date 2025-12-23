@@ -4,7 +4,7 @@ The Github repository for this project is at: https://github.com/rgriola/merkel-
 The current produciton version is at: https://merkelvision.com/landing.html
 Merkel Vision is name of the public facing application.
 
-**Last Updated**: 2025-12-22 16:35:00 EST  
+**Last Updated**: 2025-12-23 14:25:00 EST  
 **Phase**: Phase 6 - Location Management Features (🚧 IN PROGRESS - 99%)  
 **Overall Progress**: ~99% Complete
 
@@ -12,9 +12,91 @@ Merkel Vision is name of the public facing application.
 > **Migration Alert**: Schema has been significantly enhanced beyond legacy Merkel-Vision. Some fields are NEW and will require implementation. Full schema comparison completed - see `MIGRATION_READINESS.md`.
 
 > [!NOTE]
-> **Session Update (Dec 22, 2024 - Evening)**: Implemented complete Edit Location workflow with API, hook, and panel integration. Enhanced My Locations page with beautiful cards, production details, and click-to-navigate functionality. Fixed layout overflow issues and data structure transformation for proper display.
+> **Session Update (Dec 23, 2024)**: Major form consolidation completed! Extracted shared EditLocationForm and SaveLocationForm components used by both Panel and Dialog wrappers. Eliminated 581 lines of duplicate code. Enhanced LocationCard with always-visible star ratings, cleaner coordinate display, and type-colored card backgrounds.
 
-## Recent Changes (Dec 22, 2024) - Edit Location & My Locations Enhancement
+## Recent Changes (Dec 23, 2024) - Form Consolidation & UI Improvements
+
+### Form Consolidation - DRY Architecture (14:00 - 14:25 EST)
+
+**Massive Code Deduplication** - 581 lines eliminated!
+
+**Edit Form Consolidation**:
+- ✅ Created shared `EditLocationForm.tsx` component (420 lines)
+- ✅ Refactored `EditLocationPanel.tsx` to use shared form (68 lines, -85%)
+- ✅ Refactored `EditLocationDialog.tsx` to use shared form (94 lines, -76%)
+- ✅ **Result**: -268 lines (-32% code reduction)
+- ✅ Single source of truth for all edit form logic, validation, and UI
+- **Files**:
+  - [`src/components/locations/EditLocationForm.tsx`](./src/components/locations/EditLocationForm.tsx) - NEW shared component
+  - [`src/components/panels/EditLocationPanel.tsx`](./src/components/panels/EditLocationPanel.tsx) - Refactored to wrapper
+  - [`src/components/locations/EditLocationDialog.tsx`](./src/components/locations/EditLocationDialog.tsx) - Refactored to wrapper
+
+**Save Form Consolidation**:
+- ✅ Created shared `SaveLocationForm.tsx` component (405 lines)
+- ✅ Refactored `SaveLocationPanel.tsx` to use shared form (110 lines, -79%)
+  - Preserved unique "Quick Save" feature
+- ✅ Refactored `SaveLocationDialog.tsx` to use shared form (72 lines, -81%)
+- ✅ **Result**: -313 lines (-35% code reduction)
+- ✅ Single source of truth for all save form logic, validation, and UI
+- **Files**:
+  - [`src/components/locations/SaveLocationForm.tsx`](./src/components/locations/SaveLocationForm.tsx) - NEW shared component
+  - [`src/components/panels/SaveLocationPanel.tsx`](./src/components/panels/SaveLocationPanel.tsx) - Refactored to wrapper
+  - [`src/components/locations/SaveLocationDialog.tsx`](./src/components/locations/SaveLocationDialog.tsx) - Refactored to wrapper
+
+**Combined Impact**:
+- 📦 **581 total lines eliminated** (33% reduction)
+- 🎯 100% guaranteed consistency between Panel and Dialog forms
+- 🐛 Fix once, fixes everywhere (no duplicate bugs)
+- 🧪 Test once, both wrappers covered
+- 🔧 Add fields once, both get it automatically
+
+**Architecture**:
+```
+Before:
+├── EditLocationPanel.tsx (451 lines) - Full form
+└── EditLocationDialog.tsx (399 lines) - Duplicate form
+
+After:
+├── EditLocationForm.tsx (420 lines) - ✨ Shared
+├── EditLocationPanel.tsx (68 lines) - Wrapper
+└── EditLocationDialog.tsx (94 lines) - Wrapper
+```
+
+### EditLocationDialog Enhancements (13:40 - 14:00 EST)
+
+**Before Form Consolidation** - These changes were made before extracting shared forms:
+- ✅ Removed "Custom Marker Color" dropdown (redundant with Type field)
+- ✅ Added Indoor/Outdoor menu (matching EditLocationPanel)
+- ✅ Added ImageKitUploader for photo management (max 20 photos, 1.5MB)
+- ✅ Updated `useUpdateLocation` hook to support `indoorOutdoor` and `photos` fields
+- ✅ Auto-calculate color from type selection using `TYPE_COLOR_MAP`
+- **Note**: This work was then consolidated into the shared `EditLocationForm.tsx`
+
+### LocationCard UI Improvements (14:05 - 14:25 EST)
+
+**Visual Enhancements**:
+- ✅ **Star Ratings Always Visible**: Shows 5 stars on all cards
+  - 0 rating: ☆☆☆☆☆ (5 empty gray stars)
+  - 3 rating: ★★★☆☆ (3 filled yellow stars)
+  - Removed redundant rating count text "(X/5)"
+- ✅ **Cleaner Coordinates**: Reduced precision from 6 to 3 decimal places
+  - Before: `40.748817, -73.985428`
+  - After: `40.749, -73.985`
+- ✅ **Type-Colored Backgrounds**: Card background matches type badge color at 50% opacity
+  - BROLL cards: Light blue background
+  - STORY cards: Light red background
+  - Creates visual cohesion and quick type identification
+- ✅ **Repositioned Image Counter**: Moved from top-right to bottom-right corner
+  - Prevents covering the favorite star icon
+  - Bottom-right: Photo counter, Permanent/Permit badges
+- ✅ **Removed Duplicate Address**: Deleted redundant address components section
+  - Main address at top is sufficient
+  - Cleaner, less cluttered card design
+- **File**: [`src/components/locations/LocationCard.tsx`](./src/components/locations/LocationCard.tsx)
+
+---
+
+## Previous Session (Dec 22, 2024) - Edit Location & My Locations Enhancement
 
 ### Evening Session - Edit Workflow & My Locations (16:00 - 16:35 EST)
 
