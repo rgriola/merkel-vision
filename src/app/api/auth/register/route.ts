@@ -35,7 +35,7 @@ export async function POST(request: NextRequest) {
     const validation = registerSchema.safeParse(body);
     if (!validation.success) {
       return apiError(
-        validation.error.errors[0].message,
+        validation.error.issues[0].message,
         400,
         'VALIDATION_ERROR'
       );
@@ -85,6 +85,10 @@ export async function POST(request: NextRequest) {
         emailVerified: true,
         isActive: true,
         isAdmin: true,
+        avatar: true,
+        city: true,
+        country: true,
+        language: true,
         createdAt: true,
       },
     });

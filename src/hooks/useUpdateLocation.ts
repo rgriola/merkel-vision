@@ -7,6 +7,7 @@ interface UpdateLocationData {
     name?: string;
     address?: string;
     type?: string;
+    indoorOutdoor?: string;
     street?: string;
     number?: string;
     city?: string;
@@ -22,6 +23,7 @@ interface UpdateLocationData {
     isFavorite?: boolean;
     personalRating?: number;
     color?: string;
+    photos?: any[];
 }
 
 export function useUpdateLocation() {

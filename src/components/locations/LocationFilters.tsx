@@ -6,6 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Button } from "@/components/ui/button";
 import { Search, Star, SlidersHorizontal } from "lucide-react";
 import { LOCATION_TYPES } from "@/lib/location-constants";
+import { LOCATION_SORT_OPTIONS } from "@/lib/form-constants";
 
 interface LocationFiltersProps {
     onSearchChange: (search: string) => void;
@@ -105,11 +106,11 @@ export function LocationFilters({
                                 <SelectValue placeholder="Most recent" />
                             </SelectTrigger>
                             <SelectContent>
-                                <SelectItem value="recent">Most Recent</SelectItem>
-                                <SelectItem value="oldest">Oldest First</SelectItem>
-                                <SelectItem value="name-asc">Name (A-Z)</SelectItem>
-                                <SelectItem value="name-desc">Name (Z-A)</SelectItem>
-                                <SelectItem value="rating">Highest Rating</SelectItem>
+                                {LOCATION_SORT_OPTIONS.map((option) => (
+                                    <SelectItem key={option.value} value={option.value}>
+                                        {option.label}
+                                    </SelectItem>
+                                ))}
                             </SelectContent>
                         </Select>
                     </div>

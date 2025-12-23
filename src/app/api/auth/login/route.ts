@@ -1,7 +1,7 @@
 import { NextRequest } from 'next/server';
 import { z } from 'zod';
 import prisma from '@/lib/prisma';
-import { comparePassword, generateToken } from  '@/lib/auth';
+import { comparePassword, generateToken } from '@/lib/auth';
 import { apiResponse, apiError, setAuthCookie } from '@/lib/api-middleware';
 
 // Validation schema for login
@@ -23,7 +23,7 @@ export async function POST(request: NextRequest) {
     const validation = loginSchema.safeParse(body);
     if (!validation.success) {
       return apiError(
-        validation.error.errors[0].message,
+        validation.error.issues[0].message,
         400,
         'VALIDATION_ERROR'
       );
@@ -34,6 +34,22 @@ export async function POST(request: NextRequest) {
     // Find user by email
     const user = await prisma.user.findUnique({
       where: { email },
+      select: {
+        id: true,
+        email: true,
+        username: true,
+        firstName: true,
+        lastName: true,
+        emailVerified: true,
+        isActive: true,
+        isAdmin: true,
+        passwordHash: true,
+        avatar: true,
+        city: true,
+        country: true,
+        language: true,
+        createdAt: true,
+      },
     });
 
     if (!user) {
@@ -71,6 +87,10 @@ export async function POST(request: NextRequest) {
         emailVerified: user.emailVerified,
         isActive: user.isActive,
         isAdmin: user.isAdmin,
+        avatar: user.avatar,
+        city: user.city,
+        country: user.country,
+        language: user.language,
         createdAt: user.createdAt,
       },
       rememberMe || false
@@ -82,7 +102,7 @@ export async function POST(request: NextRequest) {
       where: { userId: user.id },
     });
 
-        // Create session record
+    // Create session record
     const expiryDays = rememberMe ? 30 : 7;
     const session = await prisma.session.create({
       data: {

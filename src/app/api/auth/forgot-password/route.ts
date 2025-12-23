@@ -22,7 +22,7 @@ export async function POST(request: NextRequest) {
     const validation = forgotPasswordSchema.safeParse(body);
     if (!validation.success) {
       return apiError(
-        validation.error.errors[0].message,
+        validation.error.issues[0].message,
         400,
         'VALIDATION_ERROR'
       );
