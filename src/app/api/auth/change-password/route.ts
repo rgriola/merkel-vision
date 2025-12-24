@@ -120,9 +120,6 @@ export async function POST(request: NextRequest) {
             message: 'Password changed successfully. Please log in again.',
         });
     } catch (error: any) {
-        if (error.message === 'Unauthorized') {
-            return apiError('Unauthorized', 401, 'UNAUTHORIZED');
-        }
         console.error('Change password error:', error);
         return apiError('Failed to change password', 500, 'SERVER_ERROR');
     }

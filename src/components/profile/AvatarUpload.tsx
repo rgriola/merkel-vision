@@ -7,6 +7,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { toast } from 'sonner';
 import { Camera, Upload, X, User } from 'lucide-react';
 import { useAuth } from '@/lib/auth-context';
+import { getOptimizedAvatarUrl } from '@/lib/imagekit';
 
 interface AvatarUploadProps {
     currentAvatar?: string | null;
@@ -118,11 +119,12 @@ export function AvatarUpload({ currentAvatar }: AvatarUploadProps) {
                         <div className="w-32 h-32 rounded-full overflow-hidden bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center border-4 border-white shadow-lg">
                             {previewUrl ? (
                                 <Image
-                                    src={previewUrl}
+                                    src={getOptimizedAvatarUrl(previewUrl, 128) || previewUrl}
                                     alt="Profile avatar"
                                     width={128}
                                     height={128}
                                     className="w-full h-full object-cover"
+                                    priority
                                 />
                             ) : (
                                 <User className="w-16 h-16 text-white" />

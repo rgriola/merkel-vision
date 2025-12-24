@@ -2,12 +2,16 @@
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { User, Shield, Settings } from 'lucide-react';
+import { AvatarUpload } from '@/components/profile/AvatarUpload';
 import { AccountSettingsForm } from '@/components/profile/AccountSettingsForm';
 import { ChangePasswordForm } from '@/components/profile/ChangePasswordForm';
 import { SecurityActivityLog } from '@/components/profile/SecurityActivityLog';
 import { PreferencesForm } from '@/components/profile/PreferencesForm';
+import { useAuth } from '@/lib/auth-context';
 
 export default function ProfilePage() {
+    const { user } = useAuth();
+
     return (
         <div className="container max-w-6xl mx-auto py-8 px-4">
             <div className="mb-6">
@@ -34,6 +38,7 @@ export default function ProfilePage() {
                 </TabsList>
 
                 <TabsContent value="account" className="space-y-4">
+                    <AvatarUpload currentAvatar={user?.avatar} />
                     <AccountSettingsForm />
                 </TabsContent>
 

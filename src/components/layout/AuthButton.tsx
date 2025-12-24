@@ -2,10 +2,12 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { User, LogOut } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { getOptimizedAvatarUrl } from "@/lib/imagekit";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -52,6 +54,12 @@ export function AuthButton() {
             <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="relative h-8 w-8 rounded-full">
                     <Avatar className="h-8 w-8">
+                        {user.avatar && (
+                            <AvatarImage
+                                src={getOptimizedAvatarUrl(user.avatar, 32) || user.avatar}
+                                alt={user.username}
+                            />
+                        )}
                         <AvatarFallback>{initials}</AvatarFallback>
                     </Avatar>
                 </Button>
