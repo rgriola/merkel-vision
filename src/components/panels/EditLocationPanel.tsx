@@ -35,7 +35,7 @@ export function EditLocationPanel({
     return (
         <div className="flex flex-col h-full">
             {/* Form - Scrollable */}
-            <div className="flex-1 overflow-y-auto p-4">
+            <div className="flex-1 overflow-y-auto p-3">
                 <EditLocationForm
                     locationId={locationId}
                     location={location}
@@ -46,7 +46,7 @@ export function EditLocationPanel({
             </div>
 
             {/* Footer with Actions */}
-            <div className="p-4 border-t space-y-2">
+            <div className="p-3 border-t">
                 <div className="flex gap-2">
                     <Button
                         type="button"

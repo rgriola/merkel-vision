@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useLocations } from "@/hooks/useLocations";
 import { useDeleteLocation } from "@/hooks/useDeleteLocation";
 import { LocationList } from "@/components/locations/LocationList";
+import { LocationListCompact } from "@/components/locations/LocationListCompact";
 import { LocationFilters } from "@/components/locations/LocationFilters";
 import { ShareLocationDialog } from "@/components/locations/ShareLocationDialog";
 import { SaveLocationDialog } from "@/components/locations/SaveLocationDialog";
@@ -11,7 +12,7 @@ import { EditLocationDialog } from "@/components/locations/EditLocationDialog";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { Plus, MapIcon, List } from "lucide-react";
+import { Plus, MapIcon, List, LayoutGrid } from "lucide-react";
 import type { Location } from "@/types/location";
 
 function LocationsPageInner() {
@@ -73,11 +74,10 @@ function LocationsPageInner() {
     };
 
     return (
-        <div className="fixed inset-0 top-16 flex flex-col">
+        <Tabs defaultValue="grid" className="fixed inset-0 top-16 flex flex-col">
             {/* Fixed Controls Section */}
             <div className="flex-shrink-0 bg-background border-b">
                 <div className="container mx-auto px-4 py-6 max-w-7xl">
-                    {/* Header */}
                     {/* Header */}
                     <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
                         <div>
@@ -111,50 +111,60 @@ function LocationsPageInner() {
                     )}
 
                     {/* Tabs Header */}
-                    <Tabs defaultValue="list" className="w-full">
-                        <TabsList className="grid w-full max-w-md grid-cols-2">
-                            <TabsTrigger value="list" className="flex items-center gap-2">
-                                <List className="w-4 h-4" />
-                                List View
-                            </TabsTrigger>
-                            <TabsTrigger value="map" className="flex items-center gap-2">
-                                <MapIcon className="w-4 h-4" />
-                                Map View
-                            </TabsTrigger>
-                        </TabsList>
-                    </Tabs>
+                    <TabsList className="grid w-full max-w-md grid-cols-3">
+                        <TabsTrigger value="grid" className="flex items-center gap-2">
+                            <LayoutGrid className="w-4 h-4" />
+                            Grid
+                        </TabsTrigger>
+                        <TabsTrigger value="list" className="flex items-center gap-2">
+                            <List className="w-4 h-4" />
+                            List
+                        </TabsTrigger>
+                        <TabsTrigger value="map" className="flex items-center gap-2">
+                            <MapIcon className="w-4 h-4" />
+                            Map
+                        </TabsTrigger>
+                    </TabsList>
                 </div>
             </div>
 
             {/* Scrollable Content Area */}
             <div className="flex-1 overflow-y-auto">
                 <div className="container mx-auto px-4 py-6 max-w-7xl">
-                    <Tabs defaultValue="list" className="w-full">
+                    {/* Grid View */}
+                    <TabsContent value="grid" className="mt-0">
+                        <LocationList
+                            locations={filteredLocations}
+                            isLoading={isLoading}
+                            onEdit={setEditLocation}
+                            onDelete={handleDelete}
+                            onShare={setShareLocation}
+                        />
+                    </TabsContent>
 
-                        {/* List View */}
-                        <TabsContent value="list" className="mt-0">
-                            <LocationList
-                                locations={filteredLocations}
-                                isLoading={isLoading}
-                                onEdit={setEditLocation}
-                                onDelete={handleDelete}
-                                onShare={setShareLocation}
-                            />
-                        </TabsContent>
+                    {/* List View */}
+                    <TabsContent value="list" className="mt-0">
+                        <LocationListCompact
+                            locations={filteredLocations}
+                            isLoading={isLoading}
+                            onEdit={setEditLocation}
+                            onDelete={handleDelete}
+                            onShare={setShareLocation}
+                        />
+                    </TabsContent>
 
-                        {/* Map View */}
-                        <TabsContent value="map" className="mt-0">
-                            <div className="border rounded-lg p-8 text-center bg-muted/50 min-h-[500px] flex items-center justify-center">
-                                <div>
-                                    <MapIcon className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-                                    <h3 className="text-lg font-semibold mb-2">Map View Coming Soon</h3>
-                                    <p className="text-muted-foreground max-w-md">
-                                        The map view with clustered markers will be implemented next.
-                                    </p>
-                                </div>
+                    {/* Map View */}
+                    <TabsContent value="map" className="mt-0">
+                        <div className="border rounded-lg p-8 text-center bg-muted/50 min-h-[500px] flex items-center justify-center">
+                            <div>
+                                <MapIcon className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                                <h3 className="text-lg font-semibold mb-2">Map View Coming Soon</h3>
+                                <p className="text-muted-foreground max-w-md">
+                                    The map view with clustered markers will be implemented next.
+                                </p>
                             </div>
-                        </TabsContent>
-                    </Tabs>
+                        </div>
+                    </TabsContent>
                 </div>
             </div>
 
@@ -177,7 +187,7 @@ function LocationsPageInner() {
                 open={!!shareLocation}
                 onOpenChange={(open) => !open && setShareLocation(null)}
             />
-        </div>
+        </Tabs>
     );
 }
 

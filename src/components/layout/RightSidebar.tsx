@@ -38,11 +38,11 @@ export function RightSidebar({
 
             {/* Sidebar */}
             <div
-                className={`fixed top-0 right-0 h-full bg-background border-l shadow-lg z-50 transition-transform duration-300 ease-in-out ${isOpen ? "translate-x-0" : "translate-x-full"
+                className={`fixed top-16 right-0 h-[calc(100vh-4rem)] bg-background border-l shadow-lg z-50 transition-transform duration-300 ease-in-out ${isOpen ? "translate-x-0" : "translate-x-full"
                     } w-full sm:w-[400px] lg:w-[450px]`}
             >
                 {/* Header */}
-                <div className="flex items-center justify-between p-4 border-b">
+                <div className="flex items-center justify-between p-3 border-b">
                     {title && <h2 className="text-lg font-semibold">{title}</h2>}
                     {!title && <div />}
                     <Button

@@ -154,10 +154,10 @@ export function EditLocationForm({
     const productionNotesCount = form.watch("productionNotes")?.length || 0;
 
     return (
-        <form id="edit-location-form" onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
+        <form id="edit-location-form" onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
             {/* Location Fields */}
-            <div className="space-y-4">
-                <div className="space-y-3">
+            <div className="space-y-3">
+                <div className="space-y-2">
                     <div>
                         <Label htmlFor="name">Location Name *</Label>
                         <Input
@@ -262,8 +262,8 @@ export function EditLocationForm({
             </div>
 
             {/* Production Details */}
-            <div className="space-y-4">
-                <div className="space-y-3">
+            <div className="space-y-3">
+                <div className="space-y-2">
                     <div>
                         <div className="flex justify-between items-center">
                             <Label htmlFor="productionNotes">Production Notes (Optional)</Label>
@@ -275,7 +275,7 @@ export function EditLocationForm({
                             id="productionNotes"
                             {...form.register("productionNotes")}
                             placeholder="Special considerations..."
-                            rows={3}
+                            rows={2}
                             maxLength={500}
                         />
                     </div>
@@ -310,7 +310,7 @@ export function EditLocationForm({
             </div>
 
             {/* Personal Notes */}
-            <div className="space-y-4">
+            <div className="space-y-3">
                 <div>
                     <Label htmlFor="tags">Tags (max 20)</Label>
                     <div className="flex gap-2">
@@ -389,7 +389,7 @@ export function EditLocationForm({
             </div>
 
             {/* Photo Upload */}
-            <div className="space-y-4">
+            <div className="space-y-3">
                 <h3 className="text-sm font-semibold">Photos (Max 20)</h3>
                 <ImageKitUploader
                     placeId={location.placeId}
