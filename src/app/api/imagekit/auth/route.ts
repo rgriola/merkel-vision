@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
 
         // Initialize ImageKit
         const imagekit = new ImageKit({
-            publicKey: process.env.IMAGEKIT_PUBLIC_KEY || '',
+            publicKey: process.env.NEXT_PUBLIC_IMAGEKIT_PUBLIC_KEY || '',
             privateKey: process.env.IMAGEKIT_PRIVATE_KEY || '',
             urlEndpoint: process.env.IMAGEKIT_URL_ENDPOINT || '',
         });
@@ -27,7 +27,7 @@ export async function GET(request: NextRequest) {
 
         return apiResponse({
             ...authenticationParameters,
-            publicKey: process.env.IMAGEKIT_PUBLIC_KEY,
+            publicKey: process.env.NEXT_PUBLIC_IMAGEKIT_PUBLIC_KEY,
             urlEndpoint: process.env.IMAGEKIT_URL_ENDPOINT,
         });
     } catch (error: any) {

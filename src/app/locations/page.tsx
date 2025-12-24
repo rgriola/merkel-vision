@@ -5,6 +5,7 @@ import { useLocations } from "@/hooks/useLocations";
 import { useDeleteLocation } from "@/hooks/useDeleteLocation";
 import { LocationList } from "@/components/locations/LocationList";
 import { LocationListCompact } from "@/components/locations/LocationListCompact";
+import { LocationsMapView } from "@/components/locations/LocationsMapView";
 import { LocationFilters } from "@/components/locations/LocationFilters";
 import { ShareLocationDialog } from "@/components/locations/ShareLocationDialog";
 import { SaveLocationDialog } from "@/components/locations/SaveLocationDialog";
@@ -174,15 +175,7 @@ function LocationsPageInner() {
 
                     {/* Map View */}
                     <TabsContent value="map" className="mt-0">
-                        <div className="border rounded-lg p-8 text-center bg-muted/50 min-h-[500px] flex items-center justify-center">
-                            <div>
-                                <MapIcon className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-                                <h3 className="text-lg font-semibold mb-2">Map View Coming Soon</h3>
-                                <p className="text-muted-foreground max-w-md">
-                                    The map view with clustered markers will be implemented next.
-                                </p>
-                            </div>
-                        </div>
+                        <LocationsMapView locations={filteredLocations} />
                     </TabsContent>
                 </div>
             </div>

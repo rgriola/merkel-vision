@@ -4,6 +4,7 @@ import { useState, useCallback, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { GoogleMap } from '@/components/maps/GoogleMap';
 import { CustomMarker } from '@/components/maps/CustomMarker';
+import { ClusteredMarkers } from '@/components/maps/ClusteredMarkers';
 import { InfoWindow } from '@/components/maps/InfoWindow';
 import { PlacesAutocomplete } from '@/components/maps/PlacesAutocomplete';
 import { UserLocationMarker } from '@/components/maps/UserLocationMarker';
@@ -437,17 +438,28 @@ function MapPageInner() {
                         onClick={handleUserLocationClick}
                     />
 
-                    {/* Render all markers */}
-                    {markers.map((marker) => (
+                    {/* Render temporary markers (not clustered) */}
+                    {markers.filter(m => m.isTemporary).map((marker) => (
                         <CustomMarker
                             key={marker.id}
                             position={marker.position}
                             title={marker.data?.name || 'Custom location'}
                             onClick={() => handleMarkerClick(marker)}
-                            isTemporary={marker.isTemporary} // Pass temporary status
-                            color={marker.color} // Pass marker color
+                            isTemporary={true}
+                            color={marker.color || '#EF4444'}
                         />
                     ))}
+
+                    {/* Render saved markers (clustered) */}
+                    <ClusteredMarkers
+                        map={map}
+                        markers={markers.filter(m => !m.isTemporary).map(marker => ({
+                            position: marker.position,
+                            title: marker.data?.name || 'Saved location',
+                            color: marker.color || '#EF4444',
+                            onClick: () => handleMarkerClick(marker),
+                        }))}
+                    />
 
                     {/* Render info window for selected marker */}
                     {selectedMarker && (
@@ -477,7 +489,7 @@ function MapPageInner() {
                                     </div>
                                 )}
                                 <div className="flex gap-2 mt-2">
-                                    {/* Edit button for saved locations */}
+                                    {/* View button for saved locations */}
                                     {selectedMarker.userSave && (
                                         <button
                                             onClick={() => {
@@ -487,7 +499,7 @@ function MapPageInner() {
                                             }}
                                             className="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 transition-colors"
                                         >
-                                            Edit
+                                            View
                                         </button>
                                     )}
                                     {/* Save button for temporary markers */}
