@@ -53,6 +53,11 @@ export function RegisterForm() {
   });
 
   const password = watch('password');
+  const confirmPassword = watch('confirmPassword');
+
+  // Check if passwords match in real-time
+  const passwordsMatch = password && confirmPassword && password === confirmPassword;
+  const passwordsDontMatch = password && confirmPassword && password !== confirmPassword;
 
   // Password strength indicator
   const getPasswordStrength = (pass: string): number => {
@@ -108,7 +113,7 @@ export function RegisterForm() {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" autoComplete="off">
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="firstName">First Name</Label>
@@ -116,6 +121,7 @@ export function RegisterForm() {
                 id="firstName"
                 type="text"
                 placeholder="John"
+                autoComplete="off"
                 {...register('firstName')}
                 disabled={isLoading}
                 className={errors.firstName ? 'border-red-500 focus-visible:ring-red-500' : ''}
@@ -132,6 +138,7 @@ export function RegisterForm() {
                 id="lastName"
                 type="text"
                 placeholder="Doe"
+                autoComplete="off"
                 {...register('lastName')}
                 disabled={isLoading}
                 className={errors.lastName ? 'border-red-500 focus-visible:ring-red-500' : ''}
@@ -149,6 +156,7 @@ export function RegisterForm() {
               id="email"
               type="email"
               placeholder="you@example.com"
+              autoComplete="off"
               {...register('email')}
               disabled={isLoading}
               className={errors.email ? 'border-red-500 focus-visible:ring-red-500' : ''}
@@ -165,6 +173,7 @@ export function RegisterForm() {
               id="username"
               type="text"
               placeholder="johndoe"
+              autoComplete="off"
               {...register('username')}
               disabled={isLoading}
               className={errors.username ? 'border-red-500 focus-visible:ring-red-500' : ''}
@@ -182,6 +191,7 @@ export function RegisterForm() {
                 id="password"
                 type={showPassword ? "text" : "password"}
                 placeholder="••••••••"
+                autoComplete="new-password"
                 {...register('password')}
                 disabled={isLoading}
                 className={`pr-10 ${errors.password ? 'border-red-500 focus-visible:ring-red-500' : ''}`}
@@ -239,11 +249,33 @@ export function RegisterForm() {
                 id="confirmPassword"
                 type={showConfirmPassword ? "text" : "password"}
                 placeholder="••••••••"
+                autoComplete="new-password"
                 {...register('confirmPassword')}
                 disabled={isLoading}
-                className={`pr-10 ${errors.confirmPassword ? 'border-red-500 focus-visible:ring-red-500' : ''}`}
+                className={`pr-20 ${errors.confirmPassword
+                  ? 'border-red-500 focus-visible:ring-red-500'
+                  : passwordsMatch
+                    ? 'border-green-500 focus-visible:ring-green-500'
+                    : passwordsDontMatch
+                      ? 'border-red-500 focus-visible:ring-red-500'
+                      : ''
+                  }`}
                 aria-invalid={errors.confirmPassword ? 'true' : 'false'}
               />
+              {/* Password Match Indicator */}
+              {confirmPassword && (
+                <div className="absolute right-12 top-1/2 -translate-y-1/2">
+                  {passwordsMatch ? (
+                    <svg className="h-5 w-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                  ) : passwordsDontMatch ? (
+                    <svg className="h-5 w-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  ) : null}
+                </div>
+              )}
               <button
                 type="button"
                 onClick={() => setShowConfirmPassword(!showConfirmPassword)}
@@ -257,6 +289,13 @@ export function RegisterForm() {
                 )}
               </button>
             </div>
+            {/* Real-time feedback message */}
+            {confirmPassword && !errors.confirmPassword && (
+              <p className={`text-sm font-medium ${passwordsMatch ? 'text-green-600' : 'text-red-600'}`}>
+                {passwordsMatch ? '✓ Passwords match' : '✗ Passwords do not match'}
+              </p>
+            )}
+            {/* Validation error message */}
             {errors.confirmPassword && (
               <p className="text-sm text-red-500 font-medium">{errors.confirmPassword.message}</p>
             )}

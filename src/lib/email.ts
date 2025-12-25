@@ -1,10 +1,24 @@
 import * as nodemailer from 'nodemailer';
-
+import { Resend } from 'resend';
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+const EMAIL_SERVICE = process.env.EMAIL_SERVICE || 'mailtrap';
 const EMAIL_MODE = process.env.EMAIL_MODE || 'development';
 
-// Email service configuration
+// Initialize Resend for production (lazy initialization)
+let resendClient: Resend | null = null;
+
+function getResendClient(): Resend {
+  if (!resendClient && process.env.EMAIL_API_KEY) {
+    resendClient = new Resend(process.env.EMAIL_API_KEY);
+  }
+  if (!resendClient) {
+    throw new Error('Resend API key is not configured');
+  }
+  return resendClient;
+}
+
+// Email service configuration for SMTP (Mailtrap)
 const emailConfig = {
   host: process.env.EMAIL_HOST || 'sandbox.smtp.mailtrap.io',
   port: parseInt(process.env.EMAIL_PORT || '2525'),
@@ -15,8 +29,55 @@ const emailConfig = {
   },
 };
 
-// Create reusable transporter
-const transporter = nodemailer.createTransport(emailConfig);
+// Create reusable transporter for SMTP
+const transporter = EMAIL_SERVICE === 'mailtrap'
+  ? nodemailer.createTransport(emailConfig)
+  : null;
+
+/**
+ * Send email using the configured service (Resend or Mailtrap)
+ * @param to - Recipient email address
+ * @param subject - Email subject
+ * @param html - Email HTML content
+ * @returns Promise<boolean> - Success status
+ */
+async function sendEmail(
+  to: string,
+  subject: string,
+  html: string
+): Promise<boolean> {
+  const fromName = process.env.EMAIL_FROM_NAME || 'Google Search Me';
+  const fromAddress = process.env.EMAIL_FROM_ADDRESS || 'noreply@example.com';
+
+  try {
+    if (EMAIL_SERVICE === 'resend') {
+      // Production: Use Resend API
+      const resend = getResendClient();
+      await resend.emails.send({
+        from: `${fromName} <${fromAddress}>`,
+        to,
+        subject,
+        html,
+      });
+      return true;
+    } else if (EMAIL_SERVICE === 'mailtrap' && transporter) {
+      // Development: Use Mailtrap SMTP
+      await transporter.sendMail({
+        from: `"${fromName}" <${fromAddress}>`,
+        to,
+        subject,
+        html,
+      });
+      return true;
+    } else {
+      console.error('No email service configured');
+      return false;
+    }
+  } catch (error) {
+    console.error('Email send error:', error);
+    return false;
+  }
+}
 
 /**
  * Send email verification email
@@ -45,27 +106,20 @@ export async function sendVerificationEmail(
     return true;
   }
 
-  // Production mode: send actual email via Mailtrap
-  try {
-    await transporter.sendMail({
-      from: `"${process.env.EMAIL_FROM_NAME}" <${process.env.EMAIL_FROM_ADDRESS}>`,
-      to: email,
-      subject: 'Verify your email address',
-      html: `
-        <h2>Welcome to GoogleMaps Search!</h2>
-        <p>Hi ${username},</p>
-        <p>Thank you for registering. Please click the link below to verify your email address:</p>
-        <a href="${verificationUrl}">Verify Email</a>
-        <p>Or copy and paste this link into your browser:</p>
-        <p>${verificationUrl}</p>
-        <p>If you didn't create an account, please ignore this email.</p>
-      `,
-    });
-    return true;
-  } catch (error) {
-    console.error('Email send error:', error);
-    return false;
-  }
+  // Send actual email via configured service
+  return sendEmail(
+    email,
+    'Verify your email address',
+    `
+      <h2>Welcome to Google Search Me!</h2>
+      <p>Hi ${username},</p>
+      <p>Thank you for registering. Please click the link below to verify your email address:</p>
+      <a href="${verificationUrl}" style="display: inline-block; padding: 12px 24px; background-color: #4285f4; color: white; text-decoration: none; border-radius: 4px; margin: 16px 0;">Verify Email</a>
+      <p>Or copy and paste this link into your browser:</p>
+      <p style="color: #666; word-break: break-all;">${verificationUrl}</p>
+      <p>If you didn't create an account, please ignore this email.</p>
+    `
+  );
 }
 
 /**
@@ -95,29 +149,22 @@ export async function sendPasswordResetEmail(
     return true;
   }
 
-  // Production mode: send actual email
-  try {
-    await transporter.sendMail({
-      from: `"${process.env.EMAIL_FROM_NAME}" <${process.env.EMAIL_FROM_ADDRESS}>`,
-      to: email,
-      subject: 'Reset your password',
-      html: `
-        <h2>Password Reset Request</h2>
-        <p>Hi ${username},</p>
-        <p>We received a request to reset your password. Click the link below to create a new password:</p>
-        <a href="${resetUrl}">Reset Password</a>
-        <p>Or copy and paste this link into your browser:</p>
-        <p>${resetUrl}</p>
-        <p><strong>This link will expire in 15 minutes.</strong></p>
-        <p>If you didn't request a password reset, please ignore this email.</p>
-        <p style="color: #666; font-size: 12px;">For security: Never share this link with anyone.</p>
-      `,
-    });
-    return true;
-  } catch (error) {
-    console.error('Email send error:', error);
-    return false;
-  }
+  // Send actual email via configured service
+  return sendEmail(
+    email,
+    'Reset your password',
+    `
+      <h2>Password Reset Request</h2>
+      <p>Hi ${username},</p>
+      <p>We received a request to reset your password. Click the link below to create a new password:</p>
+      <a href="${resetUrl}" style="display: inline-block; padding: 12px 24px; background-color: #4285f4; color: white; text-decoration: none; border-radius: 4px; margin: 16px 0;">Reset Password</a>
+      <p>Or copy and paste this link into your browser:</p>
+      <p style="color: #666; word-break: break-all;">${resetUrl}</p>
+      <p><strong>This link will expire in 15 minutes.</strong></p>
+      <p>If you didn't request a password reset, please ignore this email.</p>
+      <p style="color: #666; font-size: 12px;">For security: Never share this link with anyone.</p>
+    `
+  );
 }
 
 /**
@@ -155,33 +202,26 @@ export async function sendPasswordChangedEmail(
     return true;
   }
 
-  // Production mode: send actual email
-  try {
-    await transporter.sendMail({
-      from: `"${process.env.EMAIL_FROM_NAME}" <${process.env.EMAIL_FROM_ADDRESS}>`,
-      to: email,
-      subject: 'Your Password Was Changed',
-      html: `
-        <h2>Password Changed</h2>
-        <p>Hi ${username},</p>
-        <p>Your password was successfully changed on <strong>${formattedTime}</strong>.</p>
-        ${ipAddress ? `<p>IP Address: <code>${ipAddress}</code></p>` : ''}
-        <p>If you made this change, no further action is needed.</p>
-        <div style="background-color: #fff3cd; border-left: 4px solid #ffc107; padding: 12px; margin: 20px 0;">
-          <strong>⚠️ If you did NOT make this change:</strong>
-          <ol style="margin: 10px 0;">
-            <li>Someone may have unauthorized access to your account</li>
-            <li>Contact our support team immediately at <a href="mailto:admin@merkelvision.com">admin@merkelvision.com</a></li>
-            <li>We recommend securing your email account as well</li>
-          </ol>
-        </div>
-        <p>For your security, all active sessions have been logged out.</p>
-        <p style="color: #666; font-size: 12px;">This is an automated security notification.</p>
-      `,
-    });
-    return true;
-  } catch (error) {
-    console.error('Email send error:', error);
-    return false;
-  }
+  // Send actual email via configured service
+  return sendEmail(
+    email,
+    'Your Password Was Changed',
+    `
+      <h2>Password Changed</h2>
+      <p>Hi ${username},</p>
+      <p>Your password was successfully changed on <strong>${formattedTime}</strong>.</p>
+      ${ipAddress ? `<p>IP Address: <code>${ipAddress}</code></p>` : ''}
+      <p>If you made this change, no further action is needed.</p>
+      <div style="background-color: #fff3cd; border-left: 4px solid #ffc107; padding: 12px; margin: 20px 0;">
+        <strong>⚠️ If you did NOT make this change:</strong>
+        <ol style="margin: 10px 0;">
+          <li>Someone may have unauthorized access to your account</li>
+          <li>Contact our support team immediately at <a href="mailto:admin@merkelvision.com">admin@merkelvision.com</a></li>
+          <li>We recommend securing your email account as well</li>
+        </ol>
+      </div>
+      <p>For your security, all active sessions have been logged out.</p>
+      <p style="color: #666; font-size: 12px;">This is an automated security notification.</p>
+    `
+  );
 }

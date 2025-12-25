@@ -53,49 +53,54 @@ const envSchema = z.object({
         .describe('ImageKit CDN URL endpoint'),
 
     // ============================================
-    // Email Service (Mailtrap/SMTP)
+    // Email Service (Resend/Mailtrap)
     // ============================================
     EMAIL_SERVICE: z
-        .string()
+        .enum(['mailtrap', 'resend'])
         .default('mailtrap')
-        .describe('Email service provider'),
+        .describe('Email service provider (mailtrap for dev, resend for production)'),
 
+    // Resend API (for production)
+    EMAIL_API_KEY: z
+        .string()
+        .optional()
+        .describe('Resend API key (required when EMAIL_SERVICE=resend)'),
+
+    // SMTP Configuration (for Mailtrap in development)
     EMAIL_HOST: z
         .string()
-        .min(1, 'EMAIL_HOST is required')
-        .describe('SMTP host'),
+        .optional()
+        .describe('SMTP host (required when EMAIL_SERVICE=mailtrap)'),
 
     EMAIL_PORT: z
         .string()
-        .regex(/^\d+$/, 'EMAIL_PORT must be a number')
-        .transform(Number)
-        .refine((port) => port > 0 && port < 65536, 'EMAIL_PORT must be between 1 and 65535')
-        .describe('SMTP port'),
+        .optional()
+        .describe('SMTP port (required when EMAIL_SERVICE=mailtrap)'),
 
     EMAIL_USER: z
         .string()
-        .min(1, 'EMAIL_USER is required')
-        .describe('SMTP username'),
+        .optional()
+        .describe('SMTP username (required when EMAIL_SERVICE=mailtrap)'),
 
     EMAIL_PASS: z
         .string()
-        .min(1, 'EMAIL_PASS is required')
-        .describe('SMTP password'),
+        .optional()
+        .describe('SMTP password (required when EMAIL_SERVICE=mailtrap)'),
 
+    // Common Email Configuration
     EMAIL_MODE: z
         .enum(['development', 'production'])
         .default('development')
-        .describe('Email mode'),
+        .describe('Email mode (development logs to console, production sends emails)'),
 
     EMAIL_FROM_NAME: z
         .string()
-        .default('Development')
+        .default('Google Search Me')
         .describe('Email sender name'),
 
     EMAIL_FROM_ADDRESS: z
         .string()
         .email('EMAIL_FROM_ADDRESS must be a valid email')
-        .default('dev@localhost')
         .describe('Email sender address'),
 
     // ============================================

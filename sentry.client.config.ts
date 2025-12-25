@@ -1,12 +1,7 @@
 import * as Sentry from "@sentry/nextjs";
 
-// Debug: Check if DSN is loaded
-const sentryDSN = process.env.NEXT_PUBLIC_SENTRY_DSN;
-console.log('[Sentry Debug] DSN loaded:', sentryDSN ? 'YES' : 'NO');
-console.log('[Sentry Debug] Environment:', process.env.NODE_ENV);
-
 Sentry.init({
-    dsn: sentryDSN,
+    dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
 
     // Set tracesSampleRate to 1.0 to capture 100% of transactions for performance monitoring.
     // We recommend adjusting this value in production
@@ -21,22 +16,14 @@ Sentry.init({
     // `release` value here - use the environment variable `SENTRY_RELEASE`, so
     // that it will also get attached to your source maps
 
-    // Debug mode in development
-    debug: process.env.NODE_ENV === 'development',
+    // Disable debug mode to reduce console noise
+    debug: false,
 
     // Filter out localhost errors in development
     beforeSend(event, hint) {
-        console.log('[Sentry Debug] beforeSend called:', {
-            level: event.level,
-            message: event.message,
-            environment: process.env.NODE_ENV,
-        });
-
         if (process.env.NODE_ENV === 'development') {
             // Only send critical errors in development
-            const shouldSend = event.level === 'error' || event.level === 'fatal';
-            console.log('[Sentry Debug] Should send?', shouldSend);
-            return shouldSend ? event : null;
+            return (event.level === 'error' || event.level === 'fatal') ? event : null;
         }
         return event;
     },
@@ -49,4 +36,3 @@ Sentry.init({
     ],
 });
 
-console.log('[Sentry Debug] Initialization complete');

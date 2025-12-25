@@ -115,7 +115,7 @@ export async function logSecurityEvent({
                 ipAddress,
                 userAgent,
                 success,
-                metadata: metadata && Object.keys(metadata).length > 0 ? metadata : null,
+                metadata: (metadata && Object.keys(metadata).length > 0 ? metadata : undefined) as any,
             },
         });
     } catch (error) {
@@ -151,17 +151,26 @@ export async function getUserSecurityLogs(userId: number, limit: number = 50) {
 export async function getFailedLoginAttempts(email: string, windowMinutes: number = 60): Promise<number> {
     const since = new Date(Date.now() - windowMinutes * 60 * 1000);
 
-    const count = await prisma.securityLog.count({
+    // Fetch all failed login attempts in the time window
+    const logs = await prisma.securityLog.findMany({
         where: {
             eventType: SecurityEventType.FAILED_LOGIN,
             success: false,
             createdAt: { gte: since },
-            metadata: {
-                path: "email",
-                equals: email,
-            },
+        },
+        select: {
+            metadata: true,
         },
     });
+
+    // Filter by email in JavaScript (avoids MySQL JSON path issues)
+    const count = logs.filter(log => {
+        if (log.metadata && typeof log.metadata === 'object') {
+            const meta = log.metadata as Record<string, any>;
+            return meta.email === email;
+        }
+        return false;
+    }).length;
 
     return count;
 }
@@ -172,16 +181,25 @@ export async function getFailedLoginAttempts(email: string, windowMinutes: numbe
 export async function getPasswordResetRequestCount(email: string, windowMinutes: number = 60): Promise<number> {
     const since = new Date(Date.now() - windowMinutes * 60 * 1000);
 
-    const count = await prisma.securityLog.count({
+    // Fetch all password reset requests in the time window
+    const logs = await prisma.securityLog.findMany({
         where: {
             eventType: SecurityEventType.PASSWORD_RESET_REQUEST,
             createdAt: { gte: since },
-            metadata: {
-                path: "email",
-                equals: email,
-            },
+        },
+        select: {
+            metadata: true,
         },
     });
+
+    // Filter by email in JavaScript (avoids MySQL JSON path issues)
+    const count = logs.filter(log => {
+        if (log.metadata && typeof log.metadata === 'object') {
+            const meta = log.metadata as Record<string, any>;
+            return meta.email === email;
+        }
+        return false;
+    }).length;
 
     return count;
 }
