@@ -3,6 +3,7 @@ import { z } from 'zod';
 import prisma from '@/lib/prisma';
 import { comparePassword, generateToken } from '@/lib/auth';
 import { apiResponse, apiError, setAuthCookie } from '@/lib/api-middleware';
+import { rateLimit, RateLimitPresets, addRateLimitHeaders } from '@/lib/rate-limit';
 
 // Rate limiting constants
 const MAX_FAILED_ATTEMPTS = 5;
@@ -26,6 +27,22 @@ const loginSchema = z.object({
  */
 export async function POST(request: NextRequest) {
   try {
+    // Apply rate limiting BEFORE any database queries
+    const rateLimitResult = rateLimit(request, {
+      ...RateLimitPresets.MODERATE,  // 10 requests per 15 minutes
+      keyPrefix: 'login',
+    });
+
+    if (!rateLimitResult.allowed) {
+      const response = apiError(
+        `Too many login attempts. Please try again in ${Math.ceil(rateLimitResult.retryAfter / 1000)} seconds.`,
+        429,
+        'RATE_LIMIT_EXCEEDED'
+      );
+      addRateLimitHeaders(response.headers, rateLimitResult);
+      return response;
+    }
+
     const body = await request.json();
 
     // Validate request body

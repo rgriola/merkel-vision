@@ -7,6 +7,7 @@ import { Header } from "@/components/layout/Header";
 import { ConditionalFooter } from "@/components/layout/ConditionalFooter";
 import { LayoutWrapper } from "@/components/layout/LayoutWrapper";
 import { GoogleMapsProvider } from "@/lib/GoogleMapsProvider";
+import { SentryInit } from "@/components/SentryInit";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -33,6 +34,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
+        <SentryInit />
         <Providers>
           <GoogleMapsProvider>
             <LayoutWrapper>
