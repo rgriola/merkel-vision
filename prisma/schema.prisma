@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -10,299 +7,255 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-
-// User model
 model User {
-  id                 Int       @id @default(autoincrement())
-  email              String    @unique
-  username           String    @unique
-  passwordHash       String
-  firstName          String?
-  lastName           String?
-  emailVerified      Boolean   @default(false)
-  verificationToken  String?
-  verificationTokenExpiry DateTime?  // Token expiration time
-  resetToken         String?
-  resetTokenExpiry   DateTime?
-  isActive           Boolean   @default(true)
-  isAdmin            Boolean   @default(false)
-  
-  // GPS Permission tracking
-  gpsPermission      String?   @default("not_asked") // 'not_asked', 'granted', 'denied'
-  gpsPermissionUpdated DateTime?  // When GPS permission was last changed
-  
-  // Profile fields
-  avatar             String?   @db.Text  // URL to profile picture
-  bio                String?   @db.Text  // User biography/about section
-  phoneNumber        String?
-  city               String?
-  country            String?
-  timezone           String?   // IANA timezone (e.g., "America/New_York")
-  language           String?   @default("en") // ISO 639-1 code (e.g., "en", "es")
-  
-  // Preferences
-  emailNotifications Boolean   @default(true)  // Email notification preference
-  
-  // Two-Factor Authentication
-  twoFactorEnabled   Boolean   @default(false)
-  twoFactorSecret    String?   // TOTP secret for 2FA
-  
-  // Rate Limiting & Account Security
-  failedLoginAttempts Int      @default(0)     // Count of consecutive failed logins
-  lockedUntil        DateTime?                 // Account locked until this time (null = not locked)
-  
-  // OAuth fields
-  googleId           String?   @unique
-  appleId            String?   @unique
-  
-  // Activity tracking
-  lastLoginAt        DateTime?
-  
-  // Soft delete
-  deletedAt          DateTime?  // Null = active, set = soft deleted
-  
-  createdAt          DateTime  @default(now())
-  updatedAt          DateTime  @updatedAt
-  
-  // Relations
-  savedLocations     UserSave[]
-  sessions           Session[]
-  createdLocations   Location[] @relation("LocationCreator")
-  modifiedLocations  Location[] @relation("LocationModifier")
-  uploadedPhotos     Photo[]    @relation("PhotoUploader")
-  projects           Project[]
-  teamMemberships    TeamMember[] @relation("TeamMember")
-  invitedTeamMembers TeamMember[] @relation("TeamInviter")
-  securityLogs       SecurityLog[]
-  
+  id                      Int           @id @default(autoincrement())
+  email                   String        @unique
+  username                String        @unique
+  passwordHash            String
+  firstName               String?
+  lastName                String?
+  emailVerified           Boolean       @default(false)
+  verificationToken       String?
+  resetToken              String?
+  resetTokenExpiry        DateTime?
+  isActive                Boolean       @default(true)
+  isAdmin                 Boolean       @default(false)
+  createdAt               DateTime      @default(now())
+  updatedAt               DateTime      @updatedAt
+  appleId                 String?       @unique
+  avatar                  String?       @db.Text
+  city                    String?
+  country                 String?
+  googleId                String?       @unique
+  language                String?       @default("en")
+  lastLoginAt             DateTime?
+  phoneNumber             String?
+  timezone                String?
+  gpsPermission           String?       @default("not_asked")
+  gpsPermissionUpdated    DateTime?
+  verificationTokenExpiry DateTime?
+  bio                     String?       @db.Text
+  deletedAt               DateTime?
+  emailNotifications      Boolean       @default(true)
+  twoFactorEnabled        Boolean       @default(false)
+  twoFactorSecret         String?
+  failedLoginAttempts     Int           @default(0)
+  lockedUntil             DateTime?
+  createdLocations        Location[]    @relation("LocationCreator")
+  modifiedLocations       Location[]    @relation("LocationModifier")
+  uploadedPhotos          Photo[]       @relation("PhotoUploader")
+  projects                Project[]
+  securityLogs            SecurityLog[]
+  sessions                Session[]
+  invitedTeamMembers      TeamMember[]  @relation("TeamInviter")
+  teamMemberships         TeamMember[]  @relation("TeamMember")
+  savedLocations          UserSave[]
+
   @@map("users")
 }
 
-// Location model
 model Location {
-  id                 Int       @id @default(autoincrement())
-  placeId            String    @unique
-  name               String
-  address            String?   @db.Text  // formatted_address from old schema
-  lat                Float
-  lng                Float
-  type               String?
-  
-  // Detailed address components
-  street             String?
-  number             String?
-  city               String?
-  state              String?
-  zipcode            String?
-  
-  // Production & access details
-  productionNotes    String?   @db.Text
-  entryPoint         String?   @db.Text
-  parking            String?   @db.Text
-  access             String?   @db.Text
-  
-  // Additional metadata
-  rating             Float?
-  isPermanent        Boolean   @default(false)
-  
-  // Production & Logistics
-  permitRequired     Boolean   @default(false)
-  permitCost         Float?
-  contactPerson      String?
-  contactPhone       String?
-  operatingHours     String?   // "9am-5pm M-F"
-  restrictions       String?   @db.Text  // "No drones", "No flash photography"
-  indoorOutdoor      String?   // "indoor", "outdoor", "both"
-  bestTimeOfDay      String?   // "morning", "afternoon", "golden hour"
-  
-  // Audit trail
-  createdBy          Int       // User who created this location
-  lastModifiedBy     Int?      // User who last modified (null if never modified)
-  lastModifiedAt     DateTime? // When last modified (null if never modified)
-  createdAt          DateTime  @default(now())
-  updatedAt          DateTime  @updatedAt
-  
-  // Relations
-  creator            User              @relation("LocationCreator", fields: [createdBy], references: [id], onDelete: Cascade)
-  lastModifier       User?             @relation("LocationModifier", fields: [lastModifiedBy], references: [id], onDelete: SetNull)
-  savedBy            UserSave[]
-  contacts           LocationContact[]
-  projectLocations   ProjectLocation[]
-  
+  id               Int               @id @default(autoincrement())
+  placeId          String            @unique
+  name             String
+  address          String?           @db.Text
+  lat              Float
+  lng              Float
+  type             String?
+  rating           Float?
+  createdBy        Int
+  lastModifiedBy   Int?
+  lastModifiedAt   DateTime?
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  access           String?           @db.Text
+  city             String?
+  entryPoint       String?           @db.Text
+  isPermanent      Boolean           @default(false)
+  number           String?
+  parking          String?           @db.Text
+  productionNotes  String?           @db.Text
+  state            String?
+  street           String?
+  zipcode          String?
+  bestTimeOfDay    String?
+  contactPerson    String?
+  contactPhone     String?
+  indoorOutdoor    String?
+  operatingHours   String?
+  permitCost       Float?
+  permitRequired   Boolean           @default(false)
+  restrictions     String?           @db.Text
+  contacts         LocationContact[]
+  creator          User              @relation("LocationCreator", fields: [createdBy], references: [id], onDelete: Cascade)
+  lastModifier     User?             @relation("LocationModifier", fields: [lastModifiedBy], references: [id])
+  projectLocations ProjectLocation[]
+  savedBy          UserSave[]
+
+  @@index([createdBy], map: "locations_createdBy_fkey")
+  @@index([lastModifiedBy], map: "locations_lastModifiedBy_fkey")
   @@map("locations")
 }
 
-// Many-to-many relationship
 model UserSave {
-  id                 Int       @id @default(autoincrement())
-  userId             Int
-  locationId         Int
-  savedAt            DateTime  @default(now())
-  caption            String?   @db.Text
-  
-  // Organization & filtering
-  tags               Json?              // Array of tags: ["restaurant", "filming", "exterior"]
-  isFavorite         Boolean   @default(false)  // Star/favorite flag
-  
-  // Personal tracking
-  personalRating     Float?             // User's own 1-5 rating
-  visitedAt          DateTime?          // When actually visited
-  
-  // UI customization
-  color              String?            // Hex color for map marker (#FF5733)
-  
-  // Relations
-  user               User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  location           Location  @relation(fields: [locationId], references: [id], onDelete: Cascade)
-  
+  id             Int       @id @default(autoincrement())
+  userId         Int
+  locationId     Int
+  savedAt        DateTime  @default(now())
+  caption        String?   @db.Text
+  color          String?
+  isFavorite     Boolean   @default(false)
+  personalRating Float?
+  tags           Json?
+  visitedAt      DateTime?
+  location       Location  @relation(fields: [locationId], references: [id], onDelete: Cascade)
+  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   @@unique([userId, locationId])
+  @@index([locationId], map: "user_saves_locationId_fkey")
   @@map("user_saves")
 }
 
-// Session model - Enhanced with security tracking
 model Session {
-  id                 String    @id @default(cuid())
-  userId             Int
-  token              String    @unique @db.VarChar(500)  // JWT token
-  expiresAt          DateTime
-  createdAt          DateTime  @default(now())
-  
-  // Session tracking
-  lastAccessed       DateTime  @default(now())  // Last time session was used
-  userAgent          String?   @db.Text         // Browser/client info
-  ipAddress          String?                    // IP address
-  isActive           Boolean   @default(true)   // Active/inactive flag
-  
-  // Enhanced device & location tracking
-  deviceType         String?                    // "desktop", "mobile", "tablet"
-  deviceName         String?                    // "Chrome on MacBook", "Safari on iPhone"
-  loginMethod        String?                    // "password", "google", "apple"
-  country            String?                    // Geographic location
-  
-  // Relations
-  user               User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
+  id           String   @id @default(cuid())
+  userId       Int
+  token        String   @unique @db.VarChar(500)
+  expiresAt    DateTime
+  createdAt    DateTime @default(now())
+  ipAddress    String?
+  isActive     Boolean  @default(true)
+  lastAccessed DateTime @default(now())
+  userAgent    String?  @db.Text
+  country      String?
+  deviceName   String?
+  deviceType   String?
+  loginMethod  String?
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId], map: "sessions_userId_fkey")
   @@map("sessions")
 }
 
-// Photo model - ImageKit integration
 model Photo {
-  id                 Int       @id @default(autoincrement())
-  placeId            String    // Google Place ID (not FK to allow photos before location created)
-  userId             Int?      // User who uploaded (nullable for system uploads)
-  
-  // ImageKit fields
-  imagekitFileId     String    // ImageKit unique file ID
-  imagekitFilePath   String    // ImageKit storage path
-  originalFilename   String?   // Original filename from upload
-  
-  // File metadata
-  fileSize           Int?      // File size in bytes
-  mimeType           String?   // MIME type (e.g., image/jpeg)
-  width              Int?      // Image width in pixels
-  height             Int?      // Image height in pixels
-  
-  // Photo properties
-  isPrimary          Boolean   @default(false)  // Primary/featured photo for location
-  caption            String?   @db.Text         // Photo caption/description
-  
-  // Timestamps
-  uploadedAt         DateTime  @default(now())
-  
-  // Relations
-  uploader           User?     @relation("PhotoUploader", fields: [userId], references: [id], onDelete: SetNull)
-  
+  id               Int       @id @default(autoincrement())
+  placeId          String
+  userId           Int?
+  imagekitFileId   String
+  imagekitFilePath String
+  originalFilename String?
+  fileSize         Int?
+  mimeType         String?
+  width            Int?
+  height           Int?
+  isPrimary        Boolean   @default(false)
+  caption          String?   @db.Text
+  uploadedAt       DateTime  @default(now())
+  gpsLatitude      Float?
+  gpsLongitude     Float?
+  gpsAltitude      Float?
+  gpsAccuracy      Float?
+  cameraMake       String?   @db.VarChar(100)
+  cameraModel      String?   @db.VarChar(100)
+  lensMake         String?   @db.VarChar(100)
+  lensModel        String?   @db.VarChar(100)
+  dateTaken        DateTime? @db.DateTime(0)
+  iso              Int?
+  focalLength      String?   @db.VarChar(20)
+  aperture         String?   @db.VarChar(20)
+  shutterSpeed     String?   @db.VarChar(50)
+  exposureMode     String?   @db.VarChar(50)
+  whiteBalance     String?   @db.VarChar(50)
+  flash            String?   @db.VarChar(50)
+  orientation      Int?
+  colorSpace       String?   @db.VarChar(50)
+  tags             String?   @db.Text
+  uploadSource     String?   @default("manual") @db.VarChar(50)
+  hasGpsData       Boolean   @default(false)
+  uploader         User?     @relation("PhotoUploader", fields: [userId], references: [id])
+
+  @@index([placeId])
+  @@index([userId])
+  @@index([dateTaken], map: "idx_photos_dateTaken")
+  @@index([hasGpsData], map: "idx_photos_hasGpsData")
+  @@index([uploadSource], map: "idx_photos_uploadSource")
   @@map("photos")
-  @@index([placeId])  // Index for fast lookup by place
-  @@index([userId])   // Index for user's photos
 }
 
-// Project model - Organize locations into shoots/campaigns
 model Project {
-  id                 Int       @id @default(autoincrement())
-  userId             Int       // Project owner
-  name               String    // "Summer 2024 Campaign"
-  description        String?   @db.Text
-  startDate          DateTime?
-  endDate            DateTime?
-  budget             Float?
-  status             String    @default("planning")  // planning/active/completed/archived
-  color              String?   // UI color coding (#FF5733)
-  createdAt          DateTime  @default(now())
-  updatedAt          DateTime  @updatedAt
-  
-  // Relations
-  owner              User              @relation(fields: [userId], references: [id], onDelete: Cascade)
-  locations          ProjectLocation[]
-  
+  id          Int               @id @default(autoincrement())
+  userId      Int
+  name        String
+  description String?           @db.Text
+  startDate   DateTime?
+  endDate     DateTime?
+  budget      Float?
+  status      String            @default("planning")
+  color       String?
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+  locations   ProjectLocation[]
+  owner       User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId], map: "projects_userId_fkey")
   @@map("projects")
 }
 
-// Many-to-many: Projects to Locations
 model ProjectLocation {
-  id                 Int       @id @default(autoincrement())
-  projectId          Int
-  locationId         Int
-  shootDate          DateTime? // Planned shoot date
-  notes              String?   @db.Text
-  addedAt            DateTime  @default(now())
-  
-  // Relations
-  project            Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  location           Location  @relation(fields: [locationId], references: [id], onDelete: Cascade)
-  
+  id         Int       @id @default(autoincrement())
+  projectId  Int
+  locationId Int
+  shootDate  DateTime?
+  notes      String?   @db.Text
+  addedAt    DateTime  @default(now())
+  location   Location  @relation(fields: [locationId], references: [id], onDelete: Cascade)
+  project    Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
   @@unique([projectId, locationId])
+  @@index([locationId], map: "project_locations_locationId_fkey")
   @@map("project_locations")
 }
 
-// Location Contact model - Property owners, managers, etc.
 model LocationContact {
-  id                 Int       @id @default(autoincrement())
-  locationId         Int
-  name               String
-  role               String?   // "Owner", "Manager", "Security"
-  email              String?
-  phone              String?
-  notes              String?   @db.Text
-  createdAt          DateTime  @default(now())
-  
-  // Relations
-  location           Location  @relation(fields: [locationId], references: [id], onDelete: Cascade)
-  
+  id         Int      @id @default(autoincrement())
+  locationId Int
+  name       String
+  role       String?
+  email      String?
+  phone      String?
+  notes      String?  @db.Text
+  createdAt  DateTime @default(now())
+  location   Location @relation(fields: [locationId], references: [id], onDelete: Cascade)
+
+  @@index([locationId], map: "location_contacts_locationId_fkey")
   @@map("location_contacts")
 }
 
-// Team Member model - Share access with crew
 model TeamMember {
-  id                 Int       @id @default(autoincrement())
-  userId             Int       // Team member user ID
-  invitedBy          Int       // Who invited them
-  role               String    @default("viewer")  // viewer/editor/admin
-  joinedAt           DateTime  @default(now())
-  
-  // Relations
-  user               User      @relation("TeamMember", fields: [userId], references: [id], onDelete: Cascade)
-  inviter            User      @relation("TeamInviter", fields: [invitedBy], references: [id], onDelete: Cascade)
-  
-  @@unique([userId, invitedBy])  // Can't invite same user twice
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  invitedBy Int
+  role      String   @default("viewer")
+  joinedAt  DateTime @default(now())
+  inviter   User     @relation("TeamInviter", fields: [invitedBy], references: [id], onDelete: Cascade)
+  user      User     @relation("TeamMember", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, invitedBy])
+  @@index([invitedBy], map: "team_members_invitedBy_fkey")
   @@map("team_members")
 }
 
-// Security Log model - Audit trail for security events
 model SecurityLog {
-  id                 Int       @id @default(autoincrement())
-  userId             Int?      // Null for failed login attempts with invalid email
-  eventType          String    // "login", "logout", "password_reset_request", "password_reset_success", "password_change", "failed_login", "account_locked"
-  ipAddress          String?
-  userAgent          String?   @db.Text
-  location           String?   // Geographic location (city, country)
-  success            Boolean   @default(true)
-  metadata           Json?     // Additional event-specific data
-  createdAt          DateTime  @default(now())
-  
-  // Relations
-  user               User?     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
+  id        Int      @id @default(autoincrement())
+  userId    Int?
+  eventType String
+  ipAddress String?
+  userAgent String?  @db.Text
+  location  String?
+  success   Boolean  @default(true)
+  metadata  Json?
+  createdAt DateTime @default(now())
+  user      User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   @@index([userId, createdAt])
   @@index([eventType, createdAt])
   @@map("security_logs")

@@ -141,6 +141,8 @@ export async function POST(request: NextRequest) {
             longitude,
             type,
             indoorOutdoor,
+            hasPhotos: !!body.photos,
+            photoCount: body.photos ? body.photos.length : 0,
         });
 
         // Validation - Required fields
@@ -289,6 +291,44 @@ export async function POST(request: NextRequest) {
                 location: true,
             },
         });
+
+        // Handle photos if provided
+        if (body.photos && Array.isArray(body.photos) && body.photos.length > 0) {
+            console.log(`[Save Location] Creating ${body.photos.length} photo(s)`);
+
+            await prisma.photo.createMany({
+                data: body.photos.map((photo: any, index: number) => ({
+                    placeId: location.placeId,
+                    userId: user.id,
+                    imagekitFileId: photo.imagekitFileId || photo.fileId,
+                    imagekitFilePath: photo.imagekitFilePath || photo.filePath,
+                    originalFilename: photo.originalFilename || photo.name,
+                    fileSize: photo.fileSize || photo.size,
+                    mimeType: photo.mimeType || photo.type,
+                    width: photo.width,
+                    height: photo.height,
+                    isPrimary: index === 0, // First photo is primary
+                    caption: photo.caption || null,
+                    // GPS/EXIF metadata (if provided from photo upload)
+                    gpsLatitude: photo.gpsLatitude || null,
+                    gpsLongitude: photo.gpsLongitude || null,
+                    gpsAltitude: photo.gpsAltitude || null,
+                    hasGpsData: photo.hasGpsData || false,
+                    cameraMake: photo.cameraMake || null,
+                    cameraModel: photo.cameraModel || null,
+                    dateTaken: photo.dateTaken ? new Date(photo.dateTaken) : null,
+                    iso: photo.iso || null,
+                    focalLength: photo.focalLength || null,
+                    aperture: photo.aperture || null,
+                    shutterSpeed: photo.shutterSpeed || null,
+                    orientation: photo.orientation || null,
+                    colorSpace: photo.colorSpace || null,
+                    uploadSource: photo.uploadSource || 'manual',
+                })),
+            });
+
+            console.log(`[Save Location] Photos created successfully`);
+        }
 
         return apiResponse({ userSave }, 201);
     } catch (error: any) {

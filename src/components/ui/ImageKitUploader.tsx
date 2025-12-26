@@ -4,6 +4,7 @@ import { useState, useRef, useCallback, useEffect } from "react";
 import { Upload, X, Image as ImageIcon, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { useAuth } from "@/lib/auth-context";
 
 interface UploadedPhoto {
     id?: number; // Database ID (if already saved)
@@ -34,6 +35,7 @@ export function ImageKitUploader({
     maxFileSize = 1.5,
     existingPhotos = [],
 }: ImageKitUploaderProps) {
+    const { user } = useAuth();
     const [photos, setPhotos] = useState<UploadedPhoto[]>(existingPhotos);
     const [uploading, setUploading] = useState(false);
     const [dragActive, setDragActive] = useState(false);
@@ -138,6 +140,10 @@ export function ImageKitUploader({
     // Upload photo to ImageKit
     const uploadToImageKit = async (file: File): Promise<UploadedPhoto> => {
         try {
+            if (!user) {
+                throw new Error('User not authenticated');
+            }
+
             // Compress image first
             const compressedBlob = await compressImage(file, maxFileSize);
             const compressedFile = new File([compressedBlob], file.name, {
@@ -156,8 +162,11 @@ export function ImageKitUploader({
             formData.append('token', authParams.token);
             formData.append('fileName', file.name);
 
+            // User-first folder structure
             if (placeId) {
-                formData.append('folder', `/locations/${placeId}`);
+                formData.append('folder', `/users/${user.id}/locations/${placeId}`);
+            } else {
+                formData.append('folder', `/users/${user.id}/uploads`);
             }
 
             // Upload to ImageKit

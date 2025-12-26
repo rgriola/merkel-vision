@@ -50,12 +50,14 @@ interface SaveLocationFormProps {
     initialData?: Partial<SaveLocationFormData>;
     onSubmit: (data: any) => void;
     isPending?: boolean;
+    hidePhotoUpload?: boolean; // ✅ Hide photo upload section (for GPS photo flow)
 }
 
 export function SaveLocationForm({
     initialData,
     onSubmit,
     isPending = false,
+    hidePhotoUpload = false,
 }: SaveLocationFormProps) {
     const [tags, setTags] = useState<string[]>([]);
     const [tagInput, setTagInput] = useState("");
@@ -117,7 +119,8 @@ export function SaveLocationForm({
             color: finalColor,
             indoorOutdoor: finalIndoorOutdoor,
             tags: tags.length > 0 ? tags : undefined,
-            photos: photos.length > 0 ? photos : undefined,
+            // Only include photos if photo upload is not hidden (GPS flow handles photos separately)
+            photos: !hidePhotoUpload && photos.length > 0 ? photos : undefined,
         };
 
         onSubmit(submitData);
@@ -373,16 +376,18 @@ export function SaveLocationForm({
                 </div>
             </div>
 
-            {/* Photo Upload */}
-            <div className="space-y-4">
-                <h3 className="text-sm font-semibold">Photos (Optional)</h3>
-                <ImageKitUploader
-                    placeId={form.watch("placeId")}
-                    onPhotosChange={setPhotos}
-                    maxPhotos={20}
-                    maxFileSize={1.5}
-                />
-            </div>
+            {/* Photo Upload - Hidden for GPS photo flow */}
+            {!hidePhotoUpload && (
+                <div className="space-y-4">
+                    <h3 className="text-sm font-semibold">Photos (Optional)</h3>
+                    <ImageKitUploader
+                        placeId={form.watch("placeId")}
+                        onPhotosChange={setPhotos}
+                        maxPhotos={20}
+                        maxFileSize={1.5}
+                    />
+                </div>
+            )}
         </form>
     );
 }

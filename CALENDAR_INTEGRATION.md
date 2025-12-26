@@ -20,14 +20,14 @@
 
 ## 📊 Three Options Comparison
 
-| Feature | Universal Links | Google Calendar API | Custom Calendar |
-|---------|----------------|-------------------|----------------|
-| **Complexity** | ⭐ Easy | ⭐⭐⭐ Complex | ⭐⭐⭐⭐ Very Complex |
-| **Time to Implement** | 1 hour | 4-6 hours | 20+ hours |
-| **Works With** | All calendars | Google only | Your app only |
-| **User Auth** | None needed | OAuth required | Account required |
-| **Maintenance** | Zero | Medium | High |
-| **Cost** | FREE | FREE | FREE (but dev time) |
+| Feature               | Universal Links | Google Calendar API | Custom Calendar |
+|---------              |---------------- |-------------------  |----------------|
+| **Complexity**        | ⭐ Easy         | ⭐⭐⭐ Complex       | ⭐⭐⭐⭐ Very Complex |
+| **Time to Implement** | 1 hour          | 4-6 hours          | 20+ hours       |
+| **Works With**        | All calendars   | Google only        | Your app only   |
+| **User Auth**         | None needed     | OAuth required     | Account required |
+| **Maintenance**       | Zero            | Medium             | High            |
+| **Cost**              | FREE            | FREE               | FREE (but dev time) |
 | **Best For** | Most users | Google users | Full control |
 
 ---
