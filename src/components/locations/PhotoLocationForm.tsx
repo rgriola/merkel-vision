@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { SaveLocationForm } from "./SaveLocationForm";
 import { toast } from "sonner";
 import { useAuth } from "@/lib/auth-context";
+import { GoogleMap, useJsApiLoader, Marker } from "@react-google-maps/api";
 import type { PhotoMetadata } from "@/lib/photo-utils";
 
 interface PhotoLocationFormProps {
