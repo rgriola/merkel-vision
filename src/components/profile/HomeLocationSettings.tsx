@@ -81,8 +81,9 @@ export function HomeLocationSettings() {
 
     const handlePlaceSelected = async (placeData: any) => {
         if (placeData.latitude && placeData.longitude) {
+            // Use full address (formatted_address) instead of just name (street)
             await updateHomeLocation(
-                placeData.name || placeData.address,
+                placeData.address || placeData.name || 'Custom Location',
                 placeData.latitude,
                 placeData.longitude
             );

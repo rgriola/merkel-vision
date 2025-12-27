@@ -77,6 +77,16 @@ function MapPageInner() {
         }
     }, [user]);
 
+    // Update map center when home location is loaded/changed
+    useEffect(() => {
+        if (user?.homeLocationLat && user?.homeLocationLng) {
+            setCenter({
+                lat: user.homeLocationLat,
+                lng: user.homeLocationLng,
+            });
+        }
+    }, [user?.homeLocationLat, user?.homeLocationLng]);
+
     // Load saved locations
     const { data: locationsData, isLoading: isLoadingLocations } = useLocations();
 
