@@ -23,6 +23,8 @@ import { toast } from 'sonner';
 import { GpsPermissionDialog } from '@/components/maps/GpsPermissionDialog';
 import { GpsWelcomeBanner } from '@/components/maps/GpsWelcomeBanner';
 import { useGpsLocation } from '@/hooks/useGpsLocation';
+import { MapPin as MapPinIcon, X, Navigation, Users } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 interface MarkerData {
     id: string;
@@ -52,6 +54,7 @@ function MapPageInner() {
     const { requestLocation, updateUserPermission, isRequesting } = useGpsLocation();
     const [showGpsDialog, setShowGpsDialog] = useState(false);
     const [showWelcomeBanner, setShowWelcomeBanner] = useState(false);
+    const [showLocationsPanel, setShowLocationsPanel] = useState(false);
 
     // Use home location as default center if set, otherwise NYC
     const defaultCenter = useMemo(() => {
@@ -707,6 +710,179 @@ function MapPageInner() {
                         </InfoWindow>
                     )}
                 </GoogleMap>
+
+                {/* Floating Buttons - Top Right (shifted left to avoid map controls) */}
+                <div className="absolute top-4 right-[65px] flex gap-2 z-10">
+                    {/* GPS Toggle Button */}
+                    <Button
+                        onClick={async () => {
+                            if (userLocation) {
+                                setUserLocation(null);
+                                toast.info('Location hidden');
+                            } else {
+                                const position = await requestLocation();
+                                if (position) {
+                                    setUserLocation({
+                                        lat: position.coords.latitude,
+                                        lng: position.coords.longitude,
+                                    });
+                                    toast.success('Location shown');
+                                }
+                            }
+                        }}
+                        className={`shadow-lg border border-gray-200 transition-colors ${userLocation
+                            ? 'bg-[#4285F4] hover:bg-[#3367D6] text-white border-transparent' // On: Google Blue
+                            : 'bg-slate-800 hover:bg-slate-900 text-white border-transparent'   // Off: Dark Blue
+                            }`}
+                        size="sm"
+                        title={userLocation ? "Hide GPS Location" : "Show GPS Location"}
+                    >
+                        <Navigation className={`w-4 h-4 mr-2 ${userLocation ? 'fill-current' : ''}`} />
+                        GPS {userLocation ? 'On' : 'Off'}
+                    </Button>
+
+                    {/* Friends Button (Placeholder) */}
+                    <Button
+                        onClick={() => alert('Friends Locations feature coming soon!')}
+                        className="bg-white hover:bg-gray-50 text-gray-900 shadow-lg border border-gray-200"
+                        size="sm"
+                        title="View friends' locations"
+                    >
+                        <Users className="w-4 h-4 mr-2" />
+                        Friends
+                    </Button>
+
+                    {/* View All Locations Button - Fits all markers in view */}
+                    <Button
+                        onClick={() => {
+                            if (!map) return;
+
+                            const savedMarkers = markers.filter(m => !m.isTemporary);
+
+                            if (savedMarkers.length === 0) {
+                                toast.info('No saved locations to display');
+                                return;
+                            }
+
+                            // Create bounds to fit all markers
+                            const bounds = new google.maps.LatLngBounds();
+                            savedMarkers.forEach(marker => {
+                                bounds.extend(marker.position);
+                            });
+
+                            // Fit map to show all markers
+                            map.fitBounds(bounds);
+
+                            // Add some padding
+                            setTimeout(() => {
+                                if (map.getZoom()! > 16) {
+                                    map.setZoom(16);
+                                }
+                            }, 100);
+                        }}
+                        className="bg-white hover:bg-gray-50 text-gray-900 shadow-lg border border-gray-200"
+                        size="sm"
+                        title="View all saved locations on map"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2">
+                            <path d="M14.106 5.553a2 2 0 0 0 1.788 0l3.659-1.83A1 1 0 0 1 21 4.619v12.764a1 1 0 0 1-.553.894l-4.553 2.277a2 2 0 0 1-1.788 0l-4.212-2.106a2 2 0 0 0-1.788 0l-3.659 1.83A1 1 0 0 1 3 19.381V6.618a1 1 0 0 1 .553-.894l4.553-2.277a2 2 0 0 1 1.788 0z" />
+                            <path d="M15 5.764v15" />
+                            <path d="M9 3.236v15" />
+                        </svg>
+                        View All
+                    </Button>
+
+                    {/* My Locations List Button */}
+                    <Button
+                        onClick={() => setShowLocationsPanel(true)}
+                        className="bg-white hover:bg-gray-50 text-gray-900 shadow-lg border border-gray-200"
+                        size="sm"
+                        title="Show list of saved locations"
+                    >
+                        <MapPinIcon className="w-4 h-4 mr-2" />
+                        My Locations ({markers.filter(m => !m.isTemporary).length})
+                    </Button>
+                </div>
+
+                {/* Locations Panel - Slide in from right */}
+                {showLocationsPanel && (
+                    <div className="absolute top-0 right-0 h-full w-80 bg-white shadow-2xl z-20 flex flex-col animate-in slide-in-from-right">
+                        {/* Panel Header */}
+                        <div className="flex items-center justify-between p-4 border-b bg-gray-50">
+                            <h3 className="font-semibold text-lg flex items-center gap-2">
+                                <MapPinIcon className="w-5 h-5" />
+                                My Saved Locations
+                            </h3>
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => setShowLocationsPanel(false)}
+                            >
+                                <X className="w-4 h-4" />
+                            </Button>
+                        </div>
+
+                        {/* Panel Content - Scrollable List */}
+                        <div className="flex-1 overflow-y-auto p-4 space-y-2">
+                            {markers.filter(m => !m.isTemporary).length === 0 ? (
+                                <div className="text-center py-8 text-gray-500">
+                                    <MapPinIcon className="w-12 h-12 mx-auto mb-2 text-gray-300" />
+                                    <p className="text-sm">No saved locations yet</p>
+                                    <p className="text-xs mt-1">Click on the map to add locations</p>
+                                </div>
+                            ) : (
+                                markers
+                                    .filter(m => !m.isTemporary)
+                                    .map(marker => (
+                                        <button
+                                            key={marker.id}
+                                            onClick={() => {
+                                                setCenter(marker.position);
+                                                setSelectedMarker(marker);
+                                                if (map) {
+                                                    map.setZoom(16);
+                                                }
+                                                setShowLocationsPanel(false);
+                                            }}
+                                            className="w-full text-left p-3 rounded-lg border hover:bg-gray-50 hover:border-indigo-300 transition-colors"
+                                        >
+                                            <div className="flex items-start gap-2">
+                                                <div
+                                                    className="w-3 h-3 rounded-full mt-1 flex-shrink-0"
+                                                    style={{ backgroundColor: marker.color || '#8B5CF6' }}
+                                                />
+                                                <div className="flex-1 min-w-0">
+                                                    <p className="font-medium text-sm truncate">
+                                                        {marker.data?.name || 'Unnamed Location'}
+                                                    </p>
+                                                    {marker.data?.address && (
+                                                        <p className="text-xs text-gray-500 truncate">
+                                                            {marker.data.address}
+                                                        </p>
+                                                    )}
+                                                    {marker.data?.type && (
+                                                        <p className="text-xs text-indigo-600 mt-1">
+                                                            {marker.data.type}
+                                                        </p>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </button>
+                                    ))
+                            )}
+                        </div>
+
+                        {/* Panel Footer */}
+                        <div className="p-4 border-t bg-gray-50">
+                            <a
+                                href="/locations"
+                                className="block text-center text-sm text-indigo-600 hover:text-indigo-700 font-medium"
+                            >
+                                View All Locations →
+                            </a>
+                        </div>
+                    </div>
+                )}
             </div>
 
             {/* Instructions Footer */}

@@ -145,16 +145,7 @@ export function LocationsMapView({ locations }: LocationsMapViewProps) {
                     <Locate className="w-5 h-5" />
                 </Button>
 
-                {/* Friends Locations Button - Coming Soon */}
-                <Button
-                    variant="secondary"
-                    onClick={() => alert('Friends Locations feature coming soon!')}
-                    title="View friends' locations"
-                    className="bg-white hover:bg-gray-100 shadow-lg"
-                >
-                    <Users className="w-5 h-5 mr-2" />
-                    Friends
-                </Button>
+
 
                 {/* Location Count Badge */}
                 <div className="bg-white px-4 py-2 rounded-lg shadow-lg">
