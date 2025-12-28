@@ -1,4 +1,3 @@
-// exifr will be imported dynamically to avoid server-side jsdom issues
 
 export interface PhotoGPS {
     lat: number;
@@ -102,7 +101,7 @@ export async function extractPhotoGPS(file: File): Promise<PhotoMetadata> {
 
         if (!exif || Object.keys(exif).length === 0) {
             console.warn('⚠️ No EXIF data found in file');
-            console.log('📸 This could mean:');
+            console.log('   This could mean:');
             console.log('   - Photo has no EXIF data');
             console.log('   - EXIF data was stripped (common for web downloads)');
             console.log('   - File format doesn\'t support EXIF');
