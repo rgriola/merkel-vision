@@ -6,6 +6,12 @@ import './src/lib/env';
 
 
 const nextConfig: NextConfig = {
+  webpack: (config) => {
+    // Ignore jsdom to prevent errors with exifr/parse5
+    config.externals = [...(config.externals || []), 'jsdom'];
+    return config;
+  },
+
   images: {
     remotePatterns: [
       {
