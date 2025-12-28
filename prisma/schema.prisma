@@ -3,7 +3,8 @@ generator client {
 }
 
 datasource db {
-  provider = "mysql"
+  // Use PostgreSQL in production (Vercel), MySQL in local development
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -142,13 +143,13 @@ model UserSave {
 model Session {
   id           String   @id @default(cuid())
   userId       Int
-  token        String   @unique @db.VarChar(500)
+  token        String   @unique
   expiresAt    DateTime
   createdAt    DateTime @default(now())
   ipAddress    String?
   isActive     Boolean  @default(true)
   lastAccessed DateTime @default(now())
-  userAgent    String?  @db.Text
+  userAgent    String?
   country      String?
   deviceName   String?
   deviceType   String?
