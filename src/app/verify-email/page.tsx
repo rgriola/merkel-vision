@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 
@@ -11,6 +11,7 @@ export default function VerifyEmailPage() {
     const [message, setMessage] = useState('');
     const [countdown, setCountdown] = useState(3);
     const [shouldRedirect, setShouldRedirect] = useState(false);
+    const verifyingRef = useRef(false);
 
     useEffect(() => {
         const token = searchParams.get('token');
@@ -20,6 +21,10 @@ export default function VerifyEmailPage() {
             setMessage('No verification token provided');
             return;
         }
+
+        // Prevent double execution in React Strict Mode
+        if (verifyingRef.current) return;
+        verifyingRef.current = true;
 
         // Call the verification API
         fetch(`/api/auth/verify-email?token=${token}`)
