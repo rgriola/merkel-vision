@@ -1,5 +1,4 @@
-// @ts-ignore - Using lite build to prevent jsdom/parse5 ESM errors on Vercel
-import { parse } from 'exifr/dist/lite.esm.mjs';
+import { parse } from 'exifr';
 
 export interface PhotoGPS {
     lat: number;
@@ -48,6 +47,7 @@ export async function extractPhotoGPS(file: File): Promise<PhotoMetadata> {
             exif: true,
             gps: true,
             iptc: false,
+            xmp: false, // Disable XMP to avoid jsdom/parse5 issues
             icc: false,
             jfif: false,
             ihdr: false,
