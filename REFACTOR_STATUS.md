@@ -1,8 +1,8 @@
 # Merkel Vision - Refactor Status
 
-**Last Updated**: 2025-12-27 13:58:00 EST  
-**Current Phase**: Phase 8 - Photo Location Creation & Code Quality (✅ COMPLETE)  
-**Overall Progress**: ~100% Complete - Feature Complete & Optimized
+**Last Updated**: 2025-12-30 21:30:00 EST  
+**Current Phase**: Phase 9 - Production Deployment & Data Migration (🚀 IN PROGRESS)  
+**Overall Progress**: ~95% Complete - Deployed to Production, Migration Pending
 
 ---
 
@@ -10,10 +10,10 @@
 
 **Project**: Refactoring legacy vanilla JavaScript Google Maps application → Modern Next.js/React/TypeScript stack  
 **Repository**: [github.com/rgriola/merkel-vision](https://github.com/rgriola/merkel-vision.git)  
-**Production**: [merkelvision.com](https://merkelvision.com/landing.html) (Legacy version currently live)  
-**Status**: **Feature Complete & Performance Optimized** - Ready for production deployment
+**Production**: [merkel-vision.vercel.app](https://merkel-vision.vercel.app) ✅ **LIVE!**  
+**Status**: **Production Deployed & Working** - Data Migration In Progress
 
-**Stack**: Next.js 16 • React 19 • TypeScript 5 • Tailwind CSS v4 • MySQL • Prisma ORM • ImageKit
+**Stack**: Next.js 16 • React 19 • TypeScript 5 • Tailwind CSS v4 • PostgreSQL (Neon) • Prisma ORM • ImageKit
 
 ---
 
@@ -30,20 +30,26 @@
 - ✅ **Phase 6**: Save/Edit Workflows & Map Integration (100%)
 - ✅ **Phase 7**: User Profile & Avatar Management (100%)
 
-### Advanced Features & Optimization (Phase 8) ⭐ NEW
+### Advanced Features & Optimization (Phase 8)
 - ✅ **8A**: Photo Location Creation (100%)
 - ✅ **8B**: Code Quality Improvements (100%)
   - Quick Wins: Constants, cleanup, organization
   - Type Safety: TypeScript interfaces, eliminate `any` types
   - Performance: React.memo, useCallback optimization
 
+### Production Deployment (Phase 8C) ⭐ NEW - Dec 30, 2025
+- ✅ **Database Migration**: MySQL → PostgreSQL (Neon) (100%)
+- ✅ **Vercel Deployment**: exifr/jsdom fix for serverless (100%)
+- ✅ **Environment Setup**: Dev, Preview, Production environments (100%)
+- ✅ **Production Testing**: All pages loading successfully (100%)
+
 ---
 
-## 🔜 Remaining Phases
+## 🔜 Remaining Tasks
 
-- 🔜 **Phase 9**: Data Migration from SQLite (Not Started)
-- 🔜 **Phase 10**: Testing & Optimization (Not Started)
-- 🔜 **Phase 11**: Production Deployment (Not Started)
+- � **Phase 9A**: ImageKit Folder Structure Migration (In Progress)
+- � **Phase 9B**: Legacy Data Migration to Production Database (In Progress)
+- 🔜 **Phase 10**: Final Testing & Optimization (Not Started)
 
 ---
 
@@ -73,10 +79,12 @@
 - 🏗️ **9 database tables, 148 fields** (was 128 → +20 GPS/EXIF fields)
 - 📸 **33 photo metadata fields** (was 13 → +20)
 - ✅ 100% legacy-compatible schema
+- ✅ **PostgreSQL (Neon)** - Migrated from MySQL
+- ✅ **Production deployed** with Neon cloud database
 
 ---
 
-## 🆕 Recent Changes (Dec 26-27, 2024)
+## 🆕 Recent Changes (Dec 26-30, 2024)
 
 ### Phase 8A: Create Location from Photo (Dec 26) ✅
 
@@ -179,15 +187,68 @@
 
 ---
 
+### Phase 8C: Production Deployment & Database Migration (Dec 30) ✅
+
+**Production URL**: https://merkel-vision.vercel.app
+
+#### Database Migration: MySQL → PostgreSQL
+**Challenge**: Legacy app used MySQL, production needed PostgreSQL for Vercel compatibility
+
+**Solution**:
+- ✅ Migrated Prisma schema from MySQL to PostgreSQL
+- ✅ Created Neon PostgreSQL cloud database
+- ✅ Set up separate development branch for local testing
+- ✅ Configured environment variables for all environments
+
+**Environments**:
+- **Local Dev**: Neon development branch (ep-solitary-waterfall-a4yhnlsh)
+- **Vercel Preview**: Neon production database
+- **Vercel Production**: Neon production database (ep-cool-star-a4dyxqi4)
+
+#### Critical Bug Fix: exifr/jsdom Serverless Error
+**Problem**: `/locations` page crashed in production with jsdom ES Module error
+
+**Root Cause**: 
+- `exifr` library depends on `jsdom` → `parse5` (ES Module)
+- Webpack bundled these into server-side code
+- Vercel serverless environment can't handle Node.js dependencies
+
+**Solution** (`next.config.ts`):
+```typescript
+serverExternalPackages: ['exifr', 'jsdom', 'parse5']
+webpack: (config, { isServer }) => {
+  if (isServer) {
+    config.externals = [...config.externals, 'exifr', 'jsdom', 'parse5', ...]
+  }
+}
+```
+
+**Result**: ✅ Client-side GPS extraction works, server-side doesn't crash
+
+**Files Created**:
+- `EXIFR_VERCEL_FIX.md` - Complete bug fix documentation
+- `COMPLETE_DATABASE_SETUP_GUIDE.md` - Database environment setup guide
+- `NEON_DEVELOPMENT_SETUP_COMPLETE.md` - Neon configuration reference
+
+**Deployment Success**:
+- ✅ Build completed without errors
+- ✅ `/locations` page loads successfully
+- ✅ Authentication working
+- ✅ All critical pages accessible
+- ✅ No runtime errors in Vercel logs
+
+---
+
 ## 📊 Current Stats
 
 ### Codebase
-- **Database**: 9 tables, 148 fields
+- **Database**: 9 tables, 148 fields (PostgreSQL via Neon)
 - **Components**: 50+ React components
 - **Pages**: 10+ Next.js pages
 - **API Routes**: 15+ authenticated endpoints
 - **Type Coverage**: 95% (up from ~60%)
 - **Bundle Size**: Optimized (-5%)
+- **Deployment**: Vercel (Production) ✅
 
 ### Features
 - **Authentication**: Email verification, session management, password reset
@@ -205,27 +266,40 @@
 
 ---
 
-## 🚀 Production Readiness
+## 🚀 Production Deployment Status
 
-### ✅ Ready for Deployment
-- Complete feature parity with legacy app
-- Modern tech stack (Next.js 16, React 19)
-- Type-safe TypeScript throughout
-- Performance optimized
-- Security hardened (auth, sanitization, validation)
-- User-first data organization
-- Comprehensive error handling
-- Mobile responsive
+### ✅ Successfully Deployed
+- ✅ Complete feature parity with legacy app
+- ✅ Modern tech stack (Next.js 16, React 19)
+- ✅ Type-safe TypeScript throughout
+- ✅ Performance optimized
+- ✅ Security hardened (auth, sanitization, validation)
+- ✅ User-first data organization
+- ✅ Comprehensive error handling
+- ✅ Mobile responsive
+- ✅ **Live on Vercel**: https://merkel-vision.vercel.app
+- ✅ **Database**: PostgreSQL (Neon cloud)
+- ✅ **All pages loading**: /locations, /create-with-photo, /profile
+- ✅ **Authentication working**: Login, signup, session management
 
-### 📋 Pre-Deployment Checklist
-- [ ] Data migration from SQLite → MySQL
-- [ ] Final testing (E2E, integration, unit)
-- [ ] Performance audit (Lighthouse)
-- [ ] Security audit
-- [ ] Environment variables verified
-- [ ] Production database setup
-- [ ] DNS & domain configuration
-- [ ] Deploy to Vercel/production
+### 📋 Completed Deployment Tasks
+- [x] Database migration: MySQL → PostgreSQL (Neon)
+- [x] Environment variables configured (Dev, Preview, Production)
+- [x] Production database setup (Neon cloud)
+- [x] Vercel deployment configured
+- [x] Critical bug fixes (exifr/jsdom serverless issue)
+- [x] Build verification (no errors)
+- [x] Runtime testing (all pages accessible)
+
+### 🚧 Pending Migration Tasks
+- [ ] **ImageKit Folder Structure**: Migrate to user-first paths
+  - Current: `/locations/{placeId}/photo.jpg`
+  - Target: `/users/{userId}/locations/{placeId}/photo.jpg`
+- [ ] **Legacy Data Migration**: Import existing location/photo data to production database
+  - Export from legacy SQLite database
+  - Transform to PostgreSQL format
+  - Import to Neon production database
+  - Verify data integrity
 
 ---
 
@@ -242,6 +316,13 @@
 - `PHASE_3_PERFORMANCE_COMPLETE.md` - React optimization
 - `CODE_QUALITY_IMPROVEMENTS.md` - Master improvement plan
 
+### Deployment Documentation ⭐ NEW
+- `EXIFR_VERCEL_FIX.md` - Serverless exifr/jsdom bug fix
+- `COMPLETE_DATABASE_SETUP_GUIDE.md` - Database environment setup
+- `NEON_DEVELOPMENT_SETUP_COMPLETE.md` - Neon PostgreSQL configuration
+- `VERCEL_EXIFR_RESOLUTION.md` - Original bug analysis
+- `VERCEL_PREVIEW_SETUP_GUIDE.md` - Preview deployment workflow
+
 ### Development History
 - Located in `/docs/development-history/` (organized)
 - Includes session summaries, implementation notes
@@ -249,10 +330,11 @@
 
 ---
 
-## 🎉 Milestone Achievement
+## 🎉 Major Milestone Achievement: PRODUCTION DEPLOYED! 🚀
 
-**The refactored Merkel Vision application has now surpassed the original in several key areas**:
+**The refactored Merkel Vision application is now LIVE in production**:
 
+✅ **Deployed**: https://merkel-vision.vercel.app ⭐ **LIVE!**  
 ✅ **Features**: Photo upload with GPS, EXIF metadata extraction  
 ✅ **Performance**: 80% faster renders, optimized components  
 ✅ **Type Safety**: 95% TypeScript coverage vs 0% (vanilla JS)  
@@ -260,20 +342,58 @@
 ✅ **User Experience**: Modern UI, smooth interactions  
 ✅ **Security**: Input validation, sanitization, authentication  
 ✅ **Scalability**: User-first structure, modular components  
+✅ **Database**: PostgreSQL (Neon cloud) with dev/prod separation  
+✅ **Bug Fixes**: Serverless compatibility (exifr/jsdom resolved)  
 
-**Status**: Ready for final testing and production deployment! 🚀
-
----
-
-## 🔄 Next Steps
-
-1. **Phase 9**: Data Migration (SQLite → MySQL)
-2. **Phase 10**: Comprehensive Testing
-3. **Phase 11**: Production Deployment
-4. **Future**: Additional features from backlog
+**Status**: 🎯 Production deployed and working! Migration in progress.
 
 ---
 
-**Last Updated**: 2025-12-27 at 13:58 EST  
+## 🔄 Next Steps (Phase 9 - Migration)
+
+### Phase 9A: ImageKit Folder Structure Migration
+**Goal**: Update existing ImageKit photos to use user-first folder structure
+
+**Current Structure**:
+```
+/locations/{placeId}/photo.jpg
+/avatars/user-{userId}.jpg
+```
+
+**Target Structure**:
+```
+/users/{userId}/locations/{placeId}/photo.jpg
+/users/{userId}/avatars/profile.jpg
+```
+
+**Tasks**:
+1. [ ] Audit existing ImageKit files
+2. [ ] Create migration script to move/rename files
+3. [ ] Update database `imagekitFilePath` references
+4. [ ] Verify all images still load
+5. [ ] Clean up old folder structure
+
+### Phase 9B: Legacy Data Migration
+**Goal**: Import production location/photo data to Neon database
+
+**Tasks**:
+1. [ ] Export data from legacy SQLite database
+2. [ ] Transform schema (SQLite → PostgreSQL)
+3. [ ] Import users, locations, photos to Neon production
+4. [ ] Verify data integrity (counts, relationships)
+5. [ ] Test with real production data
+6. [ ] Set up regular backup schedule
+
+### Phase 10: Final Verification
+1. [ ] Performance audit (Lighthouse)
+2. [ ] Security audit
+3. [ ] User acceptance testing
+4. [ ] Monitor Vercel logs for errors
+5. [ ] DNS & domain configuration (if needed)
+
+---
+
+**Last Updated**: 2025-12-30 at 21:30 EST  
 **Contributors**: Development Team  
-**Repository**: [github.com/rgriola/merkel-vision](https://github.com/rgriola/merkel-vision.git)
+**Repository**: [github.com/rgriola/merkel-vision](https://github.com/rgriola/merkel-vision.git)  
+**Production**: [merkel-vision.vercel.app](https://merkel-vision.vercel.app) ✅
