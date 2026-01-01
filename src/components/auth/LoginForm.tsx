@@ -57,8 +57,10 @@ export function LoginForm() {
 
       toast.success('Login successful!');
 
-      // Use Next.js router for better mobile compatibility
-      router.push('/map');
+      // Use router.replace for better mobile compatibility
+      // Small delay to ensure cookie is set before navigation
+      await new Promise(resolve => setTimeout(resolve, 100));
+      router.replace('/map');
       router.refresh();
     } catch (error) {
       console.error('Login error:', error);
