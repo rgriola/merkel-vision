@@ -112,7 +112,7 @@ export default withSentryConfig(nextConfig, {
   // For all available options, see:
   // https://github.com/getsentry/sentry-webpack-plugin#options
 
-  org: "merkel-vision",
+  org: "rod-griola",  // Must match Sentry auth token organization
   project: "merkel-vision",
 
   // Only print logs for uploading source maps in CI
