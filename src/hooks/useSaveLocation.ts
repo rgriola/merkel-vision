@@ -72,8 +72,10 @@ export function useSaveLocation() {
 
             const result = await response.json();
 
-            // Save photos if provided
-            if (photos && photos.length > 0) {
+            // Save photos if provided (using locationId from the created location)
+            if (photos && photos.length > 0 && result.userSave?.location?.id) {
+                const locationId = result.userSave.location.id;
+                
                 const photoPromises = photos.map(photo =>
                     fetch('/api/photos', {
                         method: 'POST',
@@ -82,13 +84,20 @@ export function useSaveLocation() {
                         },
                         credentials: 'include',
                         body: JSON.stringify({
+                            locationId,  // Add the locationId from the created location
                             placeId: data.placeId,
                             ...photo,
                         }),
                     })
                 );
 
-                await Promise.all(photoPromises);
+                const photoResponses = await Promise.all(photoPromises);
+                
+                // Check if any photo saves failed
+                const failedPhotos = photoResponses.filter(res => !res.ok);
+                if (failedPhotos.length > 0) {
+                    console.error(`[useSaveLocation] ${failedPhotos.length} photo(s) failed to save`);
+                }
             }
 
             return result;
