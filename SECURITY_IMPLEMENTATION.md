@@ -24,6 +24,7 @@ Comprehensive IP-based rate limiting to prevent brute force attacks and API abus
 - `/src/lib/rate-limit.ts` - Core rate limiting utilities
 
 #### **Applied To**:
+
 - `/api/auth/login` - 10 attempts per 15 minutes
 
 ---
