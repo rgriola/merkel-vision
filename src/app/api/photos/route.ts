@@ -3,8 +3,8 @@ import prisma from '@/lib/prisma';
 import { apiResponse, apiError, requireAuth } from '@/lib/api-middleware';
 
 /**
- * GET /api/photos?placeId=xxx
- * Get all photos for a specific location
+ * GET /api/photos?locationId=xxx
+ * Get all photos for a specific user's location
  */
 export async function GET(request: NextRequest) {
     try {
@@ -14,16 +14,29 @@ export async function GET(request: NextRequest) {
             return apiError(authResult.error || 'Authentication required', 401, 'UNAUTHORIZED');
         }
 
+        const user = authResult.user;
         const searchParams = request.nextUrl.searchParams;
-        const placeId = searchParams.get('placeId');
+        const locationId = searchParams.get('locationId');
 
-        if (!placeId) {
-            return apiError('placeId is required', 400, 'VALIDATION_ERROR');
+        if (!locationId) {
+            return apiError('locationId is required', 400, 'VALIDATION_ERROR');
         }
 
-        // Fetch photos for this location
+        // Verify this location belongs to the user
+        const location = await prisma.location.findFirst({
+            where: {
+                id: parseInt(locationId),
+                createdBy: user.id,
+            },
+        });
+
+        if (!location) {
+            return apiError('Location not found or access denied', 404, 'NOT_FOUND');
+        }
+
+        // Fetch photos for this user's location
         const photos = await prisma.photo.findMany({
-            where: { placeId },
+            where: { locationId: parseInt(locationId) },
             orderBy: [
                 { isPrimary: 'desc' },
                 { uploadedAt: 'desc' },
@@ -40,7 +53,7 @@ export async function GET(request: NextRequest) {
 /**
  * POST /api/photos
  * Save photo metadata after ImageKit upload
- * Body: { placeId, imagekitFileId, imagekitFilePath, originalFilename, fileSize, mimeType, width, height, isPrimary?, caption? }
+ * Body: { locationId, placeId, imagekitFileId, imagekitFilePath, originalFilename, fileSize, mimeType, width, height, isPrimary?, caption? }
  */
 export async function POST(request: NextRequest) {
     try {
@@ -54,6 +67,7 @@ export async function POST(request: NextRequest) {
         const body = await request.json();
 
         const {
+            locationId,
             placeId,
             imagekitFileId,
             imagekitFilePath,
@@ -67,17 +81,30 @@ export async function POST(request: NextRequest) {
         } = body;
 
         // Validation
-        if (!placeId || !imagekitFileId || !imagekitFilePath) {
+        if (!locationId || !placeId || !imagekitFileId || !imagekitFilePath) {
             return apiError(
-                'Missing required fields: placeId, imagekitFileId, imagekitFilePath',
+                'Missing required fields: locationId, placeId, imagekitFileId, imagekitFilePath',
                 400,
                 'VALIDATION_ERROR'
             );
         }
 
-        // Create photo record
+        // Verify this location belongs to the user
+        const location = await prisma.location.findFirst({
+            where: {
+                id: locationId,
+                createdBy: user.id,
+            },
+        });
+
+        if (!location) {
+            return apiError('Location not found or access denied', 404, 'NOT_FOUND');
+        }
+
+        // Create photo record linked to user's specific location
         const photo = await prisma.photo.create({
             data: {
+                locationId,
                 placeId,
                 userId: user.id,
                 imagekitFileId,

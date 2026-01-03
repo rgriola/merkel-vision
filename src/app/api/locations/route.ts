@@ -70,11 +70,11 @@ export async function GET(request: NextRequest) {
             take: 100, // Limit for performance
         });
 
-        // Fetch photos for each location (Photo model uses placeId)
+        // Fetch photos for each location (now uses locationId for user-specific photos)
         const locationsWithPhotos = await Promise.all(
             userSaves.map(async (userSave) => {
                 const photos = await prisma.photo.findMany({
-                    where: { placeId: userSave.location.placeId },
+                    where: { locationId: userSave.location.id },
                     orderBy: [{ isPrimary: 'desc' }, { uploadedAt: 'asc' }],
                 });
                 return {
@@ -142,6 +142,10 @@ export async function POST(request: NextRequest) {
             indoorOutdoor,
             hasPhotos: !!body.photos,
             photoCount: body.photos ? body.photos.length : 0,
+            photoData: body.photos ? body.photos.map((p: any) => ({ 
+                fileId: p.imagekitFileId || p.fileId,
+                hasFileId: !!(p.imagekitFileId || p.fileId)
+            })) : null
         });
 
         // Validation - Required fields
@@ -185,71 +189,37 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        // Check if location exists
-        let location = await prisma.location.findUnique({
-            where: { placeId },
-        });
-
-        // If location doesn't exist, create it
-        if (!location) {
-            console.log('[Save Location] Creating new location in database:', { placeId, name });
-            location = await prisma.location.create({
-                data: {
-                    placeId,
-                    name,
-                    address,
-                    lat: latitude,
-                    lng: longitude,
-                    ...(type && { type }),
-                    ...(rating !== undefined && rating !== null && { rating }),
-                    // Address components
-                    ...(street && { street }),
-                    ...(number && { number }),
-                    ...(city && { city }),
-                    ...(state && { state }),
-                    ...(zipcode && { zipcode }),
-                    // Production details
-                    ...(productionNotes && { productionNotes }),
-                    ...(entryPoint && { entryPoint }),
-                    ...(parking && { parking }),
-                    ...(access && { access }),
-                    // Indoor/Outdoor
-                    ...(indoorOutdoor && { indoorOutdoor }),
-                    // Metadata
-                    ...(isPermanent !== undefined && { isPermanent }),
-                    createdBy: user.id, // Set creator
-                },
-            });
-            console.log('[Save Location] New location created with ID:', location.id);
-        } else {
-            console.log('[Save Location] Location already exists in database:', {
-                locationId: location.id,
+        // Create a new location record for this save
+        // Users can now save the same Google place multiple times (e.g., different shoots)
+        console.log('[Save Location] Creating new location record:', { placeId, name, userId: user.id });
+        const location = await prisma.location.create({
+            data: {
                 placeId,
-                name: location.name
-            });
-        }
-
-        // Check if user already saved this location
-        const existingSave = await prisma.userSave.findUnique({
-            where: {
-                userId_locationId: {
-                    userId: user.id,
-                    locationId: location.id,
-                },
+                name,
+                address,
+                lat: latitude,
+                lng: longitude,
+                ...(type && { type }),
+                ...(rating !== undefined && rating !== null && { rating }),
+                // Address components
+                ...(street && { street }),
+                ...(number && { number }),
+                ...(city && { city }),
+                ...(state && { state }),
+                ...(zipcode && { zipcode }),
+                // Production details
+                ...(productionNotes && { productionNotes }),
+                ...(entryPoint && { entryPoint }),
+                ...(parking && { parking }),
+                ...(access && { access }),
+                // Indoor/Outdoor
+                ...(indoorOutdoor && { indoorOutdoor }),
+                // Metadata
+                ...(isPermanent !== undefined && { isPermanent }),
+                createdBy: user.id, // Set creator
             },
         });
-
-        if (existingSave) {
-            console.error('[Save Location] Location already saved:', {
-                userId: user.id,
-                locationId: location.id,
-                placeId,
-                existingSaveId: existingSave.id
-            });
-            return apiError('Location already saved', 400, 'ALREADY_SAVED');
-        }
-
-        console.log('[Save Location] Location not yet saved, proceeding with UserSave creation');
+        console.log('[Save Location] New location created with ID:', location.id);
 
         // Extract UserSave fields from body
         const { tags, isFavorite, personalRating, color } = body;
@@ -283,10 +253,11 @@ export async function POST(request: NextRequest) {
 
         // Handle photos if provided
         if (body.photos && Array.isArray(body.photos) && body.photos.length > 0) {
-            console.log(`[Save Location] Creating ${body.photos.length} photo(s)`);
+            console.log(`[Save Location] Creating ${body.photos.length} photo(s) for locationId: ${location.id}`);
 
             await prisma.photo.createMany({
                 data: body.photos.map((photo: any, index: number) => ({
+                    locationId: location.id,  // Link to user's specific location
                     placeId: location.placeId,
                     userId: user.id,
                     imagekitFileId: photo.imagekitFileId || photo.fileId,

@@ -117,15 +117,16 @@ NODE_ENV=production
 
 ## Testing Checklist (After Deploy)
 
-- [x ] Site loads at Vercel URL
-- [ ] User can sign up
-- [ ] Verification email sent (check Resend)
-- [ ] User can login
-- [ ] Map loads correctly
-- [ ] Can save locations
+- [x] Site loads at Vercel URL
+- [x] User can sign up
+- [x] Verification email sent (check Resend)
+- [x] User can login
+- [x] Map loads correctly
+- [x] Can save locations
 - [ ] Password reset works
-- [ ] Check Sentry for errors
-- [ ] Custom domain working (if added)
+- [x] Check Sentry for errors
+- [x] Custom domain working (merkelvision.com)
+- [ ] Sentry source maps enabled (see SENTRY_SOURCE_MAPS_SETUP.md)
 
 ---
 

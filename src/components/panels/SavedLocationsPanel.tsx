@@ -32,32 +32,41 @@ export function SavedLocationsPanel({
     });
 
     // Filter and sort locations client-side
-    let filteredLocations = data?.locations || [];
+    let filteredUserSaves = data?.locations || [];
 
     // Filter favorites
     if (favoritesOnly) {
-        filteredLocations = filteredLocations.filter(
-            (loc) => loc.userSave?.isFavorite
+        filteredUserSaves = filteredUserSaves.filter(
+            (userSave) => userSave.isFavorite
         );
     }
 
-    // Sort locations
-    filteredLocations = [...filteredLocations].sort((a, b) => {
+    // Sort user saves
+    filteredUserSaves = [...filteredUserSaves].sort((a, b) => {
         switch (sortBy) {
             case "recent":
-                return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+                return new Date(b.savedAt).getTime() - new Date(a.savedAt).getTime();
             case "oldest":
-                return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+                return new Date(a.savedAt).getTime() - new Date(b.savedAt).getTime();
             case "name-asc":
-                return a.name.localeCompare(b.name);
+                return (a.location?.name || '').localeCompare(b.location?.name || '');
             case "name-desc":
-                return b.name.localeCompare(a.name);
+                return (b.location?.name || '').localeCompare(a.location?.name || '');
             case "rating":
-                return (b.userSave?.personalRating || 0) - (a.userSave?.personalRating || 0);
+                return (b.personalRating || 0) - (a.personalRating || 0);
             default:
                 return 0;
         }
     });
+
+    // Transform UserSave[] to Location[] for the LocationList component
+    // by extracting the location and attaching the userSave data
+    const filteredLocations = filteredUserSaves
+        .filter(userSave => userSave.location) // Only include if location exists
+        .map(userSave => ({
+            ...userSave.location!,
+            userSave: userSave, // Attach the UserSave data
+        }));
 
     const handleLocationClick = (location: Location) => {
         onLocationClick(location);

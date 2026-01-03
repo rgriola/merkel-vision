@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import type { Location } from '@/types/location';
+import type { UserSave } from '@/types/location';
 
 interface UseLocationsParams {
     search?: string;
@@ -13,7 +13,7 @@ interface UseLocationsParams {
 }
 
 interface LocationsResponse {
-    locations: Location[];
+    locations: UserSave[];
     total: number;
 }
 

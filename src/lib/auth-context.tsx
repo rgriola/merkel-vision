@@ -77,7 +77,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             queryClient.clear(); // Clear all cached data
             queryClient.clear(); // Clear all cached data
             toast.success("Logged out successfully");
-            router.push("/");
+            router.push("/logout");
         },
         onError: () => {
             toast.error("Failed to logout");

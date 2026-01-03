@@ -13,7 +13,7 @@ import { RightSidebar } from '@/components/layout/RightSidebar';
 import { SaveLocationPanel } from '@/components/panels/SaveLocationPanel';
 import { EditLocationPanel } from '@/components/panels/EditLocationPanel';
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
-import { LocationData, getUserLocation } from '@/lib/maps-utils';
+import { LocationData } from '@/lib/maps-utils';
 import { parseAddressComponents } from '@/lib/address-utils';
 import { useLocations } from '@/hooks/useLocations';
 import { UserSave } from '@/types/location';
@@ -52,7 +52,7 @@ function MapPageInner() {
     // GPS permission state
     const { user } = useAuth();
     const router = useRouter();
-    const { requestLocation, updateUserPermission, isRequesting } = useGpsLocation();
+    const { requestLocation, updateUserPermission } = useGpsLocation();
     const [showGpsDialog, setShowGpsDialog] = useState(false);
     const [showWelcomeBanner, setShowWelcomeBanner] = useState(false);
     const [showLocationsPanel, setShowLocationsPanel] = useState(false);
@@ -66,7 +66,7 @@ function MapPageInner() {
             };
         }
         return { lat: 40.7128, lng: -74.006 }; // NYC fallback
-    }, [user?.homeLocationLat, user?.homeLocationLng]);
+    }, [user]);
 
     const [center, setCenter] = useState(defaultCenter);
 
@@ -92,29 +92,31 @@ function MapPageInner() {
     }, [user?.homeLocationLat, user?.homeLocationLng]);
 
     // Load saved locations
-    const { data: locationsData, isLoading: isLoadingLocations } = useLocations();
+    const { data: locationsData } = useLocations();
 
     // Populate markers from saved locations
     useEffect(() => {
         if (locationsData?.locations) {
-            const savedMarkers: MarkerData[] = locationsData.locations.map((userSave: any) => ({
+            const savedMarkers: MarkerData[] = locationsData.locations
+                .filter((userSave) => userSave.location) // Filter out any undefined locations
+                .map((userSave) => ({
                 id: `saved-${userSave.id}`,
                 position: {
-                    lat: userSave.location.lat,
-                    lng: userSave.location.lng,
+                    lat: userSave.location!.lat,
+                    lng: userSave.location!.lng,
                 },
                 data: {
-                    placeId: userSave.location.placeId,
-                    name: userSave.location.name,
-                    address: userSave.location.address,
-                    latitude: userSave.location.lat,
-                    longitude: userSave.location.lng,
-                    type: userSave.location.type,
-                    street: userSave.location.street,
-                    number: userSave.location.number,
-                    city: userSave.location.city,
-                    state: userSave.location.state,
-                    zipcode: userSave.location.zipcode,
+                    placeId: userSave.location!.placeId,
+                    name: userSave.location!.name,
+                    address: userSave.location!.address || undefined,
+                    latitude: userSave.location!.lat,
+                    longitude: userSave.location!.lng,
+                    type: userSave.location!.type || undefined,
+                    street: userSave.location!.street || undefined,
+                    number: userSave.location!.number || undefined,
+                    city: userSave.location!.city || undefined,
+                    state: userSave.location!.state || undefined,
+                    zipcode: userSave.location!.zipcode || undefined,
                 },
                 isTemporary: false, // Saved locations are NOT temporary
                 userSave: userSave,
@@ -907,7 +909,7 @@ function MapPageInner() {
                             id: locationToEdit.userSave.locationId,
                             placeId: locationToEdit.data.placeId || locationToEdit.id,
                             name: locationToEdit.data.name || 'Selected Location',
-                            address: locationToEdit.data.address,
+                            address: locationToEdit.data.address ?? null,
                             lat: locationToEdit.position.lat,
                             lng: locationToEdit.position.lng,
                             type: locationToEdit.data.type || locationToEdit.userSave.location?.type || '',

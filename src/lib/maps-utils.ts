@@ -73,7 +73,7 @@ export function formatAddress(place: google.maps.places.PlaceResult): string {
 export interface LocationData {
     placeId: string;
     name: string;
-    address: string;
+    address?: string;
     latitude: number;
     longitude: number;
     plusCode?: string; // Google Plus Code for precise location

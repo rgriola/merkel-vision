@@ -16,17 +16,44 @@ export const UPLOAD_SOURCES = {
 export type UploadSource = typeof UPLOAD_SOURCES[keyof typeof UPLOAD_SOURCES];
 
 /**
+ * Get current environment for ImageKit folder paths
+ * Returns 'development' or 'production'
+ */
+export function getEnvironment(): 'development' | 'production' {
+    return process.env.NODE_ENV === 'production' ? 'production' : 'development';
+}
+
+/**
  * ImageKit folder path generators
- * User-first folder structure for organized storage
+ * SCALABLE STRUCTURE: Flat user directories with environment separation
+ * 
+ * Structure: /{environment}/users/{userId}/photos/
+ * - Fast retrieval (no deep nesting)
+ * - Environment isolated (dev/prod separate)
+ * - Database manages relationships (location, tags, etc.)
+ * - Easy to migrate/reorganize
  */
 export const FOLDER_PATHS = {
-    userLocation: (userId: number, placeId: string) =>
-        `/users/${userId}/locations/${placeId}`,
+    // Photos: Flat directory per user (database handles location relationships)
+    userPhotos: (userId: number) =>
+        `/${getEnvironment()}/users/${userId}/photos`,
+    
+    // Avatars: Separate from photos for easier management
     userAvatars: (userId: number) =>
-        `/users/${userId}/avatars`,
+        `/${getEnvironment()}/users/${userId}/avatars`,
+    
+    // General uploads: Catch-all for other files
     userUploads: (userId: number) =>
-        `/users/${userId}/uploads`,
+        `/${getEnvironment()}/users/${userId}/uploads`,
 } as const;
+
+/**
+ * Get user's root folder path for bulk operations (like deletion)
+ * This gets the user's entire folder to delete all their files
+ */
+export function getUserRootFolder(userId: number): string {
+    return `/${getEnvironment()}/users/${userId}/`;
+}
 
 /**
  * File size limits (in MB)

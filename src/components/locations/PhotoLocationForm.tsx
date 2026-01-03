@@ -64,11 +64,13 @@ export function PhotoLocationForm({
             }
             const authData: ImageKitAuthData = await authResponse.json();
 
-            // Upload to ImageKit
+            // Upload to ImageKit using flat user directory structure
             const formData = new FormData();
             formData.append('file', photoFile);
             formData.append('fileName', photoFile.name.replace(/\s+/g, '-'));
-            formData.append('folder', FOLDER_PATHS.userLocation(user.id, initialData.placeId));
+            const uploadFolder = FOLDER_PATHS.userPhotos(user.id);
+            console.log('[PhotoLocationForm] Uploading photo to folder:', uploadFolder);
+            formData.append('folder', uploadFolder);
             formData.append('publicKey', authData.publicKey);
             formData.append('signature', authData.signature);
             formData.append('expire', authData.expire.toString());
@@ -86,6 +88,7 @@ export function PhotoLocationForm({
             }
 
             const uploadResult: ImageKitUploadResponse = await uploadResponse.json();
+            console.log('[PhotoLocationForm] Photo uploaded successfully! Path:', uploadResult.filePath);
 
             // Step 2: Prepare photo data with GPS/EXIF metadata
             const photoData: PhotoUploadData = {

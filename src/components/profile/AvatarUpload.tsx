@@ -125,6 +125,10 @@ export function AvatarUpload({ currentAvatar }: AvatarUploadProps) {
                                     height={96}
                                     className="w-full h-full object-cover"
                                     priority
+                                    onError={() => {
+                                        // If image fails to load, show fallback
+                                        setPreviewUrl(null);
+                                    }}
                                 />
                             ) : (
                                 <User className="w-12 h-12 text-white" />

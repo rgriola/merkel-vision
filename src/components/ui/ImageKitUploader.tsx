@@ -164,12 +164,11 @@ export function ImageKitUploader({
             formData.append('token', authParams.token);
             formData.append('fileName', file.name);
 
-            // User-first folder structure
-            if (placeId) {
-                formData.append('folder', FOLDER_PATHS.userLocation(user.id, placeId));
-            } else {
-                formData.append('folder', FOLDER_PATHS.userUploads(user.id));
-            }
+            // Flat user directory structure (scalable, environment-separated)
+            // All photos go to /production/users/{userId}/photos/ (database manages location relationships)
+            const uploadFolder = FOLDER_PATHS.userPhotos(user.id);
+            console.log('[ImageKitUploader] Uploading to folder:', uploadFolder);
+            formData.append('folder', uploadFolder);
 
             // Upload to ImageKit
             const uploadResponse = await fetch('https://upload.imagekit.io/api/v1/files/upload', {
@@ -183,6 +182,8 @@ export function ImageKitUploader({
             }
 
             const uploadResult = await uploadResponse.json();
+            
+            console.log('[ImageKitUploader] Upload successful! File path:', uploadResult.filePath);
 
             // Create photo object
             const photo: UploadedPhoto = {

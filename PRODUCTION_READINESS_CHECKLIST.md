@@ -25,10 +25,10 @@
 - [x] `NEXT_PUBLIC_SENTRY_DSN` - Error tracking configured
 
 #### ⚠️ NEEDS UPDATE for Production
-- [ ] `EMAIL_MODE` - **CHANGE FROM "development" TO "production"**
-- [ ] `NEXT_PUBLIC_APP_URL` - **CHANGE FROM "http://localhost:3000" TO "https://merkelvision.com"**
-- [ ] `EMAIL_FROM_ADDRESS` - Consider changing to "admin@merkelvision.com" (more professional)
-- [ ] `NODE_ENV` - **SET TO "production"** (currently commented out)
+- [ x] `EMAIL_MODE` - **CHANGE FROM "development" TO "production"**
+- [x ] `NEXT_PUBLIC_APP_URL` - **CHANGE FROM "http://localhost:3000" TO "https://merkelvision.com"**
+- [x ] `EMAIL_FROM_ADDRESS` - Consider changing to "admin@merkelvision.com" (more professional)
+- [x ] `NODE_ENV` - **SET TO "production"** (currently commented out)
 
 #### 📋 For Vercel Environment Variables
 Copy these to Vercel Dashboard → Your Project → Settings → Environment Variables:

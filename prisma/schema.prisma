@@ -3,62 +3,58 @@ generator client {
 }
 
 datasource db {
-  // Use PostgreSQL in production (Vercel), MySQL in local development
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
 model User {
-  id                      Int           @id @default(autoincrement())
-  email                   String        @unique
-  username                String        @unique
+  id                      Int                 @id @default(autoincrement())
+  email                   String              @unique
+  username                String              @unique
   passwordHash            String
   firstName               String?
   lastName                String?
-  emailVerified           Boolean       @default(false)
+  emailVerified           Boolean             @default(false)
   verificationToken       String?
   resetToken              String?
   resetTokenExpiry        DateTime?
-  isActive                Boolean       @default(true)
-  isAdmin                 Boolean       @default(false)
-  createdAt               DateTime      @default(now())
-  updatedAt               DateTime      @updatedAt
-  appleId                 String?       @unique
+  isActive                Boolean             @default(true)
+  isAdmin                 Boolean             @default(false)
+  createdAt               DateTime            @default(now())
+  updatedAt               DateTime            @updatedAt
+  appleId                 String?             @unique
   avatar                  String?
   city                    String?
   country                 String?
-  googleId                String?       @unique
-  language                String?       @default("en")
+  googleId                String?             @unique
+  language                String?             @default("en")
   lastLoginAt             DateTime?
   phoneNumber             String?
   timezone                String?
-  gpsPermission           String?       @default("not_asked")
+  gpsPermission           String?             @default("not_asked")
   gpsPermissionUpdated    DateTime?
-  
-  // Home Location (default map center)
   homeLocationName        String?
   homeLocationLat         Float?
   homeLocationLng         Float?
   homeLocationUpdated     DateTime?
-  
   verificationTokenExpiry DateTime?
   bio                     String?
   deletedAt               DateTime?
-  emailNotifications      Boolean       @default(true)
-  twoFactorEnabled        Boolean       @default(false)
+  emailNotifications      Boolean             @default(true)
+  twoFactorEnabled        Boolean             @default(false)
   twoFactorSecret         String?
-  failedLoginAttempts     Int           @default(0)
+  failedLoginAttempts     Int                 @default(0)
   lockedUntil             DateTime?
-  createdLocations        Location[]    @relation("LocationCreator")
-  modifiedLocations       Location[]    @relation("LocationModifier")
-  uploadedPhotos          Photo[]       @relation("PhotoUploader")
+  phoneVerification       PhoneVerification[]
+  createdLocations        Location[]          @relation("LocationCreator")
+  modifiedLocations       Location[]          @relation("LocationModifier")
+  uploadedPhotos          Photo[]             @relation("PhotoUploader")
   projects                Project[]
   securityLogs            SecurityLog[]
   sessions                Session[]
-  invitedTeamMembers      TeamMember[]  @relation("TeamInviter")
-  teamMemberships         TeamMember[]  @relation("TeamMember")
+  invitedTeamMembers      TeamMember[]        @relation("TeamInviter")
+  teamMemberships         TeamMember[]        @relation("TeamMember")
   savedLocations          UserSave[]
-  phoneVerification       PhoneVerification[]
 
   @@map("users")
 }
@@ -71,9 +67,8 @@ model PhoneVerification {
   expiresAt   DateTime
   verified    Boolean  @default(false)
   createdAt   DateTime @default(now())
-  
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
+
   @@index([userId])
   @@index([phoneNumber])
   @@index([code])
@@ -81,7 +76,7 @@ model PhoneVerification {
 
 model Location {
   id               Int               @id @default(autoincrement())
-  placeId          String            @unique
+  placeId          String
   name             String
   address          String?
   lat              Float
@@ -114,11 +109,13 @@ model Location {
   contacts         LocationContact[]
   creator          User              @relation("LocationCreator", fields: [createdBy], references: [id], onDelete: Cascade)
   lastModifier     User?             @relation("LocationModifier", fields: [lastModifiedBy], references: [id])
+  photos           Photo[]
   projectLocations ProjectLocation[]
   savedBy          UserSave[]
 
   @@index([createdBy])
   @@index([lastModifiedBy])
+  @@index([placeId])
   @@map("locations")
 }
 
@@ -162,6 +159,7 @@ model Session {
 
 model Photo {
   id               Int       @id @default(autoincrement())
+  locationId       Int
   placeId          String
   userId           Int?
   imagekitFileId   String
@@ -195,8 +193,10 @@ model Photo {
   tags             String?
   uploadSource     String?   @default("manual")
   hasGpsData       Boolean   @default(false)
-  uploader         User?     @relation("PhotoUploader", fields: [userId], references: [id])
+  location         Location  @relation(fields: [locationId], references: [id], onDelete: Cascade)
+  uploader         User?     @relation("PhotoUploader", fields: [userId], references: [id], onDelete: Cascade)
 
+  @@index([locationId])
   @@index([placeId])
   @@index([userId])
   @@index([dateTaken], map: "idx_photos_dateTaken")

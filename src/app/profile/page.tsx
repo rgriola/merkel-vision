@@ -6,6 +6,7 @@ import { AvatarUpload } from '@/components/profile/AvatarUpload';
 import { AccountSettingsForm } from '@/components/profile/AccountSettingsForm';
 import { ChangePasswordForm } from '@/components/profile/ChangePasswordForm';
 import { SecurityActivityLog } from '@/components/profile/SecurityActivityLog';
+import { DeleteAccountSection } from '@/components/profile/DeleteAccountSection';
 import { PreferencesForm } from '@/components/profile/PreferencesForm';
 import { useAuth } from '@/lib/auth-context';
 
@@ -45,6 +46,7 @@ export default function ProfilePage() {
                 <TabsContent value="security" className="space-y-4">
                     <ChangePasswordForm />
                     <SecurityActivityLog />
+                    <DeleteAccountSection />
                 </TabsContent>
 
                 <TabsContent value="preferences" className="space-y-4">

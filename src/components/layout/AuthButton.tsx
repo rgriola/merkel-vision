@@ -1,8 +1,9 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { User, LogOut } from "lucide-react";
+import { User, LogOut, Shield } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -19,6 +20,7 @@ import {
 export function AuthButton() {
     const { user, isLoading, logout } = useAuth();
     const router = useRouter();
+    const [avatarError, setAvatarError] = useState(false);
 
     if (isLoading) {
         return (
@@ -53,12 +55,13 @@ export function AuthButton() {
             <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="relative h-8 w-8 rounded-full">
                     <Avatar className="h-8 w-8">
-                        {user.avatar && (
+                        {user.avatar && !avatarError ? (
                             <AvatarImage
                                 src={getOptimizedAvatarUrl(user.avatar, 32) || user.avatar}
                                 alt={user.username}
+                                onError={() => setAvatarError(true)}
                             />
-                        )}
+                        ) : null}
                         <AvatarFallback>{initials}</AvatarFallback>
                     </Avatar>
                 </Button>
@@ -77,6 +80,12 @@ export function AuthButton() {
                     <User className="mr-2 h-4 w-4" />
                     <span>Profile</span>
                 </DropdownMenuItem>
+                {user.isAdmin && (
+                    <DropdownMenuItem onClick={() => router.push("/admin/users")}>
+                        <Shield className="mr-2 h-4 w-4" />
+                        <span>Admin</span>
+                    </DropdownMenuItem>
+                )}
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={() => logout()}>
                     <LogOut className="mr-2 h-4 w-4" />

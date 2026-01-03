@@ -225,3 +225,60 @@ export async function sendPasswordChangedEmail(
     `
   );
 }
+
+/**
+ * Send account deletion notification email
+ * @param email - User's email address
+ * @param username - User's username or full name
+ */
+export async function sendAccountDeletionEmail(
+  email: string,
+  username: string
+): Promise<boolean> {
+  // In development mode, just log to console
+  if (EMAIL_MODE === 'development') {
+    console.log('\n' + '='.repeat(80));
+    console.log('🗑️  ACCOUNT DELETION NOTIFICATION (Development Mode)');
+    console.log('='.repeat(80));
+    console.log(`To: ${email}`);
+    console.log(`Subject: Your Merkel Vision Account Has Been Deleted`);
+    console.log(`\nHi ${username},\n`);
+    console.log(`We have removed your account (${email}) entirely.`);
+    console.log(`This means we have permanently deleted all personal information,`);
+    console.log(`photos, and metadata related to your account.`);
+    console.log(`\nAt any time you may register again.`);
+    console.log(`\n- MV Team`);
+    console.log('='.repeat(80) + '\n');
+    return true;
+  }
+
+  // Send actual email via configured service
+  return sendEmail(
+    email,
+    'Your Merkel Vision Account Has Been Deleted',
+    `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <h2 style="color: #333;">Account Deletion Notification</h2>
+        <p>Hi ${username},</p>
+        <p>We have removed your account <strong>${email}</strong> entirely.</p>
+        <p>This means we have permanently deleted all personal information, photos, and metadata related to your account.</p>
+        <div style="background-color: #f8f9fa; border-left: 4px solid #6c757d; padding: 16px; margin: 24px 0;">
+          <p style="margin: 0;"><strong>What was deleted:</strong></p>
+          <ul style="margin: 8px 0;">
+            <li>Your profile and account information</li>
+            <li>All uploaded photos and images</li>
+            <li>All locations and saved places</li>
+            <li>All session data and preferences</li>
+          </ul>
+        </div>
+        <p>At any time you may register again at <a href="${APP_URL}/register">${APP_URL}/register</a>.</p>
+        <p style="margin-top: 32px;">- MV Team</p>
+        <hr style="border: none; border-top: 1px solid #e0e0e0; margin: 24px 0;">
+        <p style="color: #666; font-size: 12px;">
+          This is an automated notification. If you have questions, please contact us at 
+          <a href="mailto:admin@merkelvision.com">admin@merkelvision.com</a>.
+        </p>
+      </div>
+    `
+  );
+}

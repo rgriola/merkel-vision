@@ -198,6 +198,7 @@ export async function PATCH(
             if (newPhotos.length > 0) {
                 await prisma.photo.createMany({
                     data: newPhotos.map((photo: any, index: number) => ({
+                        locationId: location.id,  // Link to user's specific location
                         placeId: location.placeId,
                         userId: user.id,
                         imagekitFileId: photo.imagekitFileId,
