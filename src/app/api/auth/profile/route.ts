@@ -124,7 +124,29 @@ export async function PATCH(request: NextRequest) {
         return apiResponse({
             success: true,
             message: 'Profile updated successfully',
-            user: updatedUser,
+            user: {
+                id: updatedUser.id,
+                email: updatedUser.email,
+                username: updatedUser.username,
+                firstName: updatedUser.firstName,
+                lastName: updatedUser.lastName,
+                emailVerified: updatedUser.emailVerified,
+                isActive: updatedUser.isActive,
+                isAdmin: updatedUser.isAdmin,
+                avatar: updatedUser.avatar,
+                city: updatedUser.city,
+                country: updatedUser.country,
+                language: updatedUser.language,
+                timezone: updatedUser.timezone,
+                emailNotifications: updatedUser.emailNotifications,
+                gpsPermission: updatedUser.gpsPermission,
+                gpsPermissionUpdated: updatedUser.gpsPermissionUpdated?.toISOString() || null,
+                homeLocationName: updatedUser.homeLocationName,
+                homeLocationLat: updatedUser.homeLocationLat,
+                homeLocationLng: updatedUser.homeLocationLng,
+                homeLocationUpdated: updatedUser.homeLocationUpdated?.toISOString() || null,
+                createdAt: updatedUser.createdAt.toISOString(),
+            },
         });
     } catch (error: any) {
         if (error.message === 'Unauthorized') {

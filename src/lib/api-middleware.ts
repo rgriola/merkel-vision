@@ -11,6 +11,18 @@ export function apiResponse(data: any, status: number = 200) {
 }
 
 /**
+ * Serialize user object by converting Date objects to ISO strings
+ */
+export function serializeUser(user: any): PublicUser {
+    return {
+        ...user,
+        gpsPermissionUpdated: user.gpsPermissionUpdated?.toISOString() || null,
+        homeLocationUpdated: user.homeLocationUpdated?.toISOString() || null,
+        createdAt: user.createdAt.toISOString(),
+    };
+}
+
+/**
  * Standardized API error response
  */
 export function apiError(message: string, status: number = 500, code?: string) {
@@ -139,7 +151,7 @@ export async function requireAuth(request: NextRequest): Promise<{
 
         return {
             authorized: true,
-            user,
+            user: serializeUser(user),
         };
     } catch (error) {
         console.error('Error fetching user in requireAuth:', error);

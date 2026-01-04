@@ -113,7 +113,12 @@ export async function POST(request: NextRequest) {
     }
 
     // Generate JWT token
-    const token = generateToken(user, false);
+    const token = generateToken({
+        ...user,
+        gpsPermissionUpdated: user.gpsPermissionUpdated?.toISOString() || null,
+        homeLocationUpdated: user.homeLocationUpdated?.toISOString() || null,
+        createdAt: user.createdAt.toISOString(),
+    }, false);
 
     // Create session record
     const session = await prisma.session.create({
@@ -128,7 +133,29 @@ export async function POST(request: NextRequest) {
     const response = apiResponse(
       {
         success: true,
-        user,
+        user: {
+          id: user.id,
+          email: user.email,
+          username: user.username,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          emailVerified: user.emailVerified,
+          isActive: user.isActive,
+          isAdmin: user.isAdmin,
+          avatar: user.avatar,
+          city: user.city,
+          country: user.country,
+          language: user.language,
+          timezone: user.timezone,
+          emailNotifications: user.emailNotifications,
+          gpsPermission: user.gpsPermission,
+          gpsPermissionUpdated: user.gpsPermissionUpdated?.toISOString() || null,
+          homeLocationName: user.homeLocationName,
+          homeLocationLat: user.homeLocationLat,
+          homeLocationLng: user.homeLocationLng,
+          homeLocationUpdated: user.homeLocationUpdated?.toISOString() || null,
+          createdAt: user.createdAt.toISOString(),
+        },
         token,
         requiresVerification: !user.emailVerified,
       },

@@ -96,7 +96,12 @@ export async function GET(req: NextRequest) {
         });
 
         return apiResponse({
-            users,
+            users: users.map(user => ({
+                ...user,
+                createdAt: user.createdAt.toISOString(),
+                updatedAt: user.updatedAt.toISOString(),
+                lastLoginAt: user.lastLoginAt?.toISOString() || null,
+            })),
             totalUsers,
             totalPages: Math.ceil(totalUsers / perPage),
             currentPage: page,

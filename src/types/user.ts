@@ -75,15 +75,15 @@ export interface PublicUser {
 
     // GPS Permission
     gpsPermission: string | null  // 'not_asked', 'granted', 'denied'
-    gpsPermissionUpdated: Date | null
+    gpsPermissionUpdated: string | null  // ISO string
 
     // Home Location (default map center)
     homeLocationName: string | null
     homeLocationLat: number | null
     homeLocationLng: number | null
-    homeLocationUpdated: Date | null
+    homeLocationUpdated: string | null  // ISO string
 
-    createdAt: Date
+    createdAt: string  // ISO string
 }
 
 

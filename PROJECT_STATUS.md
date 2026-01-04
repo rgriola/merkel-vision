@@ -1,8 +1,16 @@
 # Merkel Vision - Project Status
 
-**Last Updated**: 2026-01-03  
+**Last Updated**: 2026-01-04  
 **Production URL**: https://merkelvision.com  
 **Status**: ✅ Live in Production
+
+## Recent Deployments
+
+**2026-01-04**: Sentry DataCloneError Fix
+- Fixed Date serialization in API responses (Next.js/React 19 requirement)
+- Updated 7 API routes to return ISO strings instead of Date objects
+- Routes updated: login, register, reset-password, profile, admin users, and requireAuth middleware
+- Resolved production error: `DataCloneError: The object can not be cloned`
 
 ## Current State
 
