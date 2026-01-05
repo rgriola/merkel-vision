@@ -39,26 +39,18 @@ const saveLocationSchema = z.object({
     zipcode: z.string().max(20).optional(),
 
     // Production details - User editable, needs strict validation
-    productionNotes: z.string()
-        .max(500, "Production notes must be 500 characters or less")
-        .regex(safeLongTextRegex, "Production notes contain invalid characters")
-        .or(z.literal("")) // Allow empty string
-        .optional(),
-    entryPoint: z.string()
-        .max(200, "Entry point must be 200 characters or less")
-        .regex(safeTextRegex, "Entry point contains invalid characters")
-        .or(z.literal("")) // Allow empty string
-        .optional(),
-    parking: z.string()
-        .max(200, "Parking info must be 200 characters or less")
-        .regex(safeTextRegex, "Parking info contains invalid characters")
-        .or(z.literal("")) // Allow empty string
-        .optional(),
-    access: z.string()
-        .max(200, "Access info must be 200 characters or less")
-        .regex(safeTextRegex, "Access info contains invalid characters")
-        .or(z.literal("")) // Allow empty string
-        .optional(),
+    productionNotes: z.string().optional()
+        .refine((val) => !val || val.length <= 500, "Production notes must be 500 characters or less")
+        .refine((val) => !val || safeLongTextRegex.test(val), "Production notes contain invalid characters"),
+    entryPoint: z.string().optional()
+        .refine((val) => !val || val.length <= 200, "Entry point must be 200 characters or less")
+        .refine((val) => !val || safeTextRegex.test(val), "Entry point contains invalid characters"),
+    parking: z.string().optional()
+        .refine((val) => !val || val.length <= 200, "Parking info must be 200 characters or less")
+        .refine((val) => !val || safeTextRegex.test(val), "Parking info contains invalid characters"),
+    access: z.string().optional()
+        .refine((val) => !val || val.length <= 200, "Access info must be 200 characters or less")
+        .refine((val) => !val || safeTextRegex.test(val), "Access info contains invalid characters"),
 
     // User save details - Personal notes, needs validation
     isFavorite: z.boolean().optional(),
