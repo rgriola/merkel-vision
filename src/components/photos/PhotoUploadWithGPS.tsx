@@ -221,10 +221,10 @@ export function PhotoUploadWithGPS({ onPhotoProcessed, onCancel }: PhotoUploadWi
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2 text-orange-700 dark:text-orange-400">
                             <AlertCircle className="w-5 h-5" />
-                            Chrome Mobile Not Supported
+                            Chrome Mobile Not Supported.
                         </CardTitle>
                         <CardDescription className="text-orange-600 dark:text-orange-500">
-                            Please use Safari or Firefox for mobile photo uploads
+                            For mobile uploads switch to Safari or Firefox.
                         </CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-4">
@@ -265,7 +265,7 @@ export function PhotoUploadWithGPS({ onPhotoProcessed, onCancel }: PhotoUploadWi
                             Upload Photo
                         </CardTitle>
                         <CardDescription>
-                            Upload a photo with GPS data to automatically create a location
+                            Use a photo with GPS data to create a new location.
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
@@ -284,10 +284,10 @@ export function PhotoUploadWithGPS({ onPhotoProcessed, onCancel }: PhotoUploadWi
                             <label htmlFor="photo-upload" className="cursor-pointer">
                                 <Upload className="w-12 h-12 mx-auto mb-4 text-gray-400" />
                                 <p className="text-lg font-medium mb-2">
-                                    Drag & drop a photo or click to browse
+                                    Drag & drop or click to browse options.
                                 </p>
                                 <p className="text-sm text-muted-foreground">
-                                    Supports: JPG, PNG, HEIC • Max size: 10MB
+                                    JPG, HEIC with GPS Coordinates • Max: 10MB
                                 </p>
                             </label>
                         </div>
@@ -298,11 +298,11 @@ export function PhotoUploadWithGPS({ onPhotoProcessed, onCancel }: PhotoUploadWi
                                 <Info className="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
                                 <div className="flex-1 text-sm">
                                     <p className="font-medium text-blue-900 dark:text-blue-100 mb-1">
-                                        💡 Tip for Camera Photos
+                                        💡 Snap & Save Tip
                                     </p>
                                     <p className="text-blue-700 dark:text-blue-300">
-                                        For automatic GPS extraction from camera photos, we recommend using <strong>Safari</strong>.
-                                        Chrome can still upload photos, but you'll need to select the location manually.
+                                        Using <strong>Safari or Firefox</strong> is recommended.<br />
+                                        Chrome will upload photos, Manually select the location.
                                     </p>
                                 </div>
                             </div>
@@ -370,7 +370,7 @@ export function PhotoUploadWithGPS({ onPhotoProcessed, onCancel }: PhotoUploadWi
                                             GPS Data Found!
                                         </CardTitle>
                                         <CardDescription className="text-green-600 dark:text-green-500">
-                                            We extracted GPS coordinates from your photo
+                                            GPS coordinates used
                                         </CardDescription>
                                     </CardHeader>
                                     <CardContent className="space-y-4">
@@ -430,13 +430,12 @@ export function PhotoUploadWithGPS({ onPhotoProcessed, onCancel }: PhotoUploadWi
                                             No GPS Data Found
                                         </CardTitle>
                                         <CardDescription className="text-yellow-600 dark:text-yellow-500">
-                                            This photo doesn't contain GPS coordinates
+                                            No GPS coordinates
                                         </CardDescription>
                                     </CardHeader>
                                     <CardContent>
                                         <p className="text-sm text-muted-foreground">
-                                            You can still upload this photo, but you'll need to select the location
-                                            manually on the map.
+                                            Select the location manually on the map
                                         </p>
                                     </CardContent>
                                 </Card>
@@ -450,7 +449,7 @@ export function PhotoUploadWithGPS({ onPhotoProcessed, onCancel }: PhotoUploadWi
                             {gpsData.hasGPS ? (
                                 <Button size="lg" onClick={handleCreateLocation} className="flex-1">
                                     <MapPin className="w-4 h-4 mr-2" />
-                                    Create Location from Photo
+                                    Snap & Save
                                 </Button>
                             ) : (
                                 <Button size="lg" variant="outline" onClick={handleCreateLocation} className="flex-1">

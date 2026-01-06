@@ -63,7 +63,7 @@ function CreateWithPhotoPageInner() {
                         <Camera className="w-6 h-6 text-white" />
                     </div>
                     <div>
-                        <h1 className="text-3xl font-bold">Create Location from Photo</h1>
+                        <h1 className="text-3xl font-bold">Snap & Save</h1>
                         <p className="text-muted-foreground">
                             {step === 'upload'
                                 ? 'Upload a photo with GPS data to get started'
