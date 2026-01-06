@@ -1,7 +1,7 @@
 "use client";
 
 import { ReactNode } from "react";
-import { X } from "lucide-react";
+import { X, Heart, Sun, Building, Camera } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export type SidebarView =
@@ -17,6 +17,14 @@ interface RightSidebarProps {
     view: SidebarView;
     children: ReactNode;
     title?: string;
+    isFavorite?: boolean;
+    onFavoriteToggle?: () => void;
+    showFavorite?: boolean;
+    indoorOutdoor?: "indoor" | "outdoor";
+    onIndoorOutdoorToggle?: (value: "indoor" | "outdoor") => void;
+    showIndoorOutdoor?: boolean;
+    showPhotoUpload?: boolean;
+    onPhotoUploadToggle?: () => void;
 }
 
 export function RightSidebar({
@@ -25,6 +33,14 @@ export function RightSidebar({
     view,
     children,
     title,
+    isFavorite = false,
+    onFavoriteToggle,
+    showFavorite = false,
+    indoorOutdoor = "outdoor",
+    onIndoorOutdoorToggle,
+    showIndoorOutdoor = false,
+    showPhotoUpload = false,
+    onPhotoUploadToggle,
 }: RightSidebarProps) {
     return (
         <>
@@ -45,14 +61,80 @@ export function RightSidebar({
                 <div className="flex items-center justify-between p-3 border-b">
                     {title && <h2 className="text-lg font-semibold">{title}</h2>}
                     {!title && <div />}
-                    <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={onClose}
-                        className="shrink-0"
-                    >
-                        <X className="w-5 h-5" />
-                    </Button>
+                    <div className="flex items-center gap-1">
+                        {/* Camera Icon for Photo Upload */}
+                        {showPhotoUpload && onPhotoUploadToggle && (
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={onPhotoUploadToggle}
+                                className="shrink-0 bg-green-600 hover:bg-green-700 text-white hover:text-white"
+                                title="Toggle photo upload"
+                            >
+                                <Camera className="w-4 h-4 text-white" />
+                            </Button>
+                        )}
+                        {/* Indoor/Outdoor Toggle */}
+                        {showIndoorOutdoor && onIndoorOutdoorToggle && (
+                            <div className="flex items-center gap-0.5 mr-2">
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    onClick={() => onIndoorOutdoorToggle("outdoor")}
+                                    className="shrink-0"
+                                    title="Outdoor"
+                                >
+                                    <Sun
+                                        className={`w-5 h-5 transition-colors ${indoorOutdoor === "outdoor"
+                                            ? "text-amber-500 fill-amber-500"
+                                            : "text-muted-foreground"
+                                            }`}
+                                    />
+                                </Button>
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    onClick={() => onIndoorOutdoorToggle("indoor")}
+                                    className="shrink-0"
+                                    title="Indoor"
+                                >
+                                    <Building
+                                        className={`w-5 h-5 transition-colors ${indoorOutdoor === "indoor"
+                                            ? "text-blue-600 stroke-[2.5]"
+                                            : "text-muted-foreground"
+                                            }`}
+                                        fill={indoorOutdoor === "indoor" ? "#fbbf24" : "none"}
+                                        fillOpacity={indoorOutdoor === "indoor" ? 0.2 : 0}
+                                    />
+                                </Button>
+                            </div>
+                        )}
+                        {/* Favorite Heart Icon */}
+                        {showFavorite && onFavoriteToggle && (
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={onFavoriteToggle}
+                                className="shrink-0"
+                                title={isFavorite ? "Remove from favorites" : "Add to favorites"}
+                            >
+                                <Heart
+                                    className={`w-5 h-5 transition-colors ${isFavorite
+                                        ? "fill-red-500 text-red-500"
+                                        : "text-muted-foreground hover:text-red-500"
+                                        }`}
+                                />
+                            </Button>
+                        )}
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={onClose}
+                            className="shrink-0"
+                        >
+                            <X className="w-5 h-5" />
+                        </Button>
+                    </div>
                 </div>
 
                 {/* Content */}

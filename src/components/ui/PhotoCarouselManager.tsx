@@ -1,0 +1,275 @@
+"use client";
+
+import { useState } from "react";
+import { ChevronLeft, ChevronRight, Star, Trash2, Info } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+
+interface Photo {
+    id?: number;
+    imagekitFileId: string;
+    imagekitFilePath: string;
+    originalFilename: string;
+    fileSize: number;
+    mimeType: string;
+    width?: number;
+    height?: number;
+    url: string;
+    isPrimary?: boolean;
+    caption?: string;
+}
+
+interface PhotoCarouselManagerProps {
+    photos: Photo[];
+    onPhotosChange: (photos: Photo[]) => void;
+    onRemovePhoto: (index: number) => void;
+    maxPhotos?: number;
+    photosToDelete?: number[]; // IDs of photos marked for deletion
+}
+
+export function PhotoCarouselManager({
+    photos,
+    onPhotosChange,
+    onRemovePhoto,
+    photosToDelete = [],
+}: PhotoCarouselManagerProps) {
+    const [currentIndex, setCurrentIndex] = useState(0);
+    const [isDeleteHovered, setIsDeleteHovered] = useState(false);
+    const [showMetadata, setShowMetadata] = useState(false);
+
+    const handleSetPrimary = (index: number) => {
+        const newPhotos = photos.map((photo, i) => ({
+            ...photo,
+            isPrimary: i === index,
+        }));
+        onPhotosChange(newPhotos);
+    };
+
+    const handleCaptionChange = (index: number, caption: string) => {
+        const newPhotos = [...photos];
+        newPhotos[index] = { ...newPhotos[index], caption };
+        onPhotosChange(newPhotos);
+    };
+
+    const goToPrevious = () => {
+        setCurrentIndex((prev) => (prev === 0 ? photos.length - 1 : prev - 1));
+    };
+
+    const goToNext = () => {
+        setCurrentIndex((prev) => (prev === photos.length - 1 ? 0 : prev + 1));
+    };
+
+    if (photos.length === 0) {
+        return null;
+    }
+
+    const currentPhoto = photos[currentIndex];
+    const isCurrentPhotoMarkedForDeletion = currentPhoto.id && photosToDelete.includes(currentPhoto.id);
+
+    return (
+        <div className="space-y-4">
+            {/* Main Carousel Display */}
+            <div className="relative">
+                {/* Main Photo */}
+                <div className="relative aspect-video w-full rounded-lg overflow-hidden bg-muted border">
+                    <img
+                        src={currentPhoto.url}
+                        alt={currentPhoto.originalFilename}
+                        className={cn(
+                            "w-full h-full object-cover transition-all",
+                            isCurrentPhotoMarkedForDeletion && "opacity-50"
+                        )}
+                    />
+
+                    {/* Deletion Overlay with Red Slash */}
+                    {isCurrentPhotoMarkedForDeletion && (
+                        <>
+                            {/* Dark overlay */}
+                            <div className="absolute inset-0 bg-black/40 pointer-events-none" />
+                            {/* Red diagonal slash */}
+                            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                                <div className="w-full h-1 bg-red-600 rotate-45 transform scale-150" />
+                            </div>
+                            {/* "Marked for Deletion" text */}
+                            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-red-600 text-white px-4 py-2 rounded-md font-semibold text-sm pointer-events-none">
+                                Marked for Deletion
+                            </div>
+                        </>
+                    )}
+
+                    {/* Primary Star Button - Top Right */}
+                    <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="absolute top-2 right-2 w-8 h-8 bg-black/40 hover:bg-black/60 backdrop-blur-sm transition-all"
+                        onClick={() => handleSetPrimary(currentIndex)}
+                        disabled={currentPhoto.isPrimary}
+                        title={currentPhoto.isPrimary ? "Primary Photo" : "Set as Primary"}
+                    >
+                        <Star
+                            className={cn(
+                                "w-4 h-4 transition-all",
+                                currentPhoto.isPrimary
+                                    ? "fill-amber-500 text-amber-500"
+                                    : "fill-none text-white stroke-2"
+                            )}
+                        />
+                    </Button>
+
+                    {/* Delete Overlay (darkens photo by 20% on hover) */}
+                    {isDeleteHovered && (
+                        <div className="absolute inset-0 bg-black/20 pointer-events-none transition-opacity" />
+                    )}
+
+                    {/* Delete Button with Trash Icon */}
+                    <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="absolute top-2 left-2 w-8 h-8 bg-black/40 hover:bg-red-600/80 backdrop-blur-sm transition-all"
+                        onMouseEnter={() => setIsDeleteHovered(true)}
+                        onMouseLeave={() => setIsDeleteHovered(false)}
+                        onClick={() => {
+                            onRemovePhoto(currentIndex);
+                            setIsDeleteHovered(false);
+                        }}
+                        title={isCurrentPhotoMarkedForDeletion ? "Unmark Photo (Keep)" : "Mark Photo for Deletion"}
+                    >
+                        <Trash2
+                            className={cn(
+                                "w-4 h-4 transition-colors",
+                                isDeleteHovered ? "text-white" : "text-white/80"
+                            )}
+                        />
+                    </Button>
+
+                    {/* Navigation Arrows (only show if multiple photos) */}
+                    {photos.length > 1 && (
+                        <>
+                            <Button
+                                type="button"
+                                variant="secondary"
+                                size="icon"
+                                className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 opacity-80 hover:opacity-100 transition-opacity"
+                                onClick={goToPrevious}
+                            >
+                                <ChevronLeft className="w-5 h-5" />
+                            </Button>
+                            <Button
+                                type="button"
+                                variant="secondary"
+                                size="icon"
+                                className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 opacity-80 hover:opacity-100 transition-opacity"
+                                onClick={goToNext}
+                            >
+                                <ChevronRight className="w-5 h-5" />
+                            </Button>
+
+                            {/* Photo Counter */}
+                            <div className="absolute bottom-2 left-1/2 -translate-x-1/2 bg-black/60 text-white px-3 py-1 rounded-full text-xs font-medium">
+                                {currentIndex + 1} / {photos.length}
+                            </div>
+                        </>
+                    )}
+
+                    {/* Photo Metadata - Bottom Left Corner */}
+                    <div className="absolute bottom-2 left-2 flex items-end gap-2">
+                        {/* Info Toggle Button */}
+                        <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            className="w-6 h-6 bg-black/40 hover:bg-black/60 backdrop-blur-sm transition-all"
+                            onClick={() => setShowMetadata(!showMetadata)}
+                            title={showMetadata ? "Hide photo info" : "Show photo info"}
+                        >
+                            <Info className="w-3.5 h-3.5 text-white" />
+                        </Button>
+
+                        {/* Metadata Panel (shown when toggled) */}
+                        {showMetadata && (
+                            <div className="bg-black/70 backdrop-blur-sm text-white px-3 py-2 rounded-md text-xs space-y-1 max-w-xs">
+                                <p className="truncate">
+                                    <span className="font-semibold">File:</span> {currentPhoto.originalFilename}
+                                </p>
+                                <p>
+                                    <span className="font-semibold">Size:</span> {(currentPhoto.fileSize / 1024).toFixed(0)} KB
+                                    {currentPhoto.width && currentPhoto.height && (
+                                        <>
+                                            {" · "}
+                                            <span className="font-semibold">Dimensions:</span> {currentPhoto.width} × {currentPhoto.height}
+                                        </>
+                                    )}
+                                </p>
+                            </div>
+                        )}
+                    </div>
+                </div>
+
+                {/* Caption Input */}
+                <div className="mt-2">
+                    <input
+                        type="text"
+                        placeholder="Add caption (optional)"
+                        value={currentPhoto.caption || ""}
+                        onChange={(e) => handleCaptionChange(currentIndex, e.target.value)}
+                        maxLength={100}
+                        className="w-full text-sm px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                    />
+                    <p className="text-xs text-muted-foreground mt-1">
+                        {currentPhoto.caption?.length || 0}/100 characters
+                    </p>
+                </div>
+            </div>
+
+            {/* Thumbnail Strip (only show if multiple photos) */}
+            {photos.length > 1 && (
+                <div className="flex gap-2 overflow-x-auto pb-2">
+                    {photos.map((photo, index) => {
+                        const isMarkedForDeletion = photo.id && photosToDelete.includes(photo.id);
+                        return (
+                            <button
+                                key={index}
+                                type="button"
+                                onClick={() => setCurrentIndex(index)}
+                                className={cn(
+                                    "relative flex-shrink-0 w-20 h-20 rounded-md overflow-hidden border-2 transition-all",
+                                    currentIndex === index
+                                        ? "border-primary ring-2 ring-primary/20"
+                                        : "border-border hover:border-primary/50"
+                                )}
+                            >
+                                <img
+                                    src={photo.url}
+                                    alt={photo.originalFilename}
+                                    className={cn(
+                                        "w-full h-full object-cover transition-all",
+                                        isMarkedForDeletion && "opacity-50"
+                                    )}
+                                />
+                                
+                                {/* Red slash for marked photos */}
+                                {isMarkedForDeletion && (
+                                    <>
+                                        <div className="absolute inset-0 bg-black/30 pointer-events-none" />
+                                        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                                            <div className="w-full h-0.5 bg-red-600 rotate-45 transform scale-125" />
+                                        </div>
+                                    </>
+                                )}
+                                
+                                {/* Primary star on thumbnail */}
+                                {photo.isPrimary && (
+                                    <div className="absolute top-0.5 right-0.5 bg-amber-500 text-white p-0.5 rounded-full">
+                                        <Star className="w-2.5 h-2.5 fill-white" />
+                                    </div>
+                                )}
+                            </button>
+                        );
+                    })}
+                </div>
+            )}
+        </div>
+    );
+}

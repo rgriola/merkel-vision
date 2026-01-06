@@ -12,8 +12,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { MapPin, Tag, X } from "lucide-react";
 import { ImageKitUploader } from "@/components/ui/ImageKitUploader";
-import { TYPE_COLOR_MAP, LOCATION_TYPES } from "@/lib/location-constants";
+import { TYPE_COLOR_MAP, getAvailableTypes } from "@/lib/location-constants";
 import { indoorOutdoorSchema, DEFAULT_INDOOR_OUTDOOR, INDOOR_OUTDOOR_OPTIONS } from "@/lib/form-constants";
+import { useAuth } from "@/lib/auth-context";
 
 // Security: Regex to prevent XSS and SQL injection in text fields
 const safeTextRegex = /^[a-zA-Z0-9\s\-.,!?&'"()]+$/;
@@ -64,15 +65,19 @@ interface SaveLocationFormProps {
     initialData?: Partial<SaveLocationFormData>;
     onSubmit: (data: any) => void;
     isPending?: boolean;
-    hidePhotoUpload?: boolean; // ✅ Hide photo upload section (for GPS photo flow)
+    showPhotoUpload?: boolean; // Toggle photo upload section visibility
 }
 
 export function SaveLocationForm({
     initialData,
     onSubmit,
     isPending = false,
-    hidePhotoUpload = false,
+    showPhotoUpload = false,
 }: SaveLocationFormProps) {
+    const { user } = useAuth();
+    const isAdmin = user?.isAdmin === true;
+    const availableTypes = getAvailableTypes(isAdmin);
+    
     const [tags, setTags] = useState<string[]>([]);
     const [tagInput, setTagInput] = useState("");
     const [photos, setPhotos] = useState<any[]>([]);
@@ -123,6 +128,16 @@ export function SaveLocationForm({
         }
     }, [initialData, form]);
 
+    // Auto-focus the Location Name field when form opens
+    useEffect(() => {
+        // Small delay to allow the sidebar to finish opening animation
+        const timer = setTimeout(() => {
+            form.setFocus("name");
+        }, 100);
+
+        return () => clearTimeout(timer);
+    }, [form]);
+
     const handleSubmit = (data: SaveLocationFormData) => {
         // Ensure color is assigned based on type
         const finalColor = data.color || TYPE_COLOR_MAP[data.type || ""] || "";
@@ -133,8 +148,7 @@ export function SaveLocationForm({
             color: finalColor,
             indoorOutdoor: finalIndoorOutdoor,
             tags: tags.length > 0 ? tags : undefined,
-            // Only include photos if photo upload is not hidden (GPS flow handles photos separately)
-            photos: !hidePhotoUpload && photos.length > 0 ? photos : undefined,
+            photos: showPhotoUpload && photos.length > 0 ? photos : undefined,
         };
 
         onSubmit(submitData);
@@ -167,22 +181,122 @@ export function SaveLocationForm({
     const productionNotesCount = form.watch("productionNotes")?.length || 0;
 
     return (
-        <form id="save-location-form" onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
+        <form
+            id="save-location-form"
+            onSubmit={form.handleSubmit(handleSubmit, (errors) => {
+                // Auto-focus the first error field (Location Name or Type)
+                if (errors.name) {
+                    form.setFocus("name");
+                } else if (errors.type) {
+                    form.setFocus("type");
+                }
+            })}
+            className="space-y-6"
+        >
+            {/* Photo Upload - Collapsible at top */}
+            {showPhotoUpload && (
+                <div className="space-y-4 pb-4 border-b">
+                    <h3 className="text-sm font-semibold">Photos (Optional)</h3>
+                    <ImageKitUploader
+                        placeId={form.watch("placeId")}
+                        onPhotosChange={setPhotos}
+                        maxPhotos={20}
+                        maxFileSize={1.5}
+                    />
+                </div>
+            )}
+
             {/* Location Fields */}
             <div className="space-y-4">
                 <div className="space-y-3">
                     <div>
                         <Label htmlFor="name">Location Name *</Label>
-                        <Input
-                            id="name"
-                            {...form.register("name")}
-                            placeholder="e.g., Central Park"
-                        />
+                        <div className="relative">
+                            <Input
+                                id="name"
+                                {...form.register("name")}
+                                placeholder="e.g., Central Park"
+                                className="focus-visible:ring-green-500 focus-visible:ring-2 pr-8"
+                            />
+                            {form.watch("name") && (
+                                <button
+                                    type="button"
+                                    onClick={() => form.setValue("name", "")}
+                                    className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                                    title="Clear"
+                                >
+                                    <X className="w-4 h-4" />
+                                </button>
+                            )}
+                        </div>
                         {form.formState.errors.name && (
                             <p className="text-sm text-destructive mt-1">
                                 {form.formState.errors.name.message}
                             </p>
                         )}
+                    </div>
+
+                    {/* Type and Rating - Side by Side (MOVED UP) */}
+                    <div className="grid grid-cols-2 gap-3">
+                        {/* Type - Select Dropdown */}
+                        <div className="space-y-2">
+                            <Label htmlFor="type">Type *</Label>
+                            <Select
+                                onValueChange={(value) => {
+                                    form.setValue("type", value);
+                                    form.setValue("color", TYPE_COLOR_MAP[value] || "");
+                                }}
+                                value={form.watch("type") || ""}
+                            >
+                                <SelectTrigger
+                                    id="type"
+                                    className="focus:ring-green-500 focus:ring-2 w-full min-w-[140px]"
+                                >
+                                    <SelectValue placeholder="Required Info" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {availableTypes.map((type) => (
+                                        <SelectItem key={type} value={type}>
+                                            <div className="flex items-center gap-2">
+                                                <div
+                                                    className="w-3 h-3 rounded-full"
+                                                    style={{ backgroundColor: TYPE_COLOR_MAP[type] }}
+                                                />
+                                                <span>{type}</span>
+                                            </div>
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                            {form.formState.errors.type && (
+                                <p className="text-xs text-destructive">
+                                    {form.formState.errors.type.message}
+                                </p>
+                            )}
+                        </div>
+
+                        {/* Rating */}
+                        <div className="space-y-2">
+                            <Label htmlFor="personalRating">Rating</Label>
+                            <Select
+                                onValueChange={(value) =>
+                                    form.setValue("personalRating", parseInt(value))
+                                }
+                                defaultValue={form.getValues("personalRating")?.toString()}
+                            >
+                                <SelectTrigger className="w-full min-w-[110px]">
+                                    <SelectValue placeholder="Rate" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="0">No rating</SelectItem>
+                                    <SelectItem value="1">⭐</SelectItem>
+                                    <SelectItem value="2">⭐⭐</SelectItem>
+                                    <SelectItem value="3">⭐⭐⭐</SelectItem>
+                                    <SelectItem value="4">⭐⭐⭐⭐</SelectItem>
+                                    <SelectItem value="5">⭐⭐⭐⭐⭐</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
                     </div>
 
                     <div>
@@ -214,63 +328,6 @@ export function SaveLocationForm({
                             </p>
                         </div>
                     </div>
-
-                    {/* Type and Indoor/Outdoor - Side by Side */}
-                    <div className="grid grid-cols-2 gap-3">
-                        {/* Type - Select Dropdown */}
-                        <div className="space-y-2">
-                            <Label htmlFor="type">Type *</Label>
-                            <Select
-                                onValueChange={(value) => {
-                                    form.setValue("type", value);
-                                    form.setValue("color", TYPE_COLOR_MAP[value] || "");
-                                }}
-                                value={form.watch("type") || ""}
-                            >
-                                <SelectTrigger id="type">
-                                    <SelectValue placeholder="Select location type" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {LOCATION_TYPES.map((type) => (
-                                        <SelectItem key={type} value={type}>
-                                            <div className="flex items-center gap-2">
-                                                <div
-                                                    className="w-3 h-3 rounded-full"
-                                                    style={{ backgroundColor: TYPE_COLOR_MAP[type] }}
-                                                />
-                                                <span>{type}</span>
-                                            </div>
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                            {form.formState.errors.type && (
-                                <p className="text-xs text-destructive">
-                                    {form.formState.errors.type.message}
-                                </p>
-                            )}
-                        </div>
-
-                        {/* Indoor/Outdoor */}
-                        <div className="space-y-2">
-                            <Label htmlFor="indoorOutdoor">Indoor/Outdoor</Label>
-                            <Select
-                                onValueChange={(value) => form.setValue("indoorOutdoor", value as typeof INDOOR_OUTDOOR_OPTIONS[number])}
-                                defaultValue={form.getValues("indoorOutdoor") || DEFAULT_INDOOR_OUTDOOR}
-                            >
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Select" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {INDOOR_OUTDOOR_OPTIONS.map((option) => (
-                                        <SelectItem key={option} value={option}>
-                                            {option.charAt(0).toUpperCase() + option.slice(1)}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                        </div>
-                    </div>
                 </div>
             </div>
 
@@ -294,12 +351,53 @@ export function SaveLocationForm({
                     </div>
 
                     <div>
-                        <Label htmlFor="entryPoint">Entry Point</Label>
-                        <Input
-                            id="entryPoint"
-                            {...form.register("entryPoint")}
-                            placeholder="Main entrance"
-                        />
+                        <div className="flex justify-between items-center mb-2">
+                            <Label htmlFor="tags">Tags</Label>
+                            <span className="text-xs text-muted-foreground">
+                                {tags.length}/20 • each tag 25 chars max
+                            </span>
+                        </div>
+                        <div className="relative">
+                            <Input
+                                id="tags"
+                                value={tagInput}
+                                onChange={(e) => setTagInput(e.target.value)}
+                                onKeyDown={(e) => {
+                                    if (e.key === "Enter") {
+                                        e.preventDefault();
+                                        handleAddTag();
+                                    }
+                                }}
+                                placeholder="Add tags..."
+                                maxLength={25}
+                                className="pr-10"
+                            />
+                            <Button
+                                type="button"
+                                onClick={handleAddTag}
+                                variant="ghost"
+                                size="icon"
+                                className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7"
+                            >
+                                <Tag className="w-4 h-4" />
+                            </Button>
+                        </div>
+                        {tags.length > 0 && (
+                            <div className="flex flex-wrap gap-2 mt-2">
+                                {tags.map((tag) => (
+                                    <Badge key={tag} variant="secondary" className="gap-1">
+                                        {tag}
+                                        <button
+                                            type="button"
+                                            onClick={() => handleRemoveTag(tag)}
+                                            className="ml-1 hover:text-destructive"
+                                        >
+                                            <X className="w-3 h-3" />
+                                        </button>
+                                    </Badge>
+                                ))}
+                            </div>
+                        )}
                     </div>
 
                     <div>
@@ -308,6 +406,15 @@ export function SaveLocationForm({
                             id="parking"
                             {...form.register("parking")}
                             placeholder="Parking info"
+                        />
+                    </div>
+
+                    <div>
+                        <Label htmlFor="entryPoint">Entry Point</Label>
+                        <Input
+                            id="entryPoint"
+                            {...form.register("entryPoint")}
+                            placeholder="Main entrance"
                         />
                     </div>
 
@@ -322,97 +429,6 @@ export function SaveLocationForm({
                 </div>
             </div>
 
-            {/* Personal Notes */}
-            <div className="space-y-4">
-                <div>
-                    <Label htmlFor="tags">Tags (max 20)</Label>
-                    <div className="flex gap-2">
-                        <Input
-                            id="tags"
-                            value={tagInput}
-                            onChange={(e) => setTagInput(e.target.value)}
-                            onKeyDown={(e) => {
-                                if (e.key === "Enter") {
-                                    e.preventDefault();
-                                    handleAddTag();
-                                }
-                            }}
-                            placeholder="Add tags..."
-                            maxLength={25}
-                        />
-                        <Button type="button" onClick={handleAddTag} variant="outline" size="icon">
-                            <Tag className="w-4 h-4" />
-                        </Button>
-                    </div>
-                    <p className="text-xs text-muted-foreground mt-1">
-                        {tags.length}/20 tags • Max 25 characters per tag
-                    </p>
-                    {tags.length > 0 && (
-                        <div className="flex flex-wrap gap-2 mt-2">
-                            {tags.map((tag) => (
-                                <Badge key={tag} variant="secondary" className="gap-1">
-                                    {tag}
-                                    <button
-                                        type="button"
-                                        onClick={() => handleRemoveTag(tag)}
-                                        className="ml-1 hover:text-destructive"
-                                    >
-                                        <X className="w-3 h-3" />
-                                    </button>
-                                </Badge>
-                            ))}
-                        </div>
-                    )}
-                </div>
-
-                <div className="grid grid-cols-2 gap-3">
-                    <div>
-                        <Label htmlFor="personalRating">Rating</Label>
-                        <Select
-                            onValueChange={(value) =>
-                                form.setValue("personalRating", parseInt(value))
-                            }
-                            defaultValue={form.getValues("personalRating")?.toString()}
-                        >
-                            <SelectTrigger>
-                                <SelectValue placeholder="Rate" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="0">No rating</SelectItem>
-                                <SelectItem value="1">⭐</SelectItem>
-                                <SelectItem value="2">⭐⭐</SelectItem>
-                                <SelectItem value="3">⭐⭐⭐</SelectItem>
-                                <SelectItem value="4">⭐⭐⭐⭐</SelectItem>
-                                <SelectItem value="5">⭐⭐⭐⭐⭐</SelectItem>
-                            </SelectContent>
-                        </Select>
-                    </div>
-
-                    <div className="flex items-end">
-                        <label className="flex items-center gap-2 cursor-pointer">
-                            <input
-                                type="checkbox"
-                                {...form.register("isFavorite")}
-                                className="w-4 h-4 rounded border-gray-300"
-                            />
-                            <span className="text-sm">Favorite</span>
-                        </label>
-                    </div>
-                </div>
-            </div>
-
-            {/* Photo Upload - Hidden for GPS photo flow */}
-            {!hidePhotoUpload && (
-                <div className="space-y-4">
-                    <h3 className="text-sm font-semibold">Photos (Optional)</h3>
-                    <ImageKitUploader
-                        placeId={form.watch("placeId")}
-                        onPhotosChange={setPhotos}
-                        maxPhotos={20}
-                        maxFileSize={1.5}
-                    />
-                </div>
-            )}
         </form>
     );
 }

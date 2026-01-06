@@ -48,6 +48,10 @@ function MapPageInner() {
     const [sidebarView, setSidebarView] = useState<'save' | 'edit'>('save');
     const [locationToSave, setLocationToSave] = useState<MarkerData | null>(null);
     const [locationToEdit, setLocationToEdit] = useState<MarkerData | null>(null);
+    const [isFavorite, setIsFavorite] = useState(false);
+    const [indoorOutdoor, setIndoorOutdoor] = useState<"indoor" | "outdoor">("outdoor");
+    const [showPhotoUpload, setShowPhotoUpload] = useState(false);
+
 
     // GPS permission state
     const { user } = useAuth();
@@ -100,28 +104,28 @@ function MapPageInner() {
             const savedMarkers: MarkerData[] = locationsData.locations
                 .filter((userSave) => userSave.location) // Filter out any undefined locations
                 .map((userSave) => ({
-                id: `saved-${userSave.id}`,
-                position: {
-                    lat: userSave.location!.lat,
-                    lng: userSave.location!.lng,
-                },
-                data: {
-                    placeId: userSave.location!.placeId,
-                    name: userSave.location!.name,
-                    address: userSave.location!.address || undefined,
-                    latitude: userSave.location!.lat,
-                    longitude: userSave.location!.lng,
-                    type: userSave.location!.type || undefined,
-                    street: userSave.location!.street || undefined,
-                    number: userSave.location!.number || undefined,
-                    city: userSave.location!.city || undefined,
-                    state: userSave.location!.state || undefined,
-                    zipcode: userSave.location!.zipcode || undefined,
-                },
-                isTemporary: false, // Saved locations are NOT temporary
-                userSave: userSave,
-                color: userSave.color || '#EF4444', // Use user's custom color or default red
-            }));
+                    id: `saved-${userSave.id}`,
+                    position: {
+                        lat: userSave.location!.lat,
+                        lng: userSave.location!.lng,
+                    },
+                    data: {
+                        placeId: userSave.location!.placeId,
+                        name: userSave.location!.name,
+                        address: userSave.location!.address || undefined,
+                        latitude: userSave.location!.lat,
+                        longitude: userSave.location!.lng,
+                        type: userSave.location!.type || undefined,
+                        street: userSave.location!.street || undefined,
+                        number: userSave.location!.number || undefined,
+                        city: userSave.location!.city || undefined,
+                        state: userSave.location!.state || undefined,
+                        zipcode: userSave.location!.zipcode || undefined,
+                    },
+                    isTemporary: false, // Saved locations are NOT temporary
+                    userSave: userSave,
+                    color: userSave.color || '#EF4444', // Use user's custom color or default red
+                }));
 
             // Update markers, preserving any temporary markers
             setMarkers(prev => {
@@ -629,6 +633,21 @@ function MapPageInner() {
                                                 setLocationToEdit(selectedMarker);
                                                 setSidebarView('edit');
                                                 setIsSidebarOpen(true);
+                                                // Load favorite state from saved location
+                                                setIsFavorite(selectedMarker.userSave?.isFavorite || false);
+                                                // Load indoor/outdoor state from saved location
+                                                setIndoorOutdoor((selectedMarker.userSave?.location?.indoorOutdoor as "indoor" | "outdoor") || "outdoor");
+
+                                                // Pan map to adjust for panel (same as Save button)
+                                                if (map && typeof window !== 'undefined') {
+                                                    const isDesktop = window.innerWidth >= 1024;
+                                                    if (isDesktop) {
+                                                        const PANEL_WIDTH = 450;
+                                                        setTimeout(() => {
+                                                            map.panBy(PANEL_WIDTH / 2, 0);
+                                                        }, 100);
+                                                    }
+                                                }
                                             }}
                                             className="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 transition-colors"
                                         >
@@ -642,58 +661,31 @@ function MapPageInner() {
                                                 setLocationToSave(selectedMarker);
                                                 setSidebarView('save');
                                                 setIsSidebarOpen(true);
+
+                                                // Pan map to adjust for panel covering right side (desktop only)
+                                                if (map && typeof window !== 'undefined') {
+                                                    // Only pan on desktop (lg breakpoint = 1024px)
+                                                    const isDesktop = window.innerWidth >= 1024;
+                                                    if (isDesktop) {
+                                                        const PANEL_WIDTH = 450; // lg:w-[450px]
+                                                        // Pan left (same direction as panel sliding in)
+                                                        setTimeout(() => {
+                                                            map.panBy(PANEL_WIDTH / 2, 0);
+                                                        }, 100); // Small delay to ensure panel animation starts
+                                                    }
+                                                }
                                             }}
                                             className="px-3 py-1 bg-indigo-600 text-white text-sm rounded hover:bg-indigo-700 transition-colors"
                                         >
                                             Save
                                         </button>
                                     )}
-                                    {/* Quick Save button - only for temporary markers */}
+                                    {/* Quick Save button - disabled (feature in development) */}
                                     {selectedMarker.isTemporary && (
                                         <button
-                                            onClick={async () => {
-                                                // Quick Save: save with minimal info
-                                                if (!selectedMarker.data) return;
-
-                                                try {
-                                                    const response = await fetch('/api/locations', {
-                                                        method: 'POST',
-                                                        headers: { 'Content-Type': 'application/json' },
-                                                        body: JSON.stringify({
-                                                            placeId: selectedMarker.data.placeId || selectedMarker.id,
-                                                            name: selectedMarker.data.name,
-                                                            address: selectedMarker.data.address,
-                                                            lat: selectedMarker.position.lat,
-                                                            lng: selectedMarker.position.lng,
-                                                            quickSave: true, // Flag for quick save
-                                                        }),
-                                                    });
-
-                                                    if (response.ok) {
-                                                        // Mark marker as permanent (saved)
-                                                        setMarkers((prev) =>
-                                                            prev.map((m) =>
-                                                                m.id === selectedMarker.id
-                                                                    ? { ...m, isTemporary: false }
-                                                                    : m
-                                                            )
-                                                        );
-
-                                                        // Close InfoWindow
-                                                        setSelectedMarker(null);
-
-                                                        // Show success feedback
-                                                        alert('Location quick saved! You can add more details later.');
-                                                    } else {
-                                                        alert('Failed to save location');
-                                                    }
-                                                } catch (error) {
-                                                    console.error('Quick save error:', error);
-                                                    alert('Failed to save location');
-                                                }
-                                            }}
-                                            className="px-3 py-1 bg-green-600 text-white text-sm rounded hover:bg-green-700 transition-colors"
-                                            title="Quick save with basic info"
+                                            disabled
+                                            className="px-3 py-1 bg-gray-400 text-gray-200 text-sm rounded cursor-not-allowed opacity-60"
+                                            title="Quick save feature temporarily disabled"
                                         >
                                             Quick Save
                                         </button>
@@ -855,12 +847,33 @@ function MapPageInner() {
             <RightSidebar
                 isOpen={isSidebarOpen}
                 onClose={() => {
+                    // Pan map back to center when closing (reverse the offset)
+                    if (map && typeof window !== 'undefined') {
+                        const isDesktop = window.innerWidth >= 1024;
+                        if (isDesktop) {
+                            const PANEL_WIDTH = 450;
+                            // Pan right (panel sliding out to the right)
+                            map.panBy(-PANEL_WIDTH / 2, 0);
+                        }
+                    }
+
                     setIsSidebarOpen(false);
                     setLocationToSave(null);
                     setLocationToEdit(null);
+                    setIsFavorite(false);
+                    setIndoorOutdoor("outdoor");
+                    setShowPhotoUpload(false);
                 }}
                 view={sidebarView === 'save' ? 'save-location' : 'edit-location'}
                 title={sidebarView === 'save' ? 'Save Location' : 'Edit Location'}
+                showFavorite={true}
+                isFavorite={isFavorite}
+                onFavoriteToggle={() => setIsFavorite(!isFavorite)}
+                showIndoorOutdoor={true}
+                indoorOutdoor={indoorOutdoor}
+                onIndoorOutdoorToggle={(value) => setIndoorOutdoor(value)}
+                showPhotoUpload={true}
+                onPhotoUploadToggle={() => setShowPhotoUpload(!showPhotoUpload)}
             >
                 {/* Save Location Panel */}
                 {sidebarView === 'save' && locationToSave && (
@@ -876,6 +889,8 @@ function MapPageInner() {
                             city: locationToSave.data?.city,
                             state: locationToSave.data?.state,
                             zipcode: locationToSave.data?.zipcode,
+                            isFavorite: isFavorite,
+                            indoorOutdoor: indoorOutdoor,
                         }}
                         onSuccess={() => {
                             // Close sidebar
@@ -898,6 +913,7 @@ function MapPageInner() {
                             setIsSidebarOpen(false);
                             setLocationToSave(null);
                         }}
+                        showPhotoUpload={showPhotoUpload}
                     />
                 )}
 
@@ -941,6 +957,9 @@ function MapPageInner() {
                             photos: locationToEdit.userSave.location?.photos ?? [],
                         }}
                         userSave={locationToEdit.userSave}
+                        isFavorite={isFavorite}
+                        indoorOutdoor={indoorOutdoor}
+                        showPhotoUpload={showPhotoUpload}
                         onSuccess={() => {
                             // Close sidebar and InfoWindow
                             setIsSidebarOpen(false);

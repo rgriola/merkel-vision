@@ -12,10 +12,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { MapPin, Tag, X } from "lucide-react";
 import { ImageKitUploader } from "@/components/ui/ImageKitUploader";
-import { TYPE_COLOR_MAP, LOCATION_TYPES } from "@/lib/location-constants";
-import { indoorOutdoorSchema, DEFAULT_INDOOR_OUTDOOR, INDOOR_OUTDOOR_OPTIONS } from "@/lib/form-constants";
+import { PhotoCarouselManager } from "@/components/ui/PhotoCarouselManager";
+import { TYPE_COLOR_MAP, getAvailableTypes } from "@/lib/location-constants";
+import { indoorOutdoorSchema, DEFAULT_INDOOR_OUTDOOR } from "@/lib/form-constants";
 import { Location, UserSave } from "@/types/location";
 import { IMAGEKIT_URL_ENDPOINT } from "@/lib/imagekit";
+import { useAuth } from "@/lib/auth-context";
 
 const editLocationSchema = z.object({
     id: z.number(),
@@ -45,6 +47,7 @@ interface EditLocationFormProps {
     userSave: UserSave;
     onSubmit: (data: any) => void;
     isPending?: boolean;
+    showPhotoUpload?: boolean;
 }
 
 export function EditLocationForm({
@@ -52,11 +55,16 @@ export function EditLocationForm({
     location,
     userSave,
     onSubmit,
-    isPending = false,
+    showPhotoUpload = false,
 }: EditLocationFormProps) {
+    const { user } = useAuth();
+    const isAdmin = user?.isAdmin === true;
+    const availableTypes = getAvailableTypes(isAdmin);
+    
     const [tags, setTags] = useState<string[]>(userSave.tags || []);
     const [tagInput, setTagInput] = useState("");
     const [photos, setPhotos] = useState<any[]>([]);
+    const [photosToDelete, setPhotosToDelete] = useState<number[]>([]); // Track photo IDs to delete on submit
 
     const form = useForm<EditLocationFormData>({
         resolver: zodResolver(editLocationSchema),
@@ -114,9 +122,41 @@ export function EditLocationForm({
         });
     }, [locationId, location, userSave, form]);
 
-    const handleSubmit = (data: EditLocationFormData) => {
+    const handleSubmit = async (data: EditLocationFormData) => {
+        // Show warning if photos are marked for deletion
+        if (photosToDelete.length > 0) {
+            const message = `You are about to delete ${photosToDelete.length} ${photosToDelete.length === 1 ? 'photo' : 'photos'} on this update. This action cannot be undone.\n\nDo you want to continue?`;
+            
+            if (!window.confirm(message)) {
+                return; // User cancelled
+            }
+
+            // Delete marked photos from the server
+            for (const photoId of photosToDelete) {
+                try {
+                    const response = await fetch(`/api/photos/${photoId}`, {
+                        method: 'DELETE',
+                        credentials: 'include',
+                    });
+
+                    if (!response.ok) {
+                        const errorData = await response.json().catch(() => ({}));
+                        console.error('Failed to delete photo from server:', errorData);
+                    }
+                } catch (error) {
+                    console.error('Error deleting photo:', error);
+                }
+            }
+
+            // Clear the deletion queue after deleting
+            setPhotosToDelete([]);
+        }
+
         const finalColor = data.color || TYPE_COLOR_MAP[data.type || ""] || "";
         const finalIndoorOutdoor = data.indoorOutdoor || DEFAULT_INDOOR_OUTDOOR;
+
+        // Filter out deleted photos from the photos array before submitting
+        const remainingPhotos = photos.filter(photo => !photo.id || !photosToDelete.includes(photo.id));
 
         const submitData = {
             id: data.id,
@@ -132,7 +172,7 @@ export function EditLocationForm({
             isFavorite: data.isFavorite,
             personalRating: data.personalRating,
             color: finalColor,
-            photos: photos.length > 0 ? photos : undefined,
+            photos: remainingPhotos.length > 0 ? remainingPhotos : undefined,
         };
 
         onSubmit(submitData);
@@ -149,27 +189,170 @@ export function EditLocationForm({
         setTags(tags.filter((tag) => tag !== tagToRemove));
     };
 
+    const handleRemovePhoto = (index: number) => {
+        const photoToRemove = photos[index];
+
+        // If photo has a database ID, toggle its deletion status
+        if (photoToRemove.id) {
+            setPhotosToDelete(prev => {
+                if (prev.includes(photoToRemove.id)) {
+                    // Already marked - unmark it
+                    return prev.filter(id => id !== photoToRemove.id);
+                } else {
+                    // Not marked - mark it for deletion
+                    return [...prev, photoToRemove.id];
+                }
+            });
+        } else {
+            // New photo not yet saved - just remove from local state
+            const newPhotos = photos.filter((_, i) => i !== index);
+            setPhotos(newPhotos);
+        }
+    };
+
     // Character count helpers
-    const captionCount = form.watch("caption")?.length || 0;
     const productionNotesCount = form.watch("productionNotes")?.length || 0;
 
     return (
-        <form id="edit-location-form" onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+        <form
+            id="edit-location-form"
+            onSubmit={form.handleSubmit(handleSubmit, (errors) => {
+                // Auto-focus the first error field (Location Name or Type)
+                if (errors.name) {
+                    form.setFocus("name");
+                } else if (errors.type) {
+                    form.setFocus("type");
+                }
+            })}
+            className="space-y-4"
+        >
+            {/* Photo Upload Section - Moved to Top (toggleable) */}
+            {showPhotoUpload && (
+                <div className="pb-4 border-b">
+                    <ImageKitUploader
+                        placeId={location.placeId}
+                        onPhotosChange={setPhotos}
+                        maxPhotos={20}
+                        maxFileSize={1.5}
+                        existingPhotos={photos}
+                    />
+                </div>
+            )}
+
+            {/* Photo Section */}
+            <div className="space-y-4 pb-4 border-b">
+                <div className="flex items-center justify-between">
+                    <h3 className="text-sm font-semibold">Photos</h3>
+                    {photosToDelete.length > 0 && (
+                        <Badge variant="destructive" className="text-xs">
+                            {photosToDelete.length} marked for deletion
+                        </Badge>
+                    )}
+                </div>
+                
+                {/* Photo Carousel (if photos exist) */}
+                {photos.length > 0 && (
+                    <PhotoCarouselManager
+                        photos={photos}
+                        onPhotosChange={setPhotos}
+                        onRemovePhoto={handleRemovePhoto}
+                        photosToDelete={photosToDelete}
+                        maxPhotos={20}
+                    />
+                )}
+            </div>
+
             {/* Location Fields */}
             <div className="space-y-3">
                 <div className="space-y-2">
                     <div>
                         <Label htmlFor="name">Location Name *</Label>
-                        <Input
-                            id="name"
-                            {...form.register("name")}
-                            placeholder="e.g., Central Park"
-                        />
+                        <div className="relative">
+                            <Input
+                                id="name"
+                                {...form.register("name")}
+                                placeholder="e.g., Central Park"
+                                className="focus-visible:ring-green-500 focus-visible:ring-2 pr-8"
+                            />
+                            {form.watch("name") && (
+                                <button
+                                    type="button"
+                                    onClick={() => form.setValue("name", "")}
+                                    className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                                    title="Clear"
+                                >
+                                    <X className="w-4 h-4" />
+                                </button>
+                            )}
+                        </div>
                         {form.formState.errors.name && (
                             <p className="text-sm text-destructive mt-1">
                                 {form.formState.errors.name.message}
                             </p>
                         )}
+                    </div>
+
+                    {/* Type and Rating - Side by Side (MOVED UP) */}
+                    <div className="grid grid-cols-2 gap-3">
+                        {/* Type - Select Dropdown */}
+                        <div className="space-y-2">
+                            <Label htmlFor="type">Type *</Label>
+                            <Select
+                                onValueChange={(value) => {
+                                    form.setValue("type", value);
+                                    form.setValue("color", TYPE_COLOR_MAP[value] || "");
+                                }}
+                                value={form.watch("type") || ""}
+                            >
+                                <SelectTrigger
+                                    id="type"
+                                    className="focus:ring-green-500 focus:ring-2 w-full min-w-[140px]"
+                                >
+                                    <SelectValue placeholder="Required Info" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {availableTypes.map((type) => (
+                                        <SelectItem key={type} value={type}>
+                                            <div className="flex items-center gap-2">
+                                                <div
+                                                    className="w-3 h-3 rounded-full"
+                                                    style={{ backgroundColor: TYPE_COLOR_MAP[type] }}
+                                                />
+                                                <span>{type}</span>
+                                            </div>
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                            {form.formState.errors.type && (
+                                <p className="text-xs text-destructive">
+                                    {form.formState.errors.type.message}
+                                </p>
+                            )}
+                        </div>
+
+                        {/* Rating */}
+                        <div className="space-y-2">
+                            <Label htmlFor="personalRating">Rating</Label>
+                            <Select
+                                onValueChange={(value) =>
+                                    form.setValue("personalRating", parseInt(value))
+                                }
+                                defaultValue={form.getValues("personalRating")?.toString()}
+                            >
+                                <SelectTrigger className="w-full min-w-[110px]">
+                                    <SelectValue placeholder="Rate" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="0">No rating</SelectItem>
+                                    <SelectItem value="1">⭐</SelectItem>
+                                    <SelectItem value="2">⭐⭐</SelectItem>
+                                    <SelectItem value="3">⭐⭐⭐</SelectItem>
+                                    <SelectItem value="4">⭐⭐⭐⭐</SelectItem>
+                                    <SelectItem value="5">⭐⭐⭐⭐⭐</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
                     </div>
 
                     <div>
@@ -201,63 +384,6 @@ export function EditLocationForm({
                             </p>
                         </div>
                     </div>
-
-                    {/* Type and Indoor/Outdoor - Side by Side */}
-                    <div className="grid grid-cols-2 gap-3">
-                        {/* Type - Select Dropdown */}
-                        <div className="space-y-2">
-                            <Label htmlFor="type">Type *</Label>
-                            <Select
-                                onValueChange={(value) => {
-                                    form.setValue("type", value);
-                                    form.setValue("color", TYPE_COLOR_MAP[value] || "");
-                                }}
-                                value={form.watch("type") || ""}
-                            >
-                                <SelectTrigger id="type">
-                                    <SelectValue placeholder="Select location type" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {LOCATION_TYPES.map((type) => (
-                                        <SelectItem key={type} value={type}>
-                                            <div className="flex items-center gap-2">
-                                                <div
-                                                    className="w-3 h-3 rounded-full"
-                                                    style={{ backgroundColor: TYPE_COLOR_MAP[type] }}
-                                                />
-                                                <span>{type}</span>
-                                            </div>
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                            {form.formState.errors.type && (
-                                <p className="text-xs text-destructive">
-                                    {form.formState.errors.type.message}
-                                </p>
-                            )}
-                        </div>
-
-                        {/* Indoor/Outdoor */}
-                        <div className="space-y-2">
-                            <Label htmlFor="indoorOutdoor">Indoor/Outdoor</Label>
-                            <Select
-                                onValueChange={(value) => form.setValue("indoorOutdoor", value as typeof INDOOR_OUTDOOR_OPTIONS[number])}
-                                defaultValue={form.getValues("indoorOutdoor") || DEFAULT_INDOOR_OUTDOOR}
-                            >
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Select" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {INDOOR_OUTDOOR_OPTIONS.map((option) => (
-                                        <SelectItem key={option} value={option}>
-                                            {option.charAt(0).toUpperCase() + option.slice(1)}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                        </div>
-                    </div>
                 </div>
             </div>
 
@@ -281,12 +407,53 @@ export function EditLocationForm({
                     </div>
 
                     <div>
-                        <Label htmlFor="entryPoint">Entry Point</Label>
-                        <Input
-                            id="entryPoint"
-                            {...form.register("entryPoint")}
-                            placeholder="Main entrance"
-                        />
+                        <div className="flex justify-between items-center mb-2">
+                            <Label htmlFor="tags">Tags</Label>
+                            <span className="text-xs text-muted-foreground">
+                                {tags.length}/20 • each tag 25 chars max
+                            </span>
+                        </div>
+                        <div className="relative">
+                            <Input
+                                id="tags"
+                                value={tagInput}
+                                onChange={(e) => setTagInput(e.target.value)}
+                                onKeyDown={(e) => {
+                                    if (e.key === "Enter") {
+                                        e.preventDefault();
+                                        handleAddTag();
+                                    }
+                                }}
+                                placeholder="Add tags..."
+                                maxLength={25}
+                                className="pr-10"
+                            />
+                            <Button
+                                type="button"
+                                onClick={handleAddTag}
+                                variant="ghost"
+                                size="icon"
+                                className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7"
+                            >
+                                <Tag className="w-4 h-4" />
+                            </Button>
+                        </div>
+                        {tags.length > 0 && (
+                            <div className="flex flex-wrap gap-2 mt-2">
+                                {tags.map((tag) => (
+                                    <Badge key={tag} variant="secondary" className="gap-1">
+                                        {tag}
+                                        <button
+                                            type="button"
+                                            onClick={() => handleRemoveTag(tag)}
+                                            className="ml-1 hover:text-destructive"
+                                        >
+                                            <X className="w-3 h-3" />
+                                        </button>
+                                    </Badge>
+                                ))}
+                            </div>
+                        )}
                     </div>
 
                     <div>
@@ -299,6 +466,15 @@ export function EditLocationForm({
                     </div>
 
                     <div>
+                        <Label htmlFor="entryPoint">Entry Point</Label>
+                        <Input
+                            id="entryPoint"
+                            {...form.register("entryPoint")}
+                            placeholder="Main entrance"
+                        />
+                    </div>
+
+                    <div>
                         <Label htmlFor="access">Access</Label>
                         <Input
                             id="access"
@@ -307,97 +483,6 @@ export function EditLocationForm({
                         />
                     </div>
                 </div>
-            </div>
-
-            {/* Personal Notes */}
-            <div className="space-y-3">
-                <div>
-                    <Label htmlFor="tags">Tags (max 20)</Label>
-                    <div className="flex gap-2">
-                        <Input
-                            id="tags"
-                            value={tagInput}
-                            onChange={(e) => setTagInput(e.target.value)}
-                            onKeyDown={(e) => {
-                                if (e.key === "Enter") {
-                                    e.preventDefault();
-                                    handleAddTag();
-                                }
-                            }}
-                            placeholder="Add tags..."
-                            maxLength={25}
-                        />
-                        <Button type="button" onClick={handleAddTag} variant="outline" size="icon">
-                            <Tag className="w-4 h-4" />
-                        </Button>
-                    </div>
-                    <p className="text-xs text-muted-foreground mt-1">
-                        {tags.length}/20 tags • Max 25 characters per tag
-                    </p>
-                    {tags.length > 0 && (
-                        <div className="flex flex-wrap gap-2 mt-2">
-                            {tags.map((tag) => (
-                                <Badge key={tag} variant="secondary" className="gap-1">
-                                    {tag}
-                                    <button
-                                        type="button"
-                                        onClick={() => handleRemoveTag(tag)}
-                                        className="ml-1 hover:text-destructive"
-                                    >
-                                        <X className="w-3 h-3" />
-                                    </button>
-                                </Badge>
-                            ))}
-                        </div>
-                    )}
-                </div>
-
-                <div className="grid grid-cols-2 gap-3">
-                    <div>
-                        <Label htmlFor="personalRating">Rating</Label>
-                        <Select
-                            onValueChange={(value) =>
-                                form.setValue("personalRating", parseInt(value))
-                            }
-                            defaultValue={form.getValues("personalRating")?.toString()}
-                        >
-                            <SelectTrigger>
-                                <SelectValue placeholder="Rate" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="0">No rating</SelectItem>
-                                <SelectItem value="1">⭐</SelectItem>
-                                <SelectItem value="2">⭐⭐</SelectItem>
-                                <SelectItem value="3">⭐⭐⭐</SelectItem>
-                                <SelectItem value="4">⭐⭐⭐⭐</SelectItem>
-                                <SelectItem value="5">⭐⭐⭐⭐⭐</SelectItem>
-                            </SelectContent>
-                        </Select>
-                    </div>
-
-                    <div className="flex items-end">
-                        <label className="flex items-center gap-2 cursor-pointer">
-                            <input
-                                type="checkbox"
-                                {...form.register("isFavorite")}
-                                className="w-4 h-4 rounded border-gray-300"
-                            />
-                            <span className="text-sm">Favorite</span>
-                        </label>
-                    </div>
-                </div>
-            </div>
-
-            {/* Photo Upload */}
-            <div className="space-y-3">
-                <h3 className="text-sm font-semibold">Photos (Max 20)</h3>
-                <ImageKitUploader
-                    placeId={location.placeId}
-                    onPhotosChange={setPhotos}
-                    maxPhotos={20}
-                    maxFileSize={1.5}
-                    existingPhotos={photos}
-                />
             </div>
         </form>
     );

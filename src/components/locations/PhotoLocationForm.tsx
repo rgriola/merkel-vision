@@ -205,7 +205,7 @@ export function PhotoLocationForm({
                 initialData={initialData}
                 onSubmit={handleSubmit}
                 isPending={isSaving}
-                hidePhotoUpload={true} // ✅ Hide photo upload since we already have the GPS photo
+                showPhotoUpload={false} // ✅ Hide photo upload since we already have the GPS photo
             />
 
             <div className="flex gap-3">

@@ -172,7 +172,7 @@ npm run db:studio
 
 ### Deployment
 
-Automatic deployment to Vercel on push to `main` branch.
+No auto deployment to Verce
 
 Manual deployment:
 ```bash

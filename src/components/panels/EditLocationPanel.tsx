@@ -11,6 +11,9 @@ interface EditLocationPanelProps {
     userSave: UserSave;
     onSuccess?: () => void;
     onCancel?: () => void;
+    isFavorite?: boolean;
+    indoorOutdoor?: "indoor" | "outdoor";
+    showPhotoUpload?: boolean;
 }
 
 export function EditLocationPanel({
@@ -19,13 +22,23 @@ export function EditLocationPanel({
     userSave,
     onSuccess,
     onCancel,
+    isFavorite,
+    indoorOutdoor,
+    showPhotoUpload = false,
 }: EditLocationPanelProps) {
     const updateLocation = useUpdateLocation();
 
     const handleSubmit = (data: any) => {
         console.log('[EditLocationPanel] Updating location:', data);
 
-        updateLocation.mutate(data, {
+        // Merge isFavorite and indoorOutdoor from header with form data
+        const updateData = {
+            ...data,
+            isFavorite: isFavorite ?? data.isFavorite,
+            indoorOutdoor: indoorOutdoor ?? data.indoorOutdoor,
+        };
+
+        updateLocation.mutate(updateData, {
             onSuccess: () => {
                 onSuccess?.();
             },
@@ -42,6 +55,7 @@ export function EditLocationPanel({
                     userSave={userSave}
                     onSubmit={handleSubmit}
                     isPending={updateLocation.isPending}
+                    showPhotoUpload={showPhotoUpload}
                 />
             </div>
 

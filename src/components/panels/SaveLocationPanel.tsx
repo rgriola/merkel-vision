@@ -10,12 +10,14 @@ interface SaveLocationPanelProps {
     initialData?: any;
     onSuccess?: () => void;
     onCancel?: () => void;
+    showPhotoUpload?: boolean;
 }
 
 export function SaveLocationPanel({
     initialData,
     onSuccess,
     onCancel,
+    showPhotoUpload = false,
 }: SaveLocationPanelProps) {
     const saveLocation = useSaveLocation();
     const formDataRef = useRef<any>(null);
@@ -64,6 +66,7 @@ export function SaveLocationPanel({
                     initialData={initialData}
                     onSubmit={handleSubmit}
                     isPending={saveLocation.isPending}
+                    showPhotoUpload={showPhotoUpload}
                 />
             </div>
 
