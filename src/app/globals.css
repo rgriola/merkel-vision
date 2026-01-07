@@ -123,3 +123,10 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Safe area insets for mobile browsers */
+@layer utilities {
+  .pb-safe {
+    padding-bottom: max(1.5rem, env(safe-area-inset-bottom));
+  }
+}

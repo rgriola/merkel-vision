@@ -59,8 +59,8 @@ export function EditLocationPanel({
                 />
             </div>
 
-            {/* Footer with Actions */}
-            <div className="p-3 border-t">
+            {/* Footer with Actions - Extra padding for mobile browser UI */}
+            <div className="p-3 pb-6 border-t bg-background">
                 <div className="flex gap-2">
                     <Button
                         type="button"

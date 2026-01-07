@@ -138,7 +138,9 @@ export function RightSidebar({
                 </div>
 
                 {/* Content */}
-                <div className="h-[calc(100%-4rem)] overflow-y-auto">{children}</div>
+                <div className="h-[calc(100%-4rem)] overflow-y-auto pb-safe">
+                    {children}
+                </div>
             </div>
         </>
     );

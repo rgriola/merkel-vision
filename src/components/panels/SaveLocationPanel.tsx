@@ -70,8 +70,8 @@ export function SaveLocationPanel({
                 />
             </div>
 
-            {/* Footer with Actions */}
-            <div className="p-4 border-t space-y-2">
+            {/* Footer with Actions - Extra padding for mobile browser UI */}
+            <div className="p-4 pb-6 border-t space-y-2 bg-background">
                 <div className="flex gap-2">
                     <Button
                         type="button"
