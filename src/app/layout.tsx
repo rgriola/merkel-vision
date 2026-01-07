@@ -33,7 +33,7 @@ export const metadata: Metadata = {
   description: "Save, organize, and manage your favorite locations with Merkel Vision. Professional location scouting and management for media production.",
   keywords: ["location management", "location scouting", "media production", "film locations", "photography locations"],
   authors: [{ name: "Merkel Vision" }],
-  
+
   // Open Graph (Facebook, LinkedIn, Discord, etc.)
   openGraph: {
     type: "website",
@@ -44,7 +44,7 @@ export const metadata: Metadata = {
     description: "Save, organize, and manage your favorite locations. Professional location scouting and management for media production.",
     images: [
       {
-        url: "/opengraph-image", // Next.js will auto-generate this
+        url: "/og-image.png", // Static image in public folder
         width: 1200,
         height: 630,
         alt: "Merkel Vision - Location Management Platform",
@@ -59,7 +59,7 @@ export const metadata: Metadata = {
     creator: "@merkelvision",
     title: "Merkel Vision | Professional Location Management",
     description: "Save, organize, and manage your favorite locations for media production.",
-    images: ["/opengraph-image"],
+    images: ["/og-image.png"], // Static image in public folder
   },
 
   // Additional metadata
@@ -74,7 +74,7 @@ export const metadata: Metadata = {
       "max-snippet": -1,
     },
   },
-  
+
   // Favicon and app icons
   icons: {
     icon: "/favicon.ico",

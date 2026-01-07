@@ -260,14 +260,25 @@ npm run db:studio    # Open Prisma Studio (uses .env.local)
 
 ## 📚 Documentation
 
+### Essential Guides
 - **[PROJECT_STATUS.md](./PROJECT_STATUS.md)** - Current project status and priorities
-- **[DEPLOYMENT_QUICK_REF.md](./DEPLOYMENT_QUICK_REF.md)** - Deployment guide
-- **[ENV_TEMPLATE.md](./ENV_TEMPLATE.md)** - Environment variable reference
-- **[ADMIN_QUICK_START.md](./ADMIN_QUICK_START.md)** - Admin features guide
-- **[PHONE_VERIFICATION_GUIDE.md](./PHONE_VERIFICATION_GUIDE.md)** - Phone verification setup
-- **[SECURITY_IMPLEMENTATION.md](./SECURITY_IMPLEMENTATION.md)** - Security features
-- **[AVATAR_UPLOAD_FLOW.md](./AVATAR_UPLOAD_FLOW.md)** - Avatar system documentation
-- **[/docs/](./docs/)** - Historical documentation archive
+- **[DEPLOYMENT.md](./DEPLOYMENT.md)** - Deployment guide
+- **[PRODUCTION_CHECKLIST.md](./PRODUCTION_CHECKLIST.md)** - Pre-deployment checklist
+
+### Feature Documentation
+- **[Social Collaboration](./docs/features/social-collaboration.md)** - User invites, friends, teams (planned)
+- **[Avatar Upload](./docs/features/avatar-upload.md)** - Avatar system documentation
+- **[Phone Verification](./docs/features/phone-verification.md)** - Phone verification setup
+- **[Photo Features](./docs/features/photo-testing.md)** - Photo upload and testing guide
+
+### Development Guides
+- **[Icon Management](./docs/guides/icon-management.md)** - Icon system guide
+- **[Prisma Naming](./docs/guides/prisma-naming.md)** - Database naming conventions
+- **[Map Repositioning](./docs/guides/map-repositioning.md)** - Map UX improvements
+- **[Security](./docs/guides/security.md)** - Security implementation details
+
+### Additional Resources
+- **[/docs/](./docs/)** - Complete documentation archive
 
 ## 🚀 Deployment
 

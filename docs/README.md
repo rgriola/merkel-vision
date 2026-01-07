@@ -1,115 +1,154 @@
-# Documentation Archive
+# 📚 Fotolokashen Documentation Index
 
-This directory contains historical documentation from the Merkel Vision refactor project. These files are preserved for reference but represent completed work, resolved issues, or superseded plans.
+**Last Updated:** January 7, 2026
 
-## Directory Structure
-
-### 📁 `/archive/` - Completed Features
-Documentation for features that have been fully implemented and deployed.
-
-- GPS hybrid implementation
-- Home location features (Phase 1 & 2)
-- Location constants consolidation
-- Photo flat directory structure
-- User-specific locations architecture
-- Admin user management
-- Environment variable consolidation
-- And more...
-
-### 🔧 `/troubleshooting/` - Resolved Issues
-Bug fixes and problem resolution documentation.
-
-- Avatar environment analysis
-- Database indexing strategies
-- Prisma client errors
-- Home location fixes
-- Photo upload errors
-- Map state optimization
-- And more...
-
-### ⚙️ `/setup/` - Setup Guides
-Historical setup and migration guides.
-
-- Environment validation
-- ESLint/Prettier setup
-- First deployment
-- NextAuth migration
-- Migration readiness checklists
-
-### ✨ `/features/` - Feature Implementation Logs
-Detailed logs of feature implementations.
-
-- GPS permission handling
-- Home location analysis
-- Photo location implementation
-- Photo upload enhancements
-- Search refactor plans
-
-### 📋 `/planning/` - Planning Documents
-Historical planning documents and refactor strategies.
-
-- Code cleanup plans
-- Form consolidation
-- Prisma refactor plans
-- Refactor phases tracking
-- **REFACTOR_STATUS.md** - Historical phase tracking (Phase 1-10)
-- State management plans
-- Testing plans
-
-### 🎨 `/ui-ux/` - UI/UX Documentation
-User interface and experience planning documents.
-
-- Edit dialog updates
-- Logout styling
-- Preference change UX options
-- Tailwind refactor plans
-
-### ⚙️ `/process/` - Process Documentation
-Development process and migration documentation.
-
-- API refactor plans
-- Auth migration plans
-- Cleanup notes
-- Documentation reorganization summary
-- NextAuth migration status
-- TypeScript migration plans
-
-### 📝 `/notes/` - Miscellaneous Notes
-General notes and observations.
-
-- Database notes
-- ImageKit notes
-- Implementation notes
-- Map state notes
-- Session notes
-
-## Current Documentation
-
-For current, active documentation, see the root directory:
-
-- **README.md** - Main project documentation
-- **PROJECT_STATUS.md** - Current project status and priorities
-- **DEPLOYMENT_QUICK_REF.md** - Deployment reference
-- **ADMIN_QUICK_START.md** - Admin features guide
-- **PHONE_VERIFICATION_GUIDE.md** - Phone verification setup
-- **PHOTO_FEATURE_TESTING_GUIDE.md** - Photo testing guide
-- **PRODUCTION_READINESS_CHECKLIST.md** - Production checklist
-- **ICON_MANAGEMENT_GUIDE.md** - Icon management
-- **PRISMA_NAMING_GUIDE.md** - Database naming conventions
-- **ENV_TEMPLATE.md** - Environment variable template
-- **SECURITY_IMPLEMENTATION.md** - Security features
-- **AVATAR_UPLOAD_FLOW.md** - Avatar system documentation
-
-## Using This Archive
-
-These documents are preserved for:
-1. Understanding historical context of decisions
-2. Reference for similar future work
-3. Troubleshooting recurring issues
-4. Learning from past approaches
-
-**Note**: Always check the root directory for current documentation before referring to archived documents.
+Welcome to the Fotolokashen documentation hub! All project documentation is organized here for easy navigation.
 
 ---
 
-*Last Updated: 2026-01-03*
+## 🎯 **Quick Start**
+
+New to the project? Start here:
+
+1. **[../README.md](../README.md)** - Main project overview
+2. **[../DEPLOYMENT.md](../DEPLOYMENT.md)** - How to deploy
+3. **[../PROJECT_STATUS.md](../PROJECT_STATUS.md)** - Current status
+
+---
+
+## 📁 **Documentation Structure**
+
+```
+docs/
+├── features/           # Feature specifications and guides
+├── guides/             # Development and technical guides
+├── setup/              # Setup and configuration
+├── troubleshooting/    # Issue resolution guides
+├── ui-ux/              # Design and UX documentation
+├── planning/           # Planning documents
+├── process/            # Process and workflow guides
+├── development-history/# Historical development records
+├── archive/            # Deprecated/old documentation
+└── database/           # Database migrations and schemas
+```
+
+---
+
+## ✨ **Feature Documentation**
+
+Detailed guides for major features:
+
+- **[social-collaboration.md](./features/social-collaboration.md)** - User invites, friends, teams (planned)
+- **[avatar-upload.md](./features/avatar-upload.md)** - Avatar upload system
+- **[phone-verification.md](./features/phone-verification.md)** - Phone verification setup
+- **[photo-testing.md](./features/photo-testing.md)** - Photo upload and testing
+
+---
+
+## 🛠️ **Development Guides**
+
+Technical guides for developers:
+
+- **[icon-management.md](./guides/icon-management.md)** - Icon system guide
+- **[prisma-naming.md](./guides/prisma-naming.md)** - Database naming conventions
+- **[map-repositioning.md](./guides/map-repositioning.md)** - Map UX improvements
+- **[security.md](./guides/security.md)** - Security implementation
+
+---
+
+## 🗄️ **Database**
+
+Database-related documentation:
+
+- **[make-locations-user-specific.sql](./database/make-locations-user-specific.sql)** - Location migration script
+
+---
+
+## 📦 **Setup & Configuration**
+
+- **[setup/](./setup/)** - Initial setup guides
+- **[../DEPLOYMENT.md](../DEPLOYMENT.md)** - Deployment instructions
+
+---
+
+## 🐛 **Troubleshooting**
+
+- **[troubleshooting/](./troubleshooting/)** - Common issues and solutions
+
+---
+
+## 🎨 **UI/UX**
+
+- **[ui-ux/](./ui-ux/)** - Design documentation and guidelines
+
+---
+
+## 📋 **Planning & Process**
+
+- **[planning/](./planning/)** - Project planning documents
+- **[process/](./process/)** - Development workflows
+
+---
+
+## 📜 **Historical Records**
+
+- **[development-history/](./development-history/)** - Development timeline
+- **[archive/](./archive/)** - Deprecated documentation
+
+---
+
+## 🔍 **Finding Documentation**
+
+### By Topic:
+
+| Topic | Location |
+|-------|----------|
+| **Deployment** | `../DEPLOYMENT.md` |
+| **Features** | `features/` |
+| **Development** | `guides/` |
+| **Setup** | `setup/` |
+| **Troubleshooting** | `troubleshooting/` |
+| **Database** | `database/` |
+| **Design** | `ui-ux/` |
+
+### By Status:
+
+- **Active:** Root level + `features/` + `guides/`
+- **Reference:** `setup/` + `troubleshooting/` + `ui-ux/`
+- **Historical:** `development-history/` + `archive/`
+
+---
+
+## 📝 **Contributing to Documentation**
+
+When adding new documentation:
+
+1. **Choose the right folder:**
+   - New feature? → `features/`
+   - Technical guide? → `guides/`
+   - Setup instructions? → `setup/`
+   - Troubleshooting? → `troubleshooting/`
+
+2. **Use clear naming:**
+   - Use kebab-case: `feature-name.md`
+   - Be descriptive: `avatar-upload.md` not `avatars.md`
+
+3. **Update this index:**
+   - Add your new doc to the appropriate section above
+
+4. **Link from README:**
+   - If it's essential, add to main `../README.md`
+
+---
+
+## 🔗 **External Resources**
+
+- [Vercel Dashboard](https://vercel.com/dashboard)
+- [Neon Database](https://console.neon.tech)
+- [ImageKit Dashboard](https://imagekit.io/dashboard)
+- [Resend Dashboard](https://resend.com/overview)
+- [Sentry Dashboard](https://sentry.io)
+
+---
+
+**Need help?** Check the troubleshooting section or review the README.md for getting started!
