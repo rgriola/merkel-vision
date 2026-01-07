@@ -209,7 +209,7 @@ export function SaveLocationForm({
             {/* Photo Upload - Collapsible at top */}
             {showPhotoUpload && (
                 <div className="space-y-4 pb-4 border-b">
-                    <h3 className="text-sm font-semibold">Photos (Optional)</h3>
+                    <h3 className="text-sm font-semibold">Photos (Encouraged)</h3>
                     <ImageKitUploader
                         placeId={form.watch("placeId")}
                         onPhotosChange={setPhotos}

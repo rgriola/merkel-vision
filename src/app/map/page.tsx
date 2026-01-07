@@ -510,7 +510,7 @@ function MapPageInner() {
                     <div className="flex-1">
                         <PlacesAutocomplete
                             onPlaceSelected={handlePlaceSelected}
-                            placeholder="Search for a place..."
+                            placeholder="Search Google Maps ... "
                         />
                     </div>
                     <button
@@ -762,7 +762,7 @@ function MapPageInner() {
                         <div className="flex items-center justify-between p-4 border-b bg-gray-50">
                             <h3 className="font-semibold text-lg flex items-center gap-2">
                                 <MapPinIcon className="w-5 h-5" />
-                                My Saved Locations
+                                My Locations
                             </h3>
                             <Button
                                 variant="ghost"

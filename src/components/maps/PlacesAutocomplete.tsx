@@ -13,7 +13,7 @@ interface PlacesAutocompleteProps {
 export function PlacesAutocomplete({
     onPlaceSelected,
     className = '',
-    placeholder = 'Search for a place...',
+    placeholder = 'Search Google Maps ... ',
 }: PlacesAutocompleteProps) {
     const [autocomplete, setAutocomplete] = useState<google.maps.places.Autocomplete | null>(null);
     const inputRef = useRef<HTMLInputElement>(null);
