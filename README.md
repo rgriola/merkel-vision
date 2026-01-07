@@ -287,6 +287,10 @@ npm i -g vercel
 
 # Deploy to production
 vercel --prod
+
+npx vercel for preview. 
+
+
 ```
 
 ## 🔗 Useful Links
