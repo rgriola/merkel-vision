@@ -28,8 +28,8 @@ export function UnauthMobileMenu() {
         <div className="md:hidden fixed bottom-6 right-6 z-[100]">
             <Sheet open={open} onOpenChange={setOpen}>
                 <SheetTrigger asChild>
-                    <Button 
-                        variant="default" 
+                    <Button
+                        variant="default"
                         size="icon"
                         className="h-14 w-14 rounded-full shadow-2xl bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
                         aria-label="Open menu"
@@ -41,14 +41,14 @@ export function UnauthMobileMenu() {
                     <SheetHeader className="mb-4">
                         <SheetTitle className="flex items-center gap-2 text-base">
                             <MapPin className="h-5 w-5 text-primary" />
-                            Merkel Vision
+                            fotolokashen
                         </SheetTitle>
                     </SheetHeader>
-                    
+
                     <nav className="flex flex-col gap-1">
                         {/* Navigation Links */}
-                        <Link 
-                            href="/" 
+                        <Link
+                            href="/"
                             prefetch={false}
                             onClick={handleLinkClick}
                             className={cn(
@@ -63,12 +63,12 @@ export function UnauthMobileMenu() {
                                 <span className="absolute bottom-0 left-3 right-3 h-0.5 bg-primary rounded-full" />
                             )}
                         </Link>
-                        
+
                         <div className="my-1 border-t" />
-                        
+
                         {/* Auth Actions */}
-                        <Link 
-                            href="/login" 
+                        <Link
+                            href="/login"
                             prefetch={false}
                             onClick={handleLinkClick}
                             className={cn(
@@ -82,9 +82,9 @@ export function UnauthMobileMenu() {
                                 <span className="absolute bottom-0 left-3 right-3 h-0.5 bg-primary rounded-full" />
                             )}
                         </Link>
-                        
-                        <Link 
-                            href="/register" 
+
+                        <Link
+                            href="/register"
                             prefetch={false}
                             onClick={handleLinkClick}
                             className="flex items-center gap-3 px-3 py-2.5 rounded-md bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700 transition-colors"
@@ -92,9 +92,9 @@ export function UnauthMobileMenu() {
                             <UserPlus className="h-4 w-4" />
                             <span className="text-sm font-medium">Register</span>
                         </Link>
-                        
-                        <Link 
-                            href="/forgot-password" 
+
+                        <Link
+                            href="/forgot-password"
                             prefetch={false}
                             onClick={handleLinkClick}
                             className={cn(

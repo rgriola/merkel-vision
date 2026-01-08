@@ -46,8 +46,8 @@ export function MobileMenu() {
         <div className="md:hidden fixed bottom-6 right-6 z-[100]">
             <Sheet open={open} onOpenChange={setOpen}>
                 <SheetTrigger asChild>
-                    <Button 
-                        variant="default" 
+                    <Button
+                        variant="default"
                         size="icon"
                         className="h-14 w-14 rounded-full shadow-2xl bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
                         aria-label="Open menu"
@@ -59,10 +59,10 @@ export function MobileMenu() {
                     <SheetHeader className="mb-4">
                         <SheetTitle className="flex items-center gap-2 text-base">
                             <MapPin className="h-5 w-5 text-primary" />
-                            Merkel Vision
+                            fotolokashen
                         </SheetTitle>
                     </SheetHeader>
-                    
+
                     <nav className="flex flex-col gap-1">
                         {/* Navigation Links */}
                         {visibleItems.map((item) => {
@@ -87,9 +87,9 @@ export function MobileMenu() {
                                 </Link>
                             );
                         })}
-                        
+
                         <div className="my-1 border-t" />
-                        
+
                         {/* User Section */}
                         {user ? (
                             <>
@@ -109,7 +109,7 @@ export function MobileMenu() {
                                         <span className="absolute bottom-0 left-3 right-3 h-0.5 bg-primary rounded-full" />
                                     )}
                                 </Link>
-                                
+
                                 {/* Logout Button */}
                                 <button
                                     onClick={() => {
@@ -121,7 +121,7 @@ export function MobileMenu() {
                                     <LogOut className="h-4 w-4" />
                                     <span className="text-sm">Log out</span>
                                 </button>
-                                
+
                                 {/* User Info Footer */}
                                 <div className="mt-4 px-3 py-2 bg-muted/50 rounded-md">
                                     <p className="text-xs font-medium truncate">{user.username}</p>

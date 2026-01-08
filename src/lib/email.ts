@@ -2,7 +2,7 @@ import * as nodemailer from 'nodemailer';
 import { Resend } from 'resend';
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
-const EMAIL_SERVICE = process.env.EMAIL_SERVICE || 'mailtrap';
+const EMAIL_SERVICE = process.env.EMAIL_SERVICE || 'resend';
 const EMAIL_MODE = process.env.EMAIL_MODE || 'development';
 
 // Initialize Resend for production (lazy initialization)
@@ -46,8 +46,8 @@ async function sendEmail(
   subject: string,
   html: string
 ): Promise<boolean> {
-  const fromName = process.env.EMAIL_FROM_NAME || 'Merkel Vision';
-  const fromAddress = process.env.EMAIL_FROM_ADDRESS || 'noreply@example.com';
+  const fromName = process.env.EMAIL_FROM_NAME || 'fotolokashen';
+  const fromAddress = process.env.EMAIL_FROM_ADDRESS || 'noreply@fotolokashen.com';
 
   try {
     if (EMAIL_SERVICE === 'resend') {
@@ -111,7 +111,7 @@ export async function sendVerificationEmail(
     email,
     'Verify your email address',
     `
-      <h2>Welcome to Merkel Vision!</h2>
+      <h2>Welcome to Fotolokashen!</h2>
       <p>Hi ${username},</p>
       <p>Thank you for registering. Please click the link below to verify your email address:</p>
       <a href="${verificationUrl}" style="display: inline-block; padding: 12px 24px; background-color: #4285f4; color: white; text-decoration: none; border-radius: 4px; margin: 16px 0;">Verify Email</a>
@@ -197,7 +197,7 @@ export async function sendPasswordChangedEmail(
     if (ipAddress) {
       console.log(`IP Address: ${ipAddress}`);
     }
-    console.log(`\nIf you didn't make this change, contact: admin@merkelvision.com`);
+    console.log(`\nIf you didn't make this change, contact: admin@fotolokashen.com`);
     console.log('='.repeat(80) + '\n');
     return true;
   }
@@ -216,7 +216,7 @@ export async function sendPasswordChangedEmail(
         <strong>⚠️ If you did NOT make this change:</strong>
         <ol style="margin: 10px 0;">
           <li>Someone may have unauthorized access to your account</li>
-          <li>Contact our support team immediately at <a href="mailto:admin@merkelvision.com">admin@merkelvision.com</a></li>
+          <li>Contact our support team immediately at <a href="mailto:admin@fotolokashen.com">admin@fotolokashen.com</a></li>
           <li>We recommend securing your email account as well</li>
         </ol>
       </div>
@@ -241,10 +241,10 @@ export async function sendAccountDeletionEmail(
     console.log('🗑️  ACCOUNT DELETION NOTIFICATION (Development Mode)');
     console.log('='.repeat(80));
     console.log(`To: ${email}`);
-    console.log(`Subject: Your Merkel Vision Account Has Been Deleted`);
+    console.log(`Subject: We deleted your fotolokashen account `);
     console.log(`\nHi ${username},\n`);
     console.log(`We have removed your account (${email}) entirely.`);
-    console.log(`This means we have permanently deleted all personal information,`);
+    console.log(`This deletion removed all personal information,`);
     console.log(`photos, and metadata related to your account.`);
     console.log(`\nAt any time you may register again.`);
     console.log(`\n- MV Team`);
@@ -255,7 +255,7 @@ export async function sendAccountDeletionEmail(
   // Send actual email via configured service
   return sendEmail(
     email,
-    'Your Merkel Vision Account Has Been Deleted',
+    'We deleted your Fotolokashen account',
     `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
         <h2 style="color: #333;">Account Deletion Notification</h2>
@@ -276,7 +276,7 @@ export async function sendAccountDeletionEmail(
         <hr style="border: none; border-top: 1px solid #e0e0e0; margin: 24px 0;">
         <p style="color: #666; font-size: 12px;">
           This is an automated notification. If you have questions, please contact us at 
-          <a href="mailto:admin@merkelvision.com">admin@merkelvision.com</a>.
+          <a href="mailto:admin@fotolokashen.com">admin@fotolokashen.com</a>.
         </p>
       </div>
     `

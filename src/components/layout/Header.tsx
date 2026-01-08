@@ -23,11 +23,11 @@ export function Header() {
                         <Link href={homeLink} className="flex items-center gap-2">
                             <MapPin className="h-6 w-6 text-primary" />
                             <span className="font-bold text-lg">
-                                Merkel Vision
+                                fotolokashen
                             </span>
                         </Link>
                     </div>
-                    
+
                     {/* Right side - Navigation and Auth */}
                     <div className="flex items-center gap-6">
                         <Navigation />
@@ -35,7 +35,7 @@ export function Header() {
                     </div>
                 </div>
             </header>
-            
+
             {/* Floating Hamburger for Mobile Users - Outside header */}
             {user ? <MobileMenu /> : <UnauthMobileMenu />}
         </>

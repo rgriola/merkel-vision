@@ -1,7 +1,7 @@
 # Fotolokashen - Social Collaboration & Sharing Implementation Plan
 - Jan 7, 2026 3:39pm
 
-> **Project:** Fotolokashen (formerly fotolokashen)
+> **Project:** Fotolokashen (formerly merkel vision)
 > **Feature:** User Invites, Friends, Teams, and Location Sharing  
 > **Priority:** High - Core Growth Feature  
 > **Estimated Timeline:** 3-4 weeks (phased approach)

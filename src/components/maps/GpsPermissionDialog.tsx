@@ -30,8 +30,7 @@ export function GpsPermissionDialog({ open, onConfirm, onCancel }: GpsPermission
                     <AlertDialogDescription className="space-y-4" asChild>
                         <div className="text-muted-foreground text-sm space-y-4">
                             <p>
-                                This allows Merkel Vision to show your current location on the map
-                                and help you navigate to saved locations.
+                                Fotolokashen uses your GPS data to be precises in creating your location markers.
                             </p>
 
                             <div className="bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3">

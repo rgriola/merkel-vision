@@ -99,7 +99,7 @@ const envSchema = z.object({
 
     EMAIL_FROM_NAME: z
         .string()
-        .default('Merkel Vision')
+        .default('fotolokashen')
         .describe('Email sender name'),
 
     EMAIL_FROM_ADDRESS: z
