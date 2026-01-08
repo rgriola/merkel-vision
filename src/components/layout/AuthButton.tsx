@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { User, LogOut, Shield, FolderKanban } from "lucide-react";
+import { User, LogOut, Shield, FolderKanban, Map, MapPin } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -32,7 +32,7 @@ export function AuthButton() {
 
     if (!user) {
         return (
-            <div className="hidden md:flex items-center gap-3">
+            <div className="flex items-center gap-3">
                 <Button variant="ghost" asChild className="min-w-[90px]">
                     <Link href="/login">Login</Link>
                 </Button>
@@ -76,14 +76,29 @@ export function AuthButton() {
                     </div>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => router.push("/profile")}>
-                    <User className="mr-2 h-4 w-4" />
-                    <span>Profile</span>
+
+                {/* Navigation Links */}
+                <DropdownMenuItem onClick={() => router.push("/map")}>
+                    <Map className="mr-2 h-4 w-4" />
+                    <span>Map</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => router.push("/locations")}>
+                    <MapPin className="mr-2 h-4 w-4" />
+                    <span>My Locations</span>
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => router.push("/projects")}>
                     <FolderKanban className="mr-2 h-4 w-4" />
                     <span>My Projects</span>
                 </DropdownMenuItem>
+
+                <DropdownMenuSeparator />
+
+                {/* User Settings */}
+                <DropdownMenuItem onClick={() => router.push("/profile")}>
+                    <User className="mr-2 h-4 w-4" />
+                    <span>Profile</span>
+                </DropdownMenuItem>
+
                 {user.isAdmin && (
                     <DropdownMenuItem onClick={() => router.push("/admin/users")}>
                         <Shield className="mr-2 h-4 w-4" />
