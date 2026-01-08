@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import {
     MapPin, Star, Edit, Trash2, Share2, Calendar, Camera,
     Clock, DollarSign, Phone, User, AlertCircle, Key,
-    Navigation, Building2, MapPinned, Shield
+    Navigation, Building2, MapPinned, Shield, Heart
 } from "lucide-react";
 import type { Location } from "@/types/location";
 import { useState, memo } from "react";
@@ -114,8 +114,8 @@ export const LocationCard = memo(function LocationCard({
                         </Badge>
                     )}
                     {userSave?.isFavorite && (
-                        <div className="bg-yellow-500 text-white p-2 rounded-full shadow-lg">
-                            <Star className="w-4 h-4 fill-current" />
+                        <div className="bg-red-500 text-white p-2 rounded-full shadow-lg">
+                            <Heart className="w-4 h-4 fill-current" />
                         </div>
                     )}
                 </div>
@@ -157,14 +157,14 @@ export const LocationCard = memo(function LocationCard({
 
             <CardHeader className="space-y-3 pb-3">
                 {/* Main Address */}
-                <p className="text-sm text-muted-foreground line-clamp-2 flex items-start gap-2">
-                    <MapPin className="w-4 h-4 mt-0.5 shrink-0" />
+                <p className="text-sm text-black line-clamp-2 flex items-start gap-2">
+                    <MapPin className="w-4 h-4 mt-0.5 shrink-0 text-black" />
                     <span>{location.address || 'No address available'}</span>
                 </p>
 
                 {/* Coordinates */}
-                <div className="text-xs text-muted-foreground flex items-center gap-2">
-                    <Navigation className="w-3 h-3" />
+                <div className="text-xs text-black flex items-center gap-2">
+                    <Navigation className="w-3 h-3 text-black" />
                     <span>{location.lat.toFixed(3)}, {location.lng.toFixed(3)}</span>
                 </div>
 
@@ -185,17 +185,17 @@ export const LocationCard = memo(function LocationCard({
             <CardContent className="space-y-3 pt-0">
                 {/* Production Notes */}
                 {location.productionNotes && (
-                    <div className="text-xs bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 p-2 rounded-md">
-                        <p className="font-semibold text-blue-900 dark:text-blue-100 mb-1">📝 Production Notes:</p>
-                        <p className="text-blue-800 dark:text-blue-200">{location.productionNotes}</p>
+                    <div className="text-xs bg-blue-50 border border-blue-200 p-2 rounded-md">
+                        <p className="font-semibold text-black mb-1">📝 Production Notes:</p>
+                        <p className="text-black">{location.productionNotes}</p>
                     </div>
                 )}
 
                 {/* Quick Info Grid */}
-                <div className="grid grid-cols-2 gap-2 text-xs">
+                <div className="grid grid-cols-2 gap-2 text-xs text-black">
                     {location.indoorOutdoor && (
                         <div className="bg-muted/50 px-2 py-1.5 rounded flex items-center gap-1">
-                            <MapPinned className="w-3 h-3" />
+                            <MapPinned className="w-3 h-3 text-black" />
                             <span className="font-medium capitalize">{location.indoorOutdoor}</span>
                         </div>
                     )}
@@ -209,20 +209,20 @@ export const LocationCard = memo(function LocationCard({
                 {/* Access & Entry Point */}
                 {location.access && (
                     <div className="text-xs bg-muted/50 px-2 py-1.5 rounded flex items-start gap-2">
-                        <Key className="w-3 h-3 mt-0.5 shrink-0" />
+                        <Key className="w-3 h-3 mt-0.5 shrink-0 text-black" />
                         <div>
-                            <p className="font-medium">Access:</p>
-                            <p className="text-muted-foreground">{location.access}</p>
+                            <p className="font-medium text-black">Access:</p>
+                            <p className="text-black">{location.access}</p>
                         </div>
                     </div>
                 )}
 
                 {location.entryPoint && (
                     <div className="text-xs bg-muted/50 px-2 py-1.5 rounded flex items-start gap-2">
-                        <MapPin className="w-3 h-3 mt-0.5 shrink-0" />
+                        <MapPin className="w-3 h-3 mt-0.5 shrink-0 text-black" />
                         <div>
-                            <p className="font-medium">Entry Point:</p>
-                            <p className="text-muted-foreground">{location.entryPoint}</p>
+                            <p className="font-medium text-black">Entry Point:</p>
+                            <p className="text-black">{location.entryPoint}</p>
                         </div>
                     </div>
                 )}
@@ -234,7 +234,7 @@ export const LocationCard = memo(function LocationCard({
                             <Button
                                 variant="ghost"
                                 size="sm"
-                                className="w-full text-xs"
+                                className="w-full text-xs text-black"
                                 onClick={(e) => {
                                     e.stopPropagation();
                                     setShowAllData(!showAllData);
@@ -247,60 +247,60 @@ export const LocationCard = memo(function LocationCard({
                                 <div className="mt-3 space-y-2 text-xs">
                                     {location.bestTimeOfDay && (
                                         <div className="flex items-start gap-2 bg-muted/30 p-2 rounded">
-                                            <Clock className="w-3 h-3 mt-0.5 shrink-0" />
+                                            <Clock className="w-3 h-3 mt-0.5 shrink-0 text-black" />
                                             <div>
-                                                <p className="font-medium">Best Time:</p>
-                                                <p className="text-muted-foreground">{location.bestTimeOfDay}</p>
+                                                <p className="font-medium text-black">Best Time:</p>
+                                                <p className="text-black">{location.bestTimeOfDay}</p>
                                             </div>
                                         </div>
                                     )}
 
                                     {location.operatingHours && (
                                         <div className="flex items-start gap-2 bg-muted/30 p-2 rounded">
-                                            <Clock className="w-3 h-3 mt-0.5 shrink-0" />
+                                            <Clock className="w-3 h-3 mt-0.5 shrink-0 text-black" />
                                             <div>
-                                                <p className="font-medium">Operating Hours:</p>
-                                                <p className="text-muted-foreground">{location.operatingHours}</p>
+                                                <p className="font-medium text-black">Operating Hours:</p>
+                                                <p className="text-black">{location.operatingHours}</p>
                                             </div>
                                         </div>
                                     )}
 
                                     {location.restrictions && (
-                                        <div className="flex items-start gap-2 bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 p-2 rounded">
-                                            <AlertCircle className="w-3 h-3 mt-0.5 shrink-0 text-amber-600" />
+                                        <div className="flex items-start gap-2 bg-amber-50 border border-amber-200 p-2 rounded">
+                                            <AlertCircle className="w-3 h-3 mt-0.5 shrink-0 text-black" />
                                             <div>
-                                                <p className="font-medium text-amber-900 dark:text-amber-100">Restrictions:</p>
-                                                <p className="text-amber-800 dark:text-amber-200">{location.restrictions}</p>
+                                                <p className="font-medium text-black">Restrictions:</p>
+                                                <p className="text-black">{location.restrictions}</p>
                                             </div>
                                         </div>
                                     )}
 
                                     {location.contactPerson && (
                                         <div className="flex items-start gap-2 bg-muted/30 p-2 rounded">
-                                            <User className="w-3 h-3 mt-0.5 shrink-0" />
+                                            <User className="w-3 h-3 mt-0.5 shrink-0 text-black" />
                                             <div>
-                                                <p className="font-medium">Contact:</p>
-                                                <p className="text-muted-foreground">{location.contactPerson}</p>
+                                                <p className="font-medium text-black">Contact:</p>
+                                                <p className="text-black">{location.contactPerson}</p>
                                             </div>
                                         </div>
                                     )}
 
                                     {location.contactPhone && (
                                         <div className="flex items-start gap-2 bg-muted/30 p-2 rounded">
-                                            <Phone className="w-3 h-3 mt-0.5 shrink-0" />
+                                            <Phone className="w-3 h-3 mt-0.5 shrink-0 text-black" />
                                             <div>
-                                                <p className="font-medium">Phone:</p>
-                                                <p className="text-muted-foreground">{location.contactPhone}</p>
+                                                <p className="font-medium text-black">Phone:</p>
+                                                <p className="text-black">{location.contactPhone}</p>
                                             </div>
                                         </div>
                                     )}
 
                                     {location.permitCost !== null && location.permitCost !== undefined && (
-                                        <div className="flex items-start gap-2 bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-800 p-2 rounded">
-                                            <DollarSign className="w-3 h-3 mt-0.5 shrink-0 text-green-600" />
+                                        <div className="flex items-start gap-2 bg-green-50 border border-green-200 p-2 rounded">
+                                            <DollarSign className="w-3 h-3 mt-0.5 shrink-0 text-black" />
                                             <div>
-                                                <p className="font-medium text-green-900 dark:text-green-100">Permit Cost:</p>
-                                                <p className="text-green-800 dark:text-green-200">
+                                                <p className="font-medium text-black">Permit Cost:</p>
+                                                <p className="text-black">
                                                     {location.permitCost === 0 ? 'Free' : `$${location.permitCost}`}
                                                 </p>
                                             </div>
@@ -328,33 +328,33 @@ export const LocationCard = memo(function LocationCard({
                 )}
 
                 {/* Dates Section */}
-                <div className="flex flex-col gap-1 text-xs text-muted-foreground border-t pt-3">
+                <div className="flex flex-col gap-1 text-xs text-black border-t pt-3">
                     {userSave?.visitedAt && (
                         <div className="flex items-center gap-1.5">
-                            <Calendar className="w-3 h-3" />
+                            <Calendar className="w-3 h-3 text-black" />
                             <span>Visited: {new Date(userSave.visitedAt).toLocaleDateString()}</span>
                         </div>
                     )}
                     {userSave?.savedAt && (
                         <div className="flex items-center gap-1.5">
-                            <Star className="w-3 h-3" />
+                            <Star className="w-3 h-3 text-black" />
                             <span>Saved: {new Date(userSave.savedAt).toLocaleDateString()}</span>
                         </div>
                     )}
                     <div className="flex items-center gap-1.5">
-                        <Clock className="w-3 h-3" />
+                        <Clock className="w-3 h-3 text-black" />
                         <span>Created: {new Date(location.createdAt).toLocaleDateString()}</span>
                     </div>
                     {location.lastModifiedAt && (
                         <div className="flex items-center gap-1.5">
-                            <Clock className="w-3 h-3" />
+                            <Clock className="w-3 h-3 text-black" />
                             <span>Modified: {new Date(location.lastModifiedAt).toLocaleDateString()}</span>
                         </div>
                     )}
                 </div>
 
                 {/* Debug Info (IDs) */}
-                <div className="text-xs text-muted-foreground/50 font-mono bg-muted/20 px-2 py-1 rounded">
+                <div className="text-xs text-black/50 font-mono bg-muted/20 px-2 py-1 rounded">
                     ID: {location.id} | Place: {location.placeId.slice(0, 8)}...
                 </div>
             </CardContent>

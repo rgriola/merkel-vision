@@ -5,13 +5,12 @@ import { useLocations } from "@/hooks/useLocations";
 import { useDeleteLocation } from "@/hooks/useDeleteLocation";
 import { LocationList } from "@/components/locations/LocationList";
 import { LocationListCompact } from "@/components/locations/LocationListCompact";
-import { LocationsMapView } from "@/components/locations/LocationsMapView";
 import { LocationFilters } from "@/components/locations/LocationFilters";
 import { ShareLocationDialog } from "@/components/locations/ShareLocationDialog";
 import { EditLocationDialog } from "@/components/locations/EditLocationDialog";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Plus, MapIcon, List, LayoutGrid } from "lucide-react";
+import { List, LayoutGrid } from "lucide-react";
 import type { Location } from "@/types/location";
 
 function LocationsPageInner() {
@@ -92,42 +91,41 @@ function LocationsPageInner() {
 
     return (
         <Tabs defaultValue="grid" className="fixed inset-0 top-16 flex flex-col">
-            {/* Fixed Controls Section - MADE MORE COMPACT */}
+            {/* Fixed Controls Section - Single Line Layout */}
             <div className="flex-shrink-0 bg-background border-b">
                 <div className="container mx-auto px-4 py-3 max-w-7xl">
-                    {/* Filters */}
-                    <div className="mb-3">
-                        <LocationFilters
-                            onSearchChange={setSearch}
-                            onTypeChange={setTypeFilter}
-                            onFavoritesToggle={setFavoritesOnly}
-                            onSortChange={setSortBy}
-                        />
+                    {/* Single Row: Search + Favorites + Filters + View Toggle */}
+                    <div className="flex items-center gap-3">
+                        {/* Search - Takes most space */}
+                        <div className="flex-1">
+                            <LocationFilters
+                                onSearchChange={setSearch}
+                                onTypeChange={setTypeFilter}
+                                onFavoritesToggle={setFavoritesOnly}
+                                onSortChange={setSortBy}
+                            />
+                        </div>
+
+                        {/* View Toggle - Grid/List */}
+                        <TabsList className="grid grid-cols-2 w-auto">
+                            <TabsTrigger value="grid" className="flex items-center gap-2">
+                                <LayoutGrid className="w-4 h-4" />
+                                <span className="hidden sm:inline">Grid</span>
+                            </TabsTrigger>
+                            <TabsTrigger value="list" className="flex items-center gap-2">
+                                <List className="w-4 h-4" />
+                                <span className="hidden sm:inline">List</span>
+                            </TabsTrigger>
+                        </TabsList>
                     </div>
 
                     {/* Error State */}
                     {error && (
-                        <div className="bg-destructive/10 text-destructive px-4 py-3 rounded-lg mb-3">
+                        <div className="bg-destructive/10 text-destructive px-4 py-3 rounded-lg mt-3">
                             <p className="font-medium">Error loading locations</p>
                             <p className="text-sm">{error.message}</p>
                         </div>
                     )}
-
-                    {/* Tabs Header */}
-                    <TabsList className="grid w-full max-w-md grid-cols-3">
-                        <TabsTrigger value="grid" className="flex items-center gap-2">
-                            <LayoutGrid className="w-4 h-4" />
-                            Grid
-                        </TabsTrigger>
-                        <TabsTrigger value="list" className="flex items-center gap-2">
-                            <List className="w-4 h-4" />
-                            List
-                        </TabsTrigger>
-                        <TabsTrigger value="map" className="flex items-center gap-2">
-                            <MapIcon className="w-4 h-4" />
-                            Map
-                        </TabsTrigger>
-                    </TabsList>
                 </div>
             </div>
 
@@ -154,11 +152,6 @@ function LocationsPageInner() {
                             onDelete={handleDelete}
                             onShare={setShareLocation}
                         />
-                    </TabsContent>
-
-                    {/* Map View */}
-                    <TabsContent value="map" className="mt-0">
-                        <LocationsMapView locations={filteredLocations} />
                     </TabsContent>
                 </div>
             </div>

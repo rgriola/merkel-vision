@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useLocations } from "@/hooks/useLocations";
-import { LocationList } from "@/components/locations/LocationList";
+import { LocationListCompact } from "@/components/locations/LocationListCompact";
 import { LocationFilters } from "@/components/locations/LocationFilters";
 import type { Location } from "@/types/location";
 import { Loader2 } from "lucide-react";
@@ -59,7 +59,7 @@ export function SavedLocationsPanel({
         }
     });
 
-    // Transform UserSave[] to Location[] for the LocationList component
+    // Transform UserSave[] to Location[] for the LocationListCompact component
     // by extracting the location and attaching the userSave data
     const filteredLocations = filteredUserSaves
         .filter(userSave => userSave.location) // Only include if location exists
@@ -75,7 +75,7 @@ export function SavedLocationsPanel({
     return (
         <div className="flex flex-col h-full">
             {/* Filters */}
-            <div className="p-4 border-b bg-muted/30">
+            <div className="p-3 border-b bg-muted/30">
                 <LocationFilters
                     onSearchChange={setSearch}
                     onTypeChange={setTypeFilter}
@@ -85,13 +85,13 @@ export function SavedLocationsPanel({
             </div>
 
             {/* Location Count */}
-            <div className="px-4 py-2 text-sm text-muted-foreground border-b">
+            <div className="px-3 py-2 text-sm text-muted-foreground border-b">
                 {filteredLocations.length} location{filteredLocations.length !== 1 ? "s" : ""}
             </div>
 
             {/* Error State */}
             {error && (
-                <div className="p-4 bg-destructive/10 text-destructive text-sm">
+                <div className="p-3 bg-destructive/10 text-destructive text-sm">
                     <p className="font-medium">Error loading locations</p>
                     <p>{error.message}</p>
                 </div>
@@ -104,10 +104,10 @@ export function SavedLocationsPanel({
                 </div>
             )}
 
-            {/* Locations List */}
+            {/* Locations List - Compact View */}
             {!isLoading && (
-                <div className="flex-1 overflow-y-auto p-4">
-                    <LocationList
+                <div className="flex-1 overflow-y-auto p-3">
+                    <LocationListCompact
                         locations={filteredLocations}
                         isLoading={false}
                         onEdit={onEdit}

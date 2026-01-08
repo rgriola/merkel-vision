@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { Search, Star, SlidersHorizontal } from "lucide-react";
+import { Search, Heart, SlidersHorizontal } from "lucide-react";
 import { LOCATION_TYPES } from "@/lib/location-constants";
 import { LOCATION_SORT_OPTIONS } from "@/lib/form-constants";
 
@@ -61,7 +61,7 @@ export function LocationFilters({
                     onClick={handleFavoritesToggle}
                     className="shrink-0"
                 >
-                    <Star className={`w-4 h-4 mr-2 ${favoritesOnly ? 'fill-current' : ''}`} />
+                    <Heart className={`w-4 h-4 mr-2 ${favoritesOnly ? 'fill-current' : ''}`} />
                     Favorites
                 </Button>
 
