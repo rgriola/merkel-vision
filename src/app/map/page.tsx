@@ -143,6 +143,7 @@ function MapPageInner() {
         const lat = searchParams.get('lat');
         const lng = searchParams.get('lng');
         const zoom = searchParams.get('zoom');
+        const editLocationId = searchParams.get('edit');
 
         if (lat && lng && map) {
             const position = {
@@ -150,11 +151,91 @@ function MapPageInner() {
                 lng: parseFloat(lng),
             };
 
-            // Pan to the location with smooth animation
-            map.setOptions({
-                center: position,
-                zoom: zoom ? parseInt(zoom) : 17,
-            });
+            // If edit parameter is present, fetch the location and open edit panel
+            if (editLocationId) {
+                // Fetch the location data
+                fetch(`/api/locations/${editLocationId}`)
+                    .then(res => res.json())
+                    .then(location => {
+                        // Create marker data from location
+                        const markerData = {
+                            id: location.placeId,
+                            position: { lat: location.lat, lng: location.lng },
+                            data: {
+                                placeId: location.placeId,
+                                name: location.name,
+                                address: location.address,
+                                type: location.type,
+                                rating: location.rating,
+                                street: location.street,
+                                number: location.number,
+                                city: location.city,
+                                state: location.state,
+                                zipcode: location.zipcode,
+                                productionNotes: location.productionNotes,
+                                entryPoint: location.entryPoint,
+                                parking: location.parking,
+                                access: location.access,
+                                indoorOutdoor: location.indoorOutdoor,
+                                isPermanent: location.isPermanent,
+                                photoUrls: location.photoUrls,
+                                permitRequired: location.permitRequired,
+                                permitCost: location.permitCost,
+                                contactPerson: location.contactPerson,
+                                contactPhone: location.contactPhone,
+                                operatingHours: location.operatingHours,
+                                restrictions: location.restrictions,
+                                bestTimeOfDay: location.bestTimeOfDay,
+                            },
+                            userSave: location.userSave,
+                        };
+
+                        // Open edit panel
+                        setLocationToEdit(markerData as any);
+                        setSidebarView('edit');
+                        setIsSidebarOpen(true);
+
+                        // Load states
+                        setIsFavorite(location.userSave?.isFavorite || false);
+                        setIndoorOutdoor((location.indoorOutdoor as "indoor" | "outdoor") || "outdoor");
+
+                        // Pan map with offset for desktop
+                        if (typeof window !== 'undefined') {
+                            const isDesktop = window.innerWidth >= 1024;
+                            if (isDesktop) {
+                                const PANEL_WIDTH = 450;
+                                setTimeout(() => {
+                                    map.setOptions({
+                                        center: position,
+                                        zoom: zoom ? parseInt(zoom) : 17,
+                                    });
+                                    setTimeout(() => {
+                                        map.panBy(PANEL_WIDTH / 2, 0);
+                                    }, 100);
+                                }, 50);
+                            } else {
+                                map.setOptions({
+                                    center: position,
+                                    zoom: zoom ? parseInt(zoom) : 17,
+                                });
+                            }
+                        }
+                    })
+                    .catch(err => {
+                        console.error('Failed to fetch location:', err);
+                        // Fallback: just pan to the coordinates
+                        map.setOptions({
+                            center: position,
+                            zoom: zoom ? parseInt(zoom) : 17,
+                        });
+                    });
+            } else {
+                // No edit parameter, just pan to the location
+                map.setOptions({
+                    center: position,
+                    zoom: zoom ? parseInt(zoom) : 17,
+                });
+            }
         }
     }, [searchParams, map]);
 
@@ -867,15 +948,75 @@ function MapPageInner() {
                             onLocationClick={(location) => {
                                 // Close the panel first
                                 setShowLocationsPanel(false);
-                                // Navigate to the location on the map
-                                if (map) {
-                                    map.panTo({ lat: location.lat, lng: location.lng });
-                                    map.setZoom(17);
-                                }
-                                // Find the marker and select it
-                                const marker = markers.find(m => m.id === location.placeId);
-                                if (marker) {
-                                    setSelectedMarker(marker);
+
+                                // Create a marker-like structure from the location data
+                                const markerData = {
+                                    id: location.placeId,
+                                    position: { lat: location.lat, lng: location.lng },
+                                    data: {
+                                        placeId: location.placeId,
+                                        name: location.name,
+                                        address: location.address,
+                                        type: location.type,
+                                        rating: location.rating,
+                                        street: location.street,
+                                        number: location.number,
+                                        city: location.city,
+                                        state: location.state,
+                                        zipcode: location.zipcode,
+                                        productionNotes: location.productionNotes,
+                                        entryPoint: location.entryPoint,
+                                        parking: location.parking,
+                                        access: location.access,
+                                        indoorOutdoor: location.indoorOutdoor,
+                                        isPermanent: location.isPermanent,
+                                        photoUrls: location.photoUrls,
+                                        permitRequired: location.permitRequired,
+                                        permitCost: location.permitCost,
+                                        contactPerson: location.contactPerson,
+                                        contactPhone: location.contactPhone,
+                                        operatingHours: location.operatingHours,
+                                        restrictions: location.restrictions,
+                                        bestTimeOfDay: location.bestTimeOfDay,
+                                    },
+                                    userSave: location.userSave,
+                                };
+
+                                // Don't set selectedMarker (which shows InfoWindow)
+                                // Just open the edit panel
+                                setLocationToEdit(markerData as any);
+                                setSidebarView('edit');
+                                setIsSidebarOpen(true);
+
+                                // Load favorite state
+                                setIsFavorite(location.userSave?.isFavorite || false);
+
+                                // Load indoor/outdoor state
+                                setIndoorOutdoor((location.indoorOutdoor as "indoor" | "outdoor") || "outdoor");
+
+                                // Pan map to adjust for panel (same as handleMarkerClick)
+                                if (map && typeof window !== 'undefined') {
+                                    const isDesktop = window.innerWidth >= 1024;
+                                    if (isDesktop) {
+                                        const PANEL_WIDTH = 450;
+                                        setTimeout(() => {
+                                            // Center on location first
+                                            map.setOptions({
+                                                center: { lat: location.lat, lng: location.lng },
+                                                zoom: 17,
+                                            });
+                                            // Then pan to accommodate panel
+                                            setTimeout(() => {
+                                                map.panBy(PANEL_WIDTH / 2, 0);
+                                            }, 100);
+                                        }, 50);
+                                    } else {
+                                        // Mobile: just center on location
+                                        map.setOptions({
+                                            center: { lat: location.lat, lng: location.lng },
+                                            zoom: 17,
+                                        });
+                                    }
                                 }
                             }}
                             onEdit={(location) => {

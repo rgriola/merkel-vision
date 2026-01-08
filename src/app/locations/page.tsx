@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { useLocations } from "@/hooks/useLocations";
 import { useDeleteLocation } from "@/hooks/useDeleteLocation";
 import { LocationList } from "@/components/locations/LocationList";
@@ -14,6 +15,7 @@ import { List, LayoutGrid } from "lucide-react";
 import type { Location } from "@/types/location";
 
 function LocationsPageInner() {
+    const router = useRouter();
     const [search, setSearch] = useState("");
     const [typeFilter, setTypeFilter] = useState("all");
     const [favoritesOnly, setFavoritesOnly] = useState(false);
@@ -140,6 +142,10 @@ function LocationsPageInner() {
                             onEdit={setEditLocation}
                             onDelete={handleDelete}
                             onShare={setShareLocation}
+                            onClick={(location) => {
+                                // Navigate to map with location and open edit panel
+                                router.push(`/map?lat=${location.lat}&lng=${location.lng}&zoom=17&edit=${location.id}`);
+                            }}
                         />
                     </TabsContent>
 
@@ -151,6 +157,10 @@ function LocationsPageInner() {
                             onEdit={setEditLocation}
                             onDelete={handleDelete}
                             onShare={setShareLocation}
+                            onClick={(location) => {
+                                // Navigate to map with location and open edit panel
+                                router.push(`/map?lat=${location.lat}&lng=${location.lng}&zoom=17&edit=${location.id}`);
+                            }}
                         />
                     </TabsContent>
                 </div>
