@@ -29,7 +29,7 @@ export const viewport: Viewport = {
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://fotolokashen.com'),
-  title: "fotolokashen | Location Management",
+  title: "fotolokashen | Locations with Purpose",
   description: "Photography crew managment platform. Create Projects, Use location data to be precise and remember the best view. With the best maps available google maps.",
   keywords: ["location management", "location scouting", "media production", "film locations", "photography locations", "google maps"],
   authors: [{ name: "fotolokashen" }],
@@ -47,7 +47,7 @@ export const metadata: Metadata = {
         url: "/og-image.png", // Static image in public folder
         width: 1200,
         height: 630,
-        alt: "fotolokashen - Location Management Platform",
+        alt: "fotolokashen - Purposeful Locations",
       },
     ],
   },
@@ -57,7 +57,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     site: "@fotolokashen", // Your Twitter handle if you have one
     creator: "@fotolokashen",
-    title: "fotolokashen | Professional Location Management",
+    title: "fotolokashen | Locations with Purpose",
     description: "Save, organize, and manage your favorite locations for media production. With the best maps available google maps.",
     images: ["/og-image.png"], // Static image in public folder
   },
