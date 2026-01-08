@@ -9,6 +9,9 @@ import { LayoutWrapper } from "@/components/layout/LayoutWrapper";
 import { GoogleMapsProvider } from "@/lib/GoogleMapsProvider";
 import { SentryInit } from "@/components/SentryInit";
 
+
+const tagline = "Locations & Purpose";
+
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -29,7 +32,7 @@ export const viewport: Viewport = {
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://fotolokashen.com'),
-  title: "fotolokashen | Locations with Purpose",
+  title: `fotolokashen | ${tagline}`,
   description: "Photography crew managment platform. Create Projects, Use location data to be precise and remember the best view. With the best maps available google maps.",
   keywords: ["location management", "location scouting", "media production", "film locations", "photography locations", "google maps"],
   authors: [{ name: "fotolokashen" }],
@@ -40,7 +43,7 @@ export const metadata: Metadata = {
     locale: "en_US",
     url: "https://fotolokashen.com",
     siteName: "fotolokashen",
-    title: "fotolokashen | locations with purpose",
+    title: `fotolokashen | ${tagline}`,
     description: "Use your photo data to save locations, share the best views, organize projects and team members with fotolokashen.com",
     images: [
       {
@@ -57,7 +60,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     site: "@fotolokashen", // Your Twitter handle if you have one
     creator: "@fotolokashen",
-    title: "fotolokashen | Locations with Purpose",
+    title: `fotolokashen | ${tagline}`,
     description: "Save, organize, and manage your favorite locations for media production. With the best maps available google maps.",
     images: ["/og-image.png"], // Static image in public folder
   },

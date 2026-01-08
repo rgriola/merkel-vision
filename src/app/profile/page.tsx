@@ -16,9 +16,9 @@ export default function ProfilePage() {
     return (
         <div className="container max-w-6xl mx-auto py-8 px-4">
             <div className="mb-6">
-                <h1 className="text-3xl font-bold">Profile Settings</h1>
+                <h1 className="text-3xl font-bold">Member Profile Settings</h1>
                 <p className="text-muted-foreground mt-1">
-                    Manage your account, security, and preferences
+                    Security and Preferences for your account
                 </p>
             </div>
 
