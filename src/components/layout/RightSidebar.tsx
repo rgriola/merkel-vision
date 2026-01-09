@@ -1,8 +1,9 @@
 "use client";
 
 import { ReactNode } from "react";
-import { X, Heart, Sun, Building, Camera, Save } from "lucide-react";
+import { X, Heart, Sun, Building, Camera, Save, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 export type SidebarView =
     | "saved-locations"
@@ -75,10 +76,19 @@ export function RightSidebar({
                                 size="icon"
                                 onClick={onSave}
                                 disabled={isSaving}
-                                className="shrink-0 bg-indigo-600 hover:bg-indigo-700 text-white hover:text-white disabled:opacity-50"
+                                className={cn(
+                                    "shrink-0 hover:text-white disabled:cursor-not-allowed transition-all",
+                                    isSaving 
+                                        ? "bg-indigo-400 disabled:opacity-70" 
+                                        : "bg-indigo-600 hover:bg-indigo-700"
+                                )}
                                 title={isSaving ? "Saving..." : "Save location"}
                             >
-                                <Save className="w-4 h-4 text-white" />
+                                {isSaving ? (
+                                    <Loader2 className="w-4 h-4 text-white animate-spin" />
+                                ) : (
+                                    <Save className="w-4 h-4 text-white" />
+                                )}
                             </Button>
                         )}
                         {/* Camera Icon for Photo Upload */}

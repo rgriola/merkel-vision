@@ -54,6 +54,7 @@ function MapPageInner() {
     const [indoorOutdoor, setIndoorOutdoor] = useState<"indoor" | "outdoor">("outdoor");
     const [showPhotoUpload, setShowPhotoUpload] = useState(false);
     const [showSearchDialog, setShowSearchDialog] = useState(false);
+    const [isSavingLocation, setIsSavingLocation] = useState(false); // Track save operation
 
 
     // GPS permission state
@@ -1091,7 +1092,7 @@ function MapPageInner() {
                         form.requestSubmit();
                     }
                 }}
-                isSaving={false}
+                isSaving={isSavingLocation}  // Use dynamic state instead of hardcoded false
             >
                 {/* Save Location Panel */}
                 {sidebarView === 'save' && locationToSave && (
@@ -1127,6 +1128,7 @@ function MapPageInner() {
                             setSelectedMarker(null);
                             setLocationToSave(null);
                         }}
+                        onSavingChange={setIsSavingLocation}  // Wire up save state
                         showPhotoUpload={showPhotoUpload}
                     />
                 )}

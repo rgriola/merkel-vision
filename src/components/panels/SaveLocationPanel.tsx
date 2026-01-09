@@ -1,16 +1,15 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
+import { useEffect, useRef } from "react";
 import { useSaveLocation } from "@/hooks/useSaveLocation";
-import { Zap } from "lucide-react";
 import { SaveLocationForm } from "@/components/locations/SaveLocationForm";
-import { useRef } from "react";
 
 interface SaveLocationPanelProps {
     initialData?: any;
     onSuccess?: () => void;
     onCancel?: () => void;
     showPhotoUpload?: boolean;
+    onSavingChange?: (isSaving: boolean) => void; // Callback to expose save state to parent
 }
 
 export function SaveLocationPanel({
@@ -18,9 +17,15 @@ export function SaveLocationPanel({
     onSuccess,
     onCancel,
     showPhotoUpload = false,
+    onSavingChange,
 }: SaveLocationPanelProps) {
     const saveLocation = useSaveLocation();
     const formDataRef = useRef<any>(null);
+
+    // Notify parent component when save state changes
+    useEffect(() => {
+        onSavingChange?.(saveLocation.isPending);
+    }, [saveLocation.isPending, onSavingChange]);
 
     const handleSubmit = (data: any) => {
         // Store for quick save
