@@ -3,5 +3,9 @@
     "deploymentEnabled": {
       "main": false
     }
+  },
+  "github": {
+    "silent": false,
+    "autoAlias": true
   }
 }
