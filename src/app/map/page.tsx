@@ -28,6 +28,7 @@ import { MapControls } from '@/components/maps/MapControls';
 import { MapPin as MapPinIcon, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+import { debounceLeading } from '@/lib/utils/debounce';
 
 interface MarkerData {
     id: string;
@@ -727,6 +728,20 @@ function MapPageInner() {
         setSelectedMarker(null);
     }, [selectedMarker, isSidebarOpen]);
 
+    // Debounced save handler to prevent rapid repeated clicks
+    // Uses debounceLeading to execute immediately on first click, ignore subsequent clicks within 1 second
+    const handleSaveClick = useMemo(
+        () => debounceLeading(() => {
+            // Trigger form submit for either save or edit
+            const formId = sidebarView === 'save' ? 'save-location-form' : 'edit-location-form';
+            const form = document.getElementById(formId) as HTMLFormElement;
+            if (form) {
+                form.requestSubmit();
+            }
+        }, 1000), // 1 second debounce - prevents duplicate submissions
+        [sidebarView]
+    );
+
     return (
         <div className="fixed inset-0 top-16 flex flex-col">
             {/* Map Container */}
@@ -1084,14 +1099,7 @@ function MapPageInner() {
                 showPhotoUpload={true}
                 onPhotoUploadToggle={() => setShowPhotoUpload(!showPhotoUpload)}
                 showSaveButton={true}
-                onSave={() => {
-                    // Trigger form submit for either save or edit
-                    const formId = sidebarView === 'save' ? 'save-location-form' : 'edit-location-form';
-                    const form = document.getElementById(formId) as HTMLFormElement;
-                    if (form) {
-                        form.requestSubmit();
-                    }
-                }}
+                onSave={handleSaveClick}  // Use debounced save handler
                 isSaving={isSavingLocation}  // Use dynamic state instead of hardcoded false
             >
                 {/* Save Location Panel */}
