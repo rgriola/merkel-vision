@@ -1,41 +1,25 @@
-import * as nodemailer from 'nodemailer';
 import { Resend } from 'resend';
 
+// Environment variables
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
-const EMAIL_SERVICE = process.env.EMAIL_SERVICE || 'resend';
 const EMAIL_MODE = process.env.EMAIL_MODE || 'development';
+const EMAIL_API_KEY = process.env.EMAIL_API_KEY;
 
-// Initialize Resend for production (lazy initialization)
+// Initialize Resend client (lazy initialization)
 let resendClient: Resend | null = null;
 
 function getResendClient(): Resend {
-  if (!resendClient && process.env.EMAIL_API_KEY) {
-    resendClient = new Resend(process.env.EMAIL_API_KEY);
+  if (!resendClient && EMAIL_API_KEY) {
+    resendClient = new Resend(EMAIL_API_KEY);
   }
   if (!resendClient) {
-    throw new Error('Resend API key is not configured');
+    throw new Error('Resend API key is not configured. Set EMAIL_API_KEY in environment variables.');
   }
   return resendClient;
 }
 
-// Email service configuration for SMTP (Mailtrap)
-const emailConfig = {
-  host: process.env.EMAIL_HOST || 'sandbox.smtp.mailtrap.io',
-  port: parseInt(process.env.EMAIL_PORT || '2525'),
-  secure: false, // true for 465, false for other ports
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
-  },
-};
-
-// Create reusable transporter for SMTP
-const transporter = EMAIL_SERVICE === 'mailtrap'
-  ? nodemailer.createTransport(emailConfig)
-  : null;
-
 /**
- * Send email using the configured service (Resend or Mailtrap)
+ * Send email using Resend API
  * @param to - Recipient email address
  * @param subject - Email subject
  * @param html - Email HTML content
@@ -46,35 +30,21 @@ async function sendEmail(
   subject: string,
   html: string
 ): Promise<boolean> {
-  const fromName = process.env.EMAIL_FROM_NAME || 'fotolokashen';
+  const fromName = process.env.EMAIL_FROM_NAME || 'Fotolokashen';
   const fromAddress = process.env.EMAIL_FROM_ADDRESS || 'noreply@fotolokashen.com';
 
   try {
-    if (EMAIL_SERVICE === 'resend') {
-      // Production: Use Resend API
-      const resend = getResendClient();
-      await resend.emails.send({
-        from: `${fromName} <${fromAddress}>`,
-        to,
-        subject,
-        html,
-      });
-      return true;
-    } else if (EMAIL_SERVICE === 'mailtrap' && transporter) {
-      // Development: Use Mailtrap SMTP
-      await transporter.sendMail({
-        from: `"${fromName}" <${fromAddress}>`,
-        to,
-        subject,
-        html,
-      });
-      return true;
-    } else {
-      console.error('No email service configured');
-      return false;
-    }
+    const resend = getResendClient();
+    await resend.emails.send({
+      from: `${fromName} <${fromAddress}>`,
+      to,
+      subject,
+      html,
+    });
+    console.log(`✅ Email sent to ${to}: ${subject}`);
+    return true;
   } catch (error) {
-    console.error('Email send error:', error);
+    console.error('❌ Email send error:', error);
     return false;
   }
 }
