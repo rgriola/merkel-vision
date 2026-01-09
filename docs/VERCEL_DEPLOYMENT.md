@@ -7,6 +7,29 @@ git push
 npx vercel --prod  # ← Vercel is deprecating this
 ```
 
+# 1. Create a feature branch
+git checkout -b feature/my-new-feature
+
+# 2. Make changes and push
+git add .
+git commit -m "Add new feature"
+git push origin feature/my-new-feature
+
+# 3. Vercel automatically deploys to:
+# https://fotolokashen-git-feature-my-new-feature-rgriola.vercel.app
+
+
+# Create a test branch
+git checkout -b test/preview-deployment
+
+# Make a small change (like updating README)
+echo "Testing preview deployment" >> README.md
+
+# Push to trigger preview
+git add README.md
+git commit -m "Test: Preview deployment"
+git push origin test/preview-deployment
+
 ---
 
 ## Recommended Setup (Git Integration) ✅
