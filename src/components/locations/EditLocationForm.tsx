@@ -230,7 +230,6 @@ export function EditLocationForm({
             {showPhotoUpload && (
                 <div className="pb-4 border-b">
                     <ImageKitUploader
-                        placeId={location.placeId}
                         onPhotosChange={setPhotos}
                         maxPhotos={20}
                         // maxFileSize uses default from FILE_SIZE_LIMITS.PHOTO (10 MB)
