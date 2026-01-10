@@ -1,4 +1,10 @@
 import { Resend } from 'resend';
+import {
+  verificationEmailTemplate,
+  passwordResetEmailTemplate,
+  passwordChangedEmailTemplate,
+  accountDeletionEmailTemplate,
+} from './email-templates';
 
 // Environment variables
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
@@ -68,7 +74,7 @@ export async function sendVerificationEmail(
     console.log('📧 VERIFICATION EMAIL (Development Mode)');
     console.log('='.repeat(80));
     console.log(`To: ${email}`);
-    console.log(`Subject: Verify your email address`);
+    console.log(`Subject: Please confirm your registration`);
     console.log(`\nHi ${username},\n`);
     console.log(`Click the link below to verify your email:\n`);
     console.log(`🔗 ${verificationUrl}\n`);
@@ -76,19 +82,11 @@ export async function sendVerificationEmail(
     return true;
   }
 
-  // Send actual email via configured service
+  // Send actual email with styled template
   return sendEmail(
     email,
-    'Verify your email address',
-    `
-      <h2>Welcome to Fotolokashen!</h2>
-      <p>Hi ${username},</p>
-      <p>Thank you for registering. Please click the link below to verify your email address:</p>
-      <a href="${verificationUrl}" style="display: inline-block; padding: 12px 24px; background-color: #4285f4; color: white; text-decoration: none; border-radius: 4px; margin: 16px 0;">Verify Email</a>
-      <p>Or copy and paste this link into your browser:</p>
-      <p style="color: #666; word-break: break-all;">${verificationUrl}</p>
-      <p>If you didn't create an account, please ignore this email.</p>
-    `
+    'Please confirm your registration',
+    verificationEmailTemplate(username, verificationUrl)
   );
 }
 
@@ -119,21 +117,11 @@ export async function sendPasswordResetEmail(
     return true;
   }
 
-  // Send actual email via configured service
+  // Send actual email with styled template
   return sendEmail(
     email,
     'Reset your password',
-    `
-      <h2>Password Reset Request</h2>
-      <p>Hi ${username},</p>
-      <p>We received a request to reset your password. Click the link below to create a new password:</p>
-      <a href="${resetUrl}" style="display: inline-block; padding: 12px 24px; background-color: #4285f4; color: white; text-decoration: none; border-radius: 4px; margin: 16px 0;">Reset Password</a>
-      <p>Or copy and paste this link into your browser:</p>
-      <p style="color: #666; word-break: break-all;">${resetUrl}</p>
-      <p><strong>This link will expire in 15 minutes.</strong></p>
-      <p>If you didn't request a password reset, please ignore this email.</p>
-      <p style="color: #666; font-size: 12px;">For security: Never share this link with anyone.</p>
-    `
+    passwordResetEmailTemplate(username, resetUrl)
   );
 }
 
@@ -172,27 +160,11 @@ export async function sendPasswordChangedEmail(
     return true;
   }
 
-  // Send actual email via configured service
+  // Send actual email with styled template
   return sendEmail(
     email,
     'Your Password Was Changed',
-    `
-      <h2>Password Changed</h2>
-      <p>Hi ${username},</p>
-      <p>Your password was successfully changed on <strong>${formattedTime}</strong>.</p>
-      ${ipAddress ? `<p>IP Address: <code>${ipAddress}</code></p>` : ''}
-      <p>If you made this change, no further action is needed.</p>
-      <div style="background-color: #fff3cd; border-left: 4px solid #ffc107; padding: 12px; margin: 20px 0;">
-        <strong>⚠️ If you did NOT make this change:</strong>
-        <ol style="margin: 10px 0;">
-          <li>Someone may have unauthorized access to your account</li>
-          <li>Contact our support team immediately at <a href="mailto:admin@fotolokashen.com">admin@fotolokashen.com</a></li>
-          <li>We recommend securing your email account as well</li>
-        </ol>
-      </div>
-      <p>For your security, all active sessions have been logged out.</p>
-      <p style="color: #666; font-size: 12px;">This is an automated security notification.</p>
-    `
+    passwordChangedEmailTemplate(username, formattedTime, ipAddress)
   );
 }
 
@@ -222,33 +194,10 @@ export async function sendAccountDeletionEmail(
     return true;
   }
 
-  // Send actual email via configured service
+  // Send actual email with styled template
   return sendEmail(
     email,
     'We deleted your Fotolokashen account',
-    `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-        <h2 style="color: #333;">Account Deletion Notification</h2>
-        <p>Hi ${username},</p>
-        <p>We have removed your account <strong>${email}</strong> entirely.</p>
-        <p>This means we have permanently deleted all personal information, photos, and metadata related to your account.</p>
-        <div style="background-color: #f8f9fa; border-left: 4px solid #6c757d; padding: 16px; margin: 24px 0;">
-          <p style="margin: 0;"><strong>What was deleted:</strong></p>
-          <ul style="margin: 8px 0;">
-            <li>Your profile and account information</li>
-            <li>All uploaded photos and images</li>
-            <li>All locations and saved places</li>
-            <li>All session data and preferences</li>
-          </ul>
-        </div>
-        <p>At any time you may register again at <a href="${APP_URL}/register">${APP_URL}/register</a>.</p>
-        <p style="margin-top: 32px;">- MV Team</p>
-        <hr style="border: none; border-top: 1px solid #e0e0e0; margin: 24px 0;">
-        <p style="color: #666; font-size: 12px;">
-          This is an automated notification. If you have questions, please contact us at 
-          <a href="mailto:admin@fotolokashen.com">admin@fotolokashen.com</a>.
-        </p>
-      </div>
-    `
+    accountDeletionEmailTemplate(username, email)
   );
 }
