@@ -38,7 +38,7 @@ export default function Home() {
               Coordinate with Purpose{" "}
             </h1>
             <p className="mb-8 text-lg sm:text-xl text-gray-200">
-            Use Fotolokashen with Google Maps to orginize your Photos, Locations, Projects, and Teams.</p>
+              Use Fotolokashen with Google Maps to orginize your Photos, Locations, Projects, and Teams.</p>
             {/* Buttons - Reduced width by ~50% */}
             <div className="flex flex-col gap-4 sm:flex-row sm:justify-center items-center">
               {user ? (

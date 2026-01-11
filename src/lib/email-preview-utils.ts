@@ -41,8 +41,8 @@ export const DEVICE_SIZES = {
 export type DeviceSize = keyof typeof DEVICE_SIZES;
 
 export const EMAIL_TEMPLATES = [
-    { value: 'verification', label: '✉️ Verification Email', subject: 'Please confirm your registration' },
-    { value: 'welcomeTo', label: '✉️ Welcome To Fotolokashen', subject: 'Welcome to Fotolokashen' },
+    { value: 'verification', label: '✉️ Verification Email', subject: 'Confirm your email' },
+    { value: 'welcomeTo', label: '✉️ Welcome To Fotolokashen', subject: 'Email Confirmed' },
     { value: 'passwordReset', label: '🔐 Password Reset Email', subject: 'Reset your password' },
     { value: 'passwordChanged', label: '✅ Password Changed Notification', subject: 'Your Password Was Changed' },
     { value: 'accountDeletion', label: '🗑️ Account Deletion Email', subject: 'We deleted your Fotolokashen account' },

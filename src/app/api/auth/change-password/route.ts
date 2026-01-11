@@ -3,8 +3,11 @@ import { z } from 'zod';
 import { requireAuth, apiResponse, apiError } from '@/lib/api-middleware';
 import { comparePassword, hashPassword } from '@/lib/auth';
 import { sendPasswordChangedEmail } from '@/lib/email';
-import { logSecurityEvent, SecurityEventType, getClientIP } from '@/lib/security';
+import { logSecurityEvent, SecurityEventType, getClientIP, getPasswordResetAttemptCount } from '@/lib/security';
 import prisma from '@/lib/prisma';
+
+// Rate limiting constants (more lenient for authenticated users)
+const MAX_PASSWORD_CHANGES_PER_HOUR = 5;  // 5 changes per hour for authenticated users
 
 // Validation schema
 const changePasswordSchema = z.object({
@@ -58,11 +61,31 @@ export async function POST(request: NextRequest) {
                 email: true,
                 username: true,
                 passwordHash: true,
+                timezone: true,
             },
         });
 
         if (!fullUser) {
             return apiError('User not found', 404, 'USER_NOT_FOUND');
+        }
+
+        // Check rate limiting - prevent too many password changes
+        // Note: We use the same tracking function but with more lenient limits
+        const recentChanges = await getPasswordResetAttemptCount(fullUser.email, 60);
+        if (recentChanges >= MAX_PASSWORD_CHANGES_PER_HOUR) {
+            await logSecurityEvent({
+                userId: authResult.user.id,
+                eventType: SecurityEventType.PASSWORD_CHANGE,
+                request,
+                success: false,
+                metadata: { email: fullUser.email, reason: 'rate_limited' },
+            });
+
+            return apiError(
+                'Too many password changes. Please wait 1 hour before trying again.',
+                429,
+                'RATE_LIMITED'
+            );
         }
 
         // Verify current password
@@ -103,7 +126,8 @@ export async function POST(request: NextRequest) {
             fullUser.email,
             fullUser.username,
             ipAddress,
-            new Date()
+            new Date(),
+            fullUser.timezone
         );
 
         // Log successful password change

@@ -4,6 +4,7 @@ import {
   passwordResetEmailTemplate,
   passwordChangedEmailTemplate,
   accountDeletionEmailTemplate,
+  welcomeToEmailTemplate,
 } from './email-templates';
 
 // Environment variables
@@ -91,6 +92,37 @@ export async function sendVerificationEmail(
 }
 
 /**
+ * Send welcome email (after verification)
+ * @param email - User's email address
+ * @param username - User's username
+ */
+export async function sendWelcomeEmail(
+  email: string,
+  username: string
+): Promise<boolean> {
+  // In development mode, just log to console
+  if (EMAIL_MODE === 'development') {
+    console.log('\n' + '='.repeat(80));
+    console.log('🎉 WELCOME EMAIL (Development Mode)');
+    console.log('='.repeat(80));
+    console.log(`To: ${email}`);
+    console.log(`Subject: Email Confirmed - Welcome to Fotolokashen!`);
+    console.log(`\nHi ${username},\n`);
+    console.log(`Your email has been confirmed! Welcome to Fotolokashen.`);
+    console.log(`\nStart adding locations, photos, and building your projects!`);
+    console.log('='.repeat(80) + '\n');
+    return true;
+  }
+
+  // Send actual email with styled template
+  return sendEmail(
+    email,
+    'Email Confirmed - Welcome to Fotolokashen!',
+    welcomeToEmailTemplate(username)
+  );
+}
+
+/**
  * Send password reset email
  * @param email - User's email address
  * @param token - Reset token
@@ -131,16 +163,26 @@ export async function sendPasswordResetEmail(
  * @param username - User's username
  * @param ipAddress - IP address where change occurred
  * @param timestamp - When the change occurred
+ * @param userTimezone - User's timezone preference (optional)
  */
 export async function sendPasswordChangedEmail(
   email: string,
   username: string,
   ipAddress: string | null,
-  timestamp: Date
+  timestamp: Date,
+  userTimezone?: string | null
 ): Promise<boolean> {
+  // Format timestamp in user's timezone if available, otherwise UTC
+  const timezone = userTimezone || 'UTC';
+
   const formattedTime = timestamp.toLocaleString('en-US', {
-    dateStyle: 'long',
-    timeStyle: 'short',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+    timeZone: timezone,
+    timeZoneName: 'short',
   });
 
   // In development mode, just log to console

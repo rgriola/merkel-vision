@@ -7,7 +7,8 @@ import { logSecurityEvent, SecurityEventType, getPasswordResetRequestCount } fro
 import crypto from 'crypto';
 
 // Rate limiting constants
-const MAX_RESET_REQUESTS_PER_HOUR = 5;
+const MAX_REQUESTS_PER_15_MIN = 2;  // 2 requests in 15 minutes
+const MAX_REQUESTS_PER_HOUR = 3;    // 3 requests in 1 hour (includes the 2 from 15min)
 const TOKEN_EXPIRY_MINUTES = 15;
 
 // Validation schema
@@ -38,19 +39,35 @@ export async function POST(request: NextRequest) {
 
     const { email } = validation.data;
 
-    // Check rate limiting for this email
-    const resetRequestCount = await getPasswordResetRequestCount(email, 60);
-    if (resetRequestCount >= MAX_RESET_REQUESTS_PER_HOUR) {
-      // Log the rate limit event
+    // Check rate limiting - 15 minute window (stricter)
+    const recentRequestCount = await getPasswordResetRequestCount(email, 15);
+    if (recentRequestCount >= MAX_REQUESTS_PER_15_MIN) {
       await logSecurityEvent({
         eventType: SecurityEventType.PASSWORD_RESET_REQUEST,
         request,
         success: false,
-        metadata: { email, reason: 'rate_limited' },
+        metadata: { email, reason: 'rate_limited_15min' },
       });
 
       return apiError(
-        'Too many password reset requests. Please try again later.',
+        'Too many password reset requests. Please wait 15 minutes before trying again.',
+        429,
+        'RATE_LIMITED'
+      );
+    }
+
+    // Check rate limiting - 1 hour window (backup check)
+    const hourlyRequestCount = await getPasswordResetRequestCount(email, 60);
+    if (hourlyRequestCount >= MAX_REQUESTS_PER_HOUR) {
+      await logSecurityEvent({
+        eventType: SecurityEventType.PASSWORD_RESET_REQUEST,
+        request,
+        success: false,
+        metadata: { email, reason: 'rate_limited_1hour' },
+      });
+
+      return apiError(
+        'Too many password reset requests. Please wait 1 hour before trying again.',
         429,
         'RATE_LIMITED'
       );

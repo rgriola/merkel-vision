@@ -45,6 +45,7 @@ import {
     passwordResetEmailTemplate,
     passwordChangedEmailTemplate,
     accountDeletionEmailTemplate,
+    welcomeToEmailTemplate,
 } from '@/lib/email-templates';
 
 export default function EmailPreviewPage() {
@@ -66,7 +67,7 @@ export default function EmailPreviewPage() {
                 html = verificationEmailTemplate(previewData.username, previewData.verificationUrl);
                 break;
             case 'welcomeTo':
-                html = verificationEmailTemplate(previewData.username, previewData.verificationUrl);
+                html = welcomeToEmailTemplate(previewData.username);
                 break;
             case 'passwordReset':
                 html = passwordResetEmailTemplate(previewData.username, previewData.resetUrl);

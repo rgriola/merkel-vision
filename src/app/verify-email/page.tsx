@@ -3,21 +3,32 @@
 import { useEffect, useState, useRef } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { AlertCircle, CheckCircle, Mail, Clock } from 'lucide-react';
+
+type VerificationStatus = 'loading' | 'success' | 'no_token' | 'expired' | 'invalid' | 'error';
 
 export default function VerifyEmailPage() {
     const searchParams = useSearchParams();
     const router = useRouter();
-    const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
+    const [status, setStatus] = useState<VerificationStatus>('loading');
     const [message, setMessage] = useState('');
+    const [email, setEmail] = useState('');
     const [countdown, setCountdown] = useState(3);
     const [shouldRedirect, setShouldRedirect] = useState(false);
     const verifyingRef = useRef(false);
 
     useEffect(() => {
         const token = searchParams.get('token');
+        const emailParam = searchParams.get('email');
+        const resend = searchParams.get('resend');
 
+        if (emailParam) {
+            setEmail(decodeURIComponent(emailParam));
+        }
+
+        // If no token provided, show appropriate message
         if (!token) {
-            setStatus('error');
+            setStatus('no_token');
             setMessage('No verification token provided');
             return;
         }
@@ -39,8 +50,20 @@ export default function VerifyEmailPage() {
                         setShouldRedirect(true);
                     }
                 } else {
-                    setStatus('error');
-                    setMessage(data.error || 'Verification failed');
+                    // Determine specific error type based on error code or message
+                    const errorMsg = data.error || 'Verification failed';
+                    const errorCode = data.code;
+
+                    if (errorCode === 'TOKEN_EXPIRED' || errorMsg.includes('expired')) {
+                        setStatus('expired');
+                        setMessage('Your verification link has expired');
+                    } else if (errorMsg.includes('Invalid')) {
+                        setStatus('invalid');
+                        setMessage('This verification link is invalid');
+                    } else {
+                        setStatus('error');
+                        setMessage(errorMsg);
+                    }
                 }
             })
             .catch(() => {
@@ -77,6 +100,7 @@ export default function VerifyEmailPage() {
 
             {/* Content */}
             <div className="relative z-10 max-w-md w-full bg-white/95 backdrop-blur-sm rounded-lg shadow-xl p-8 mx-4">
+                {/* Loading State */}
                 {status === 'loading' && (
                     <div className="text-center">
                         <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
@@ -86,15 +110,17 @@ export default function VerifyEmailPage() {
                     </div>
                 )}
 
+                {/* Success State */}
                 {status === 'success' && (
                     <div className="text-center">
-                        <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100">
-                            <svg className="h-6 w-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
-                            </svg>
+                        <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-green-100">
+                            <CheckCircle className="h-10 w-10 text-green-600" />
                         </div>
-                        <h2 className="mt-4 text-2xl font-bold text-gray-900">Success!</h2>
+                        <h2 className="mt-4 text-2xl font-bold text-gray-900">Email Verified!</h2>
                         <p className="mt-2 text-gray-600">{message}</p>
+                        <p className="mt-3 text-sm text-gray-500">
+                            You should receive a welcome email shortly.
+                        </p>
                         {shouldRedirect && countdown > 0 && (
                             <p className="mt-3 text-sm text-indigo-600 font-medium">
                                 Redirecting to login in {countdown} second{countdown !== 1 ? 's' : ''}...
@@ -117,21 +143,32 @@ export default function VerifyEmailPage() {
                     </div>
                 )}
 
-                {status === 'error' && (
+                {/* No Token - Check Email */}
+                {status === 'no_token' && (
                     <div className="text-center">
-                        <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100">
-                            <svg className="h-6 w-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
-                            </svg>
+                        <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-amber-100">
+                            <Mail className="h-10 w-10 text-amber-600" />
                         </div>
-                        <h2 className="mt-4 text-2xl font-bold text-gray-900">Verification Failed</h2>
-                        <p className="mt-2 text-gray-600">{message}</p>
+                        <h2 className="mt-4 text-2xl font-bold text-gray-900">Check Your Email</h2>
+                        <div className="mt-4 p-4 bg-amber-50 border border-amber-200 rounded-lg">
+                            <p className="text-sm text-amber-800">
+                                <strong>Email not verified yet.</strong>
+                            </p>
+                            <p className="mt-2 text-sm text-amber-700">
+                                Please check your email inbox for the confirmation link we sent you during registration.
+                            </p>
+                        </div>
+                        {email && (
+                            <p className="mt-3 text-sm text-gray-600">
+                                Confirmation email sent to: <strong>{email}</strong>
+                            </p>
+                        )}
                         <div className="mt-6 space-y-3">
                             <Link
-                                href="/register"
+                                href="/login"
                                 className="block w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-3 px-4 rounded-lg transition-colors"
                             >
-                                Register Again
+                                Back to Login
                             </Link>
                             <Link
                                 href="/"
@@ -140,6 +177,79 @@ export default function VerifyEmailPage() {
                                 Go to Home
                             </Link>
                         </div>
+                        <p className="mt-4 text-xs text-gray-500">
+                            Didn't receive the email? Check your spam folder or contact support.
+                        </p>
+                    </div>
+                )}
+
+                {/* Expired Token */}
+                {status === 'expired' && (
+                    <div className="text-center">
+                        <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-amber-100">
+                            <Clock className="h-10 w-10 text-amber-600" />
+                        </div>
+                        <h2 className="mt-4 text-2xl font-bold text-gray-900">Link Expired</h2>
+                        <div className="mt-4 p-4 bg-amber-50 border border-amber-200 rounded-lg">
+                            <p className="text-sm text-amber-800">
+                                <strong>Your verification link has expired.</strong>
+                            </p>
+                            <p className="mt-2 text-sm text-amber-700">
+                                For security reasons, email verification links expire after 30 minutes.
+                            </p>
+                        </div>
+                        <div className="mt-6 space-y-3">
+                            <Link
+                                href="/forgot-password"
+                                className="block w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-3 px-4 rounded-lg transition-colors"
+                            >
+                                Request New Verification Link
+                            </Link>
+                            <Link
+                                href="/login"
+                                className="block w-full bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-3 px-4 rounded-lg transition-colors"
+                            >
+                                Back to Login
+                            </Link>
+                        </div>
+                        <p className="mt-4 text-xs text-gray-500">
+                            Use the "Forgot Password" flow to receive a new verification email.
+                        </p>
+                    </div>
+                )}
+
+                {/* Invalid Token or Other Error */}
+                {(status === 'invalid' || status === 'error') && (
+                    <div className="text-center">
+                        <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-amber-100">
+                            <AlertCircle className="h-10 w-10 text-amber-600" />
+                        </div>
+                        <h2 className="mt-4 text-2xl font-bold text-gray-900">Verification Issue</h2>
+                        <div className="mt-4 p-4 bg-amber-50 border border-amber-200 rounded-lg">
+                            <p className="text-sm text-amber-800">
+                                <strong>{message}</strong>
+                            </p>
+                            <p className="mt-2 text-sm text-amber-700">
+                                The verification link may have already been used or is no longer valid.
+                            </p>
+                        </div>
+                        <div className="mt-6 space-y-3">
+                            <Link
+                                href="/login"
+                                className="block w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-3 px-4 rounded-lg transition-colors"
+                            >
+                                Try Logging In
+                            </Link>
+                            <Link
+                                href="/forgot-password"
+                                className="block w-full bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-3 px-4 rounded-lg transition-colors"
+                            >
+                                Request New Link
+                            </Link>
+                        </div>
+                        <p className="mt-4 text-xs text-gray-500">
+                            If your email is already verified, you can log in directly.
+                        </p>
                     </div>
                 )}
             </div>

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { apiResponse, apiError } from '@/lib/api-middleware';
+import { sendWelcomeEmail } from '@/lib/email';
 
 export async function GET(request: NextRequest) {
   try {
@@ -25,12 +26,21 @@ export async function GET(request: NextRequest) {
       return apiError('Invalid or expired verification token', 400, 'INVALID_TOKEN');
     }
 
+    // Check if token has expired
+    if (user.verificationTokenExpiry && user.verificationTokenExpiry < new Date()) {
+      console.log('❌ Email verification failed: Token expired');
+      console.log(`   Expiry: ${user.verificationTokenExpiry.toISOString()}`);
+      console.log(`   Current: ${new Date().toISOString()}`);
+      return apiError('Verification token has expired. Please request a new one.', 400, 'TOKEN_EXPIRED');
+    }
+
     // Update user to mark email as verified and clear token
     await prisma.user.update({
       where: { id: user.id },
       data: {
         emailVerified: true,
         verificationToken: null,
+        verificationTokenExpiry: null,
       },
     });
 
@@ -39,6 +49,14 @@ export async function GET(request: NextRequest) {
     console.log(`   User: ${user.email} (${user.username})`);
     console.log(`   User ID: ${user.id}`);
     console.log(`   Timestamp: ${new Date().toISOString()}`);
+
+    // Send welcome email
+    const username = user.firstName && user.lastName
+      ? `${user.firstName} ${user.lastName}`
+      : user.username;
+
+    await sendWelcomeEmail(user.email, username);
+    console.log('📧 Welcome email sent to', user.email);
 
     return apiResponse({
       success: true,

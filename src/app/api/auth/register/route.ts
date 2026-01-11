@@ -60,8 +60,9 @@ export async function POST(request: NextRequest) {
     // Hash password
     const passwordHash = await hashPassword(password);
 
-    // Generate verification token
+    // Generate verification token with 30-minute expiry
     const verificationToken = generateVerificationToken();
+    const verificationTokenExpiry = new Date(Date.now() + 30 * 60 * 1000); // 30 minutes
 
     // Create user
     const user = await prisma.user.create({
@@ -72,6 +73,7 @@ export async function POST(request: NextRequest) {
         firstName: firstName || null,
         lastName: lastName || null,
         verificationToken,
+        verificationTokenExpiry,
         emailVerified: false,
         isActive: true,
         isAdmin: false,
@@ -114,10 +116,10 @@ export async function POST(request: NextRequest) {
 
     // Generate JWT token
     const token = generateToken({
-        ...user,
-        gpsPermissionUpdated: user.gpsPermissionUpdated?.toISOString() || null,
-        homeLocationUpdated: user.homeLocationUpdated?.toISOString() || null,
-        createdAt: user.createdAt.toISOString(),
+      ...user,
+      gpsPermissionUpdated: user.gpsPermissionUpdated?.toISOString() || null,
+      homeLocationUpdated: user.homeLocationUpdated?.toISOString() || null,
+      createdAt: user.createdAt.toISOString(),
     }, false);
 
     // Create session record

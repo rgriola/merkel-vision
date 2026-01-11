@@ -4,7 +4,11 @@ import prisma from '@/lib/prisma';
 import { hashPassword, generateToken } from '@/lib/auth';
 import { apiResponse, apiError, setAuthCookie } from '@/lib/api-middleware';
 import { sendPasswordChangedEmail } from '@/lib/email';
-import { logSecurityEvent, SecurityEventType, getClientIP } from '@/lib/security';
+import { logSecurityEvent, SecurityEventType, getClientIP, getPasswordResetAttemptCount } from '@/lib/security';
+
+// Rate limiting constants
+const MAX_RESET_ATTEMPTS_PER_15_MIN = 2;  // 2 successful resets in 15 minutes
+const MAX_RESET_ATTEMPTS_PER_HOUR = 3;    // 3 successful resets in 1 hour
 
 // Validation schema
 const resetPasswordSchema = z.object({
@@ -90,6 +94,41 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Check rate limiting - prevent too many password resets
+    const recentResets = await getPasswordResetAttemptCount(user.email, 15);
+    if (recentResets >= MAX_RESET_ATTEMPTS_PER_15_MIN) {
+      await logSecurityEvent({
+        userId: user.id,
+        eventType: SecurityEventType.PASSWORD_RESET_SUCCESS,
+        request,
+        success: false,
+        metadata: { email: user.email, reason: 'rate_limited_15min' },
+      });
+
+      return apiError(
+        'Too many password reset attempts. Please wait 15 minutes before trying again.',
+        429,
+        'RATE_LIMITED'
+      );
+    }
+
+    const hourlyResets = await getPasswordResetAttemptCount(user.email, 60);
+    if (hourlyResets >= MAX_RESET_ATTEMPTS_PER_HOUR) {
+      await logSecurityEvent({
+        userId: user.id,
+        eventType: SecurityEventType.PASSWORD_RESET_SUCCESS,
+        request,
+        success: false,
+        metadata: { email: user.email, reason: 'rate_limited_1hour' },
+      });
+
+      return apiError(
+        'Too many password reset attempts. Please wait 1 hour before trying again.',
+        429,
+        'RATE_LIMITED'
+      );
+    }
+
     // Check if account is active
     if (!user.isActive) {
       await logSecurityEvent({
@@ -143,8 +182,19 @@ export async function POST(request: NextRequest) {
       metadata: { email: user.email },
     });
 
-    // Auto-login: Generate JWT token for the user
-    // We construct the PublicUser object manually here since we have all the fields
+    // Check if email is verified before auto-login
+    if (!user.emailVerified) {
+      // Email not verified - require verification before login
+      return apiResponse({
+        success: true,
+        message: 'Password reset successful. Please verify your email before logging in.',
+        requiresVerification: true,
+        email: user.email,
+      });
+    }
+
+    // Email is verified - proceed with auto-login
+    // Generate JWT token for the user
     const jwtToken = generateToken(
       {
         id: user.id,

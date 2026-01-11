@@ -42,7 +42,7 @@ export async function POST(request: NextRequest) {
         // Rate limiting check
         const now = Date.now();
         const userRateLimits = rateLimitMap.get(email) || [];
-        
+
         // Remove timestamps older than the rate limit window
         const recentAttempts = userRateLimits.filter(
             timestamp => now - timestamp < RATE_LIMIT_WINDOW
@@ -56,9 +56,9 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        // Generate new verification token
+        // Generate new verification token with 30-minute expiry
         const verificationToken = generateVerificationToken();
-        const verificationTokenExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+        const verificationTokenExpiry = new Date(Date.now() + 30 * 60 * 1000); // 30 minutes
 
         // Update user with new token
         await prisma.user.update({

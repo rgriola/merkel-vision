@@ -205,6 +205,37 @@ export async function getPasswordResetRequestCount(email: string, windowMinutes:
 }
 
 /**
+ * Get password reset attempt count (actual password changes) for rate limiting
+ * This tracks successful password resets to prevent abuse
+ */
+export async function getPasswordResetAttemptCount(email: string, windowMinutes: number = 60): Promise<number> {
+    const since = new Date(Date.now() - windowMinutes * 60 * 1000);
+
+    // Fetch all successful password resets in the time window
+    const logs = await prisma.securityLog.findMany({
+        where: {
+            eventType: SecurityEventType.PASSWORD_RESET_SUCCESS,
+            success: true,
+            createdAt: { gte: since },
+        },
+        select: {
+            metadata: true,
+        },
+    });
+
+    // Filter by email in JavaScript
+    const count = logs.filter(log => {
+        if (log.metadata && typeof log.metadata === 'object') {
+            const meta = log.metadata as Record<string, any>;
+            return meta.email === email;
+        }
+        return false;
+    }).length;
+
+    return count;
+}
+
+/**
  * Format security log for display
  */
 export function formatSecurityLog(log: any): string {

@@ -85,19 +85,39 @@ export function ResetPasswordForm({ token }: ResetPasswordFormProps) {
 
             if (!response.ok) {
                 toast.error(result.error || 'Failed to reset password');
+                setIsLoading(false);
                 return;
             }
 
+            // Check if email verification is required
+            if (result.requiresVerification) {
+                toast.success('Password reset successful!');
+
+                // Wait a moment for user to see the message
+                await new Promise(resolve => setTimeout(resolve, 1500));
+
+                // Show verification required message
+                toast.info('Please verify your email before logging in.');
+
+                // Wait another moment
+                await new Promise(resolve => setTimeout(resolve, 1500));
+
+                // Redirect to verify-email page with email parameter
+                router.push(`/verify-email?email=${encodeURIComponent(result.email)}`);
+                return;
+            }
+
+            // Email is verified - auto-login successful
             toast.success('Password reset successful! Logging you in...');
 
-            // Auto-login successful - redirect to map
-            setTimeout(() => {
-                window.location.href = '/map';
-            }, 1000);
+            // Wait for server to process and set cookies
+            await new Promise(resolve => setTimeout(resolve, 1500));
+
+            // Redirect to map
+            router.push('/map');
         } catch (error) {
             console.error('Reset password error:', error);
             toast.error('An unexpected error occurred');
-        } finally {
             setIsLoading(false);
         }
     };
@@ -181,12 +201,12 @@ export function ResetPasswordForm({ token }: ResetPasswordFormProps) {
                                 {...register('confirmPassword')}
                                 disabled={isLoading}
                                 className={`pl-9 pr-20 ${errors.confirmPassword
-                                        ? 'border-red-500 focus-visible:ring-red-500'
-                                        : passwordsMatch
-                                            ? 'border-green-500 focus-visible:ring-green-500'
-                                            : passwordsDontMatch
-                                                ? 'border-red-500 focus-visible:ring-red-500'
-                                                : ''
+                                    ? 'border-red-500 focus-visible:ring-red-500'
+                                    : passwordsMatch
+                                        ? 'border-green-500 focus-visible:ring-green-500'
+                                        : passwordsDontMatch
+                                            ? 'border-red-500 focus-visible:ring-red-500'
+                                            : ''
                                     }`}
                                 aria-invalid={errors.confirmPassword ? 'true' : 'false'}
                             />

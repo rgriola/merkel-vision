@@ -40,7 +40,7 @@ function emailWrapper(content: string): string {
                 📍 ${BRAND_NAME}
               </h1>
               <p style="margin: 8px 0 0; color: rgba(255,255,255,0.9); font-size: 14px;">
-                Location Scouting & Production Management
+              Coordinate with Purpose
               </p>
             </td>
           </tr>
@@ -139,7 +139,7 @@ function alertBox(type: 'info' | 'warning' | 'success' | 'danger', content: stri
 export function verificationEmailTemplate(username: string, verificationUrl: string): string {
   const content = `
     <h2 style="margin: 0 0 16px; color: #212529; font-size: 24px; font-weight: 600;">
-      Welcome to ${BRAND_NAME}! 🎉
+      Verification Email 🎉
     </h2>
     
     <p style="margin: 0 0 16px; color: #495057; font-size: 16px; line-height: 1.6;">
@@ -147,19 +147,19 @@ export function verificationEmailTemplate(username: string, verificationUrl: str
     </p>
     
     <p style="margin: 0 0 16px; color: #495057; font-size: 16px; line-height: 1.6;">
-      Thank you for registering! We're excited to have you on board. To get started, please verify your email address by clicking the button below:
+      You are registered! Now click the link and confirming your email. We're excited to have you on board.
     </p>
     
     ${emailButton(verificationUrl, '✓ Verify Email Address', 'primary')}
     
     <p style="margin: 24px 0 8px; color: #6c757d; font-size: 14px; line-height: 1.6;">
-      Or copy and paste this link into your browser:
+      Or copy-paste this link into your browser:
     </p>
     <p style="margin: 0 0 16px; padding: 12px; background-color: #f8f9fa; border-radius: 4px; color: #495057; font-size: 13px; word-break: break-all; font-family: 'Courier New', monospace;">
       ${verificationUrl}
     </p>
     
-    ${alertBox('info', 'This verification link will expire in 24 hours for security purposes.')}
+    ${alertBox('info', 'This verification link will expire in 30 minutes for security purposes.')}
     
     <p style="margin: 24px 0 0; color: #6c757d; font-size: 14px; line-height: 1.6;">
       If you didn't create an account with ${BRAND_NAME}, you can safely ignore this email.
@@ -170,12 +170,12 @@ export function verificationEmailTemplate(username: string, verificationUrl: str
 }
 
 /**
- * Verification Email Template
+ * Welcome Email Template (Post-Verification)
  */
-export function welcomeToEmailTemplate(username: string, verificationUrl: string): string {
+export function welcomeToEmailTemplate(username: string): string {
   const content = `
     <h2 style="margin: 0 0 16px; color: #212529; font-size: 24px; font-weight: 600;">
-      Welcome to ${BRAND_NAME}! 🎉
+      Email confirmed
     </h2>
     
     <p style="margin: 0 0 16px; color: #495057; font-size: 16px; line-height: 1.6;">
@@ -183,20 +183,9 @@ export function welcomeToEmailTemplate(username: string, verificationUrl: string
     </p>
     
     <p style="margin: 0 0 16px; color: #495057; font-size: 16px; line-height: 1.6;">
-      Thank you for registering! We're excited to have you on board. To get started, please verify your email address by clicking the button below:
+      Now try to set up a new location with photos and info for your specific needs. Add photos, locations, create projects or teams. Invite your crew and start producing some great stuff.
     </p>
-    
-    ${emailButton(verificationUrl, '✓ Verify Email Address', 'primary')}
-    
-    <p style="margin: 24px 0 8px; color: #6c757d; font-size: 14px; line-height: 1.6;">
-      Or copy and paste this link into your browser:
-    </p>
-    <p style="margin: 0 0 16px; padding: 12px; background-color: #f8f9fa; border-radius: 4px; color: #495057; font-size: 13px; word-break: break-all; font-family: 'Courier New', monospace;">
-      ${verificationUrl}
-    </p>
-    
-    ${alertBox('info', 'This verification link will expire in 24 hours for security purposes.')}
-    
+  
     <p style="margin: 24px 0 0; color: #6c757d; font-size: 14px; line-height: 1.6;">
       If you didn't create an account with ${BRAND_NAME}, you can safely ignore this email.
     </p>
