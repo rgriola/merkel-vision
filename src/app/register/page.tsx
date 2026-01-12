@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import { RegisterForm } from '@/components/auth/RegisterForm';
 
 export default function RegisterPage() {
@@ -18,6 +19,17 @@ export default function RegisterPage() {
       {/* Content - 25px from header with consistent padding */}
       <div className="relative z-10 w-full px-4 md:px-6 lg:px-8 mt-[25px] flex-1 flex items-start md:items-center">
         <div className="w-full">
+          {/* Logo */}
+          <div className="mb-6 flex justify-center">
+            <Image
+              src="/logo.png"
+              alt="fotolokashen"
+              width={1200}
+              height={196}
+              className="w-auto h-16 sm:h-20"
+              priority
+            />
+          </div>
           <RegisterForm />
         </div>
       </div>

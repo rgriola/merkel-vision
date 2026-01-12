@@ -2,6 +2,7 @@
 
 import { useSearchParams } from 'next/navigation';
 import { Suspense } from 'react';
+import Image from 'next/image';
 import { ResetPasswordForm } from '@/components/auth/ResetPasswordForm';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { AlertCircle } from 'lucide-react';
@@ -14,31 +15,59 @@ function ResetPasswordContent() {
 
     if (!token) {
         return (
-            <Card className="w-full max-w-md bg-white/95 backdrop-blur-sm">
-                <CardHeader className="space-y-1 text-center">
-                    <div className="mx-auto w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mb-4">
-                        <AlertCircle className="w-6 h-6 text-red-600" />
-                    </div>
-                    <CardTitle className="text-2xl font-bold">Invalid Reset Link</CardTitle>
-                    <CardDescription>
-                        This password reset link is missing required information.
-                    </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                    <p className="text-sm text-gray-600 text-center">
-                        Please request a new password reset link.
-                    </p>
-                    <Link href="/forgot-password" className="block">
-                        <Button className="w-full">
-                            Request New Reset Link
-                        </Button>
-                    </Link>
-                </CardContent>
-            </Card>
+            <div className="w-full max-w-md mx-auto">
+                {/* Logo */}
+                <div className="mb-6 flex justify-center">
+                    <Image
+                        src="/logo.png"
+                        alt="fotolokashen"
+                        width={1200}
+                        height={196}
+                        className="w-auto h-16 sm:h-20"
+                        priority
+                    />
+                </div>
+                <Card className="w-full bg-white/95 backdrop-blur-sm">
+                    <CardHeader className="space-y-1 text-center">
+                        <div className="mx-auto w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mb-4">
+                            <AlertCircle className="w-6 h-6 text-red-600" />
+                        </div>
+                        <CardTitle className="text-2xl font-bold">Invalid Reset Link</CardTitle>
+                        <CardDescription>
+                            This password reset link is missing required information.
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                        <p className="text-sm text-gray-600 text-center">
+                            Please request a new password reset link.
+                        </p>
+                        <Link href="/forgot-password" className="block">
+                            <Button className="w-full">
+                                Request New Reset Link
+                            </Button>
+                        </Link>
+                    </CardContent>
+                </Card>
+            </div>
         );
     }
 
-    return <ResetPasswordForm token={token} />;
+    return (
+        <div className="w-full">
+            {/* Logo */}
+            <div className="mb-6 flex justify-center">
+                <Image
+                    src="/logo.png"
+                    alt="fotolokashen"
+                    width={1200}
+                    height={196}
+                    className="w-auto h-16 sm:h-20"
+                    priority
+                />
+            </div>
+            <ResetPasswordForm token={token} />
+        </div>
+    );
 }
 
 export default function ResetPasswordPage() {

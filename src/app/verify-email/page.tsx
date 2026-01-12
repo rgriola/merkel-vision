@@ -3,6 +3,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import { AlertCircle, CheckCircle, Mail, Clock } from 'lucide-react';
 
 type VerificationStatus = 'loading' | 'success' | 'no_token' | 'expired' | 'invalid' | 'error';
@@ -99,7 +100,20 @@ export default function VerifyEmailPage() {
             <div className="absolute bottom-0 left-0 h-96 w-96 rounded-full bg-purple-400/20 blur-3xl animate-pulse" />
 
             {/* Content */}
-            <div className="relative z-10 max-w-md w-full bg-white/95 backdrop-blur-sm rounded-lg shadow-xl p-8 mx-4">
+            <div className="relative z-10 max-w-md w-full mx-4">
+                {/* Logo */}
+                <div className="mb-6 flex justify-center">
+                    <Image
+                        src="/logo.png"
+                        alt="fotolokashen"
+                        width={1200}
+                        height={196}
+                        className="w-auto h-16 sm:h-20"
+                        priority
+                    />
+                </div>
+                
+                <div className="bg-white/95 backdrop-blur-sm rounded-lg shadow-xl p-8">
                 {/* Loading State */}
                 {status === 'loading' && (
                     <div className="text-center">
@@ -252,6 +266,7 @@ export default function VerifyEmailPage() {
                         </p>
                     </div>
                 )}
+                </div>
             </div>
         </div>
     );

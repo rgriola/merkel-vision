@@ -26,7 +26,7 @@ User (Primary Owner)
             └── Shared Projects
 ```
 
-**Important**: When a user shares content with a team, they retain ownership. If they leave the team, they can choose to keep or remove their content.
+**Important**: When a user shares content with a team, they retain ownership. If they leave the team, they can choose to keep or remove their content. 
 
 ---
 
@@ -34,94 +34,149 @@ User (Primary Owner)
 
 ### 1.1 Database Changes
 
-#### Add Username Slug to Users Table
+#### No Username Changes Needed ✅
 
-```sql
--- Migration: Add username slug
-ALTER TABLE users 
-ADD COLUMN username_slug VARCHAR(30) UNIQUE;
+Your existing `username` field is already perfect for URLs:
+- ✅ Unique constraint
+- ✅ 3-50 characters
+- ✅ Alphanumeric + hyphens/underscores
+- ✅ Case-insensitive lookups via `.toLowerCase()`
 
--- Create index for fast lookups
-CREATE INDEX idx_users_username_slug ON users(username_slug);
+**No migration needed for usernames!**
 
--- Backfill existing users (convert username to slug)
-UPDATE users 
-SET username_slug = LOWER(REGEXP_REPLACE(username, '[^a-zA-Z0-9_-]', '', 'g'))
-WHERE username_slug IS NULL;
+#### Add Reserved Usernames Table
 
--- Make it NOT NULL after backfill
-ALTER TABLE users 
-ALTER COLUMN username_slug SET NOT NULL;
+**Update**: `prisma/schema.prisma`
+
+```prisma
+model ReservedUsername {
+  username  String   @id
+  reason    String
+  createdAt DateTime @default(now())
+
+  @@map("reserved_usernames")
+}
 ```
 
-#### Reserved Usernames Table
+#### Update UserSave for Public Profiles
 
-```sql
--- Create reserved usernames table
-CREATE TABLE reserved_usernames (
-  slug VARCHAR(30) PRIMARY KEY,
-  reason TEXT,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
+**Update**: `prisma/schema.prisma`
 
--- Insert reserved slugs
-INSERT INTO reserved_usernames (slug, reason) VALUES
-  ('admin', 'System route'),
-  ('api', 'System route'),
-  ('app', 'System route'),
-  ('auth', 'System route'),
-  ('blog', 'Future feature'),
-  ('create-with-photo', 'System route'),
-  ('help', 'System route'),
-  ('locations', 'System route'),
-  ('login', 'System route'),
-  ('logout', 'System route'),
-  ('map', 'System route'),
-  ('profile', 'System route'),
-  ('projects', 'Future feature'),
-  ('register', 'System route'),
-  ('settings', 'System route'),
-  ('share', 'System route'),
-  ('teams', 'System route'),
-  ('www', 'System route');
+```prisma
+model UserSave {
+  id             Int       @id @default(autoincrement())
+  userId         Int
+  locationId     Int
+  savedAt        DateTime  @default(now())
+  color          String?
+  isFavorite     Boolean   @default(false)
+  personalRating Float?
+  caption        String?   // ADD: User's personal caption for location
+  tags           Json?
+  visitedAt      DateTime?
+  visibility     String    @default("private") // ADD: 'public', 'unlisted', 'private'
+  
+  location       Location  @relation(fields: [locationId], references: [id], onDelete: Cascade)
+  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, locationId])
+  @@index([locationId])
+  @@index([visibility]) // ADD: For filtering public locations
+  @@map("user_saves")
+}
+```
+
+#### Run Migration
+
+```bash
+npx prisma migrate dev --name add_user_profiles
+```
+
+#### Seed Reserved Usernames
+
+**Create/Update**: `prisma/seed.ts`
+
+```typescript
+import { PrismaClient } from '@prisma/client';
+
+const prisma = new PrismaClient();
+
+async function main() {
+  const reservedUsernames = [
+    { username: 'admin', reason: 'System route' },
+    { username: 'api', reason: 'System route' },
+    { username: 'app', reason: 'System route' },
+    { username: 'auth', reason: 'System route' },
+    { username: 'blog', reason: 'Future feature' },
+    { username: 'help', reason: 'System route' },
+    { username: 'login', reason: 'System route' },
+    { username: 'logout', reason: 'System route' },
+    { username: 'map', reason: 'System route' },
+    { username: 'profile', reason: 'System route' },
+    { username: 'register', reason: 'System route' },
+    { username: 'settings', reason: 'System route' },
+    { username: 'teams', reason: 'System route' },
+    { username: 'verify-email', reason: 'System route' },
+    { username: 'reset-password', reason: 'System route' },
+    { username: 'forgot-password', reason: 'System route' },
+    { username: 'share', reason: 'System route' },
+  ];
+
+  await prisma.reservedUsername.createMany({
+    data: reservedUsernames,
+    skipDuplicates: true,
+  });
+
+  console.log('✅ Seeded reserved usernames');
+}
+
+main()
+  .catch((e) => {
+    console.error(e);
+    process.exit(1);
+  })
+  .finally(async () => {
+    await prisma.$disconnect();
+  });
+```
+
+Run seed:
+```bash
+npx prisma db seed
 ```
 
 ### 1.2 Username Validation Utility
 
-**File**: `src/lib/username-utils.ts`
+**Create**: `src/lib/username-utils.ts`
 
 ```typescript
+import prisma from '@/lib/prisma';
+
+const USERNAME_REGEX = /^[a-zA-Z0-9_-]{3,50}$/;
+
 /**
- * Username/Slug validation and utilities
+ * Check if username is available
  */
-
-const USERNAME_REGEX = /^[a-zA-Z0-9_-]{3,30}$/;
-
 export async function isUsernameAvailable(username: string): Promise<boolean> {
-  const slug = generateSlug(username);
+  const lowerUsername = username.toLowerCase();
   
   // Check if reserved
-  const reserved = await db.query(
-    'SELECT 1 FROM reserved_usernames WHERE slug = $1',
-    [slug]
-  );
-  if (reserved.rows.length > 0) return false;
+  const reserved = await prisma.reservedUsername.findUnique({
+    where: { username: lowerUsername }
+  });
+  if (reserved) return false;
   
-  // Check if taken
-  const taken = await db.query(
-    'SELECT 1 FROM users WHERE username_slug = $1',
-    [slug]
-  );
-  return taken.rows.length === 0;
+  // Check if taken by another user
+  const taken = await prisma.user.findUnique({
+    where: { username: lowerUsername }
+  });
+  
+  return !taken;
 }
 
-export function generateSlug(username: string): string {
-  return username
-    .toLowerCase()
-    .replace(/[^a-z0-9_-]/g, '')
-    .slice(0, 30);
-}
-
+/**
+ * Validate username format
+ */
 export function validateUsername(username: string): {
   valid: boolean;
   error?: string;
@@ -130,8 +185,8 @@ export function validateUsername(username: string): {
     return { valid: false, error: 'Username must be at least 3 characters' };
   }
   
-  if (username.length > 30) {
-    return { valid: false, error: 'Username must be 30 characters or less' };
+  if (username.length > 50) {
+    return { valid: false, error: 'Username must be 50 characters or less' };
   }
   
   if (!USERNAME_REGEX.test(username)) {
@@ -144,8 +199,18 @@ export function validateUsername(username: string): {
   return { valid: true };
 }
 
+/**
+ * Format username for display
+ */
 export function formatUsername(username: string): string {
   return `@${username}`;
+}
+
+/**
+ * Normalize username for storage/lookup (case-insensitive)
+ */
+export function normalizeUsername(username: string): string {
+  return username.toLowerCase();
 }
 ```
 
@@ -155,8 +220,8 @@ export function formatUsername(username: string): string {
 
 ```typescript
 import { notFound } from 'next/navigation';
-import { getUserByUsername } from '@/lib/queries/users';
-import { getUserPublicLocations } from '@/lib/queries/locations';
+import prisma from '@/lib/prisma';
+import { normalizeUsername } from '@/lib/username-utils';
 
 interface UserProfilePageProps {
   params: { username: string };
@@ -177,6 +242,36 @@ export async function generateMetadata({ params }: UserProfilePageProps) {
   };
 }
 
+async function getUserByUsername(username: string) {
+  return await prisma.user.findUnique({
+    where: { username: normalizeUsername(username) },
+    select: {
+      id: true,
+      username: true,
+      firstName: true,
+      lastName: true,
+      avatar: true,
+      bio: true,
+      createdAt: true,
+    }
+  });
+}
+
+async function getUserPublicLocations(userId: number) {
+  return await prisma.userSave.findMany({
+    where: {
+      userId,
+      visibility: 'public'
+    },
+    include: {
+      location: true
+    },
+    orderBy: {
+      savedAt: 'desc'
+    }
+  });
+}
+
 export default async function UserProfilePage({ params }: UserProfilePageProps) {
   const user = await getUserByUsername(params.username);
   
@@ -194,8 +289,12 @@ export default async function UserProfilePage({ params }: UserProfilePageProps) 
       </div>
       
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {locations.map((location) => (
-          <LocationCard key={location.id} location={location} />
+        {locations.map((save) => (
+          <LocationCard 
+            key={save.id} 
+            location={save.location}
+            userSave={save}
+          />
         ))}
       </div>
     </div>
@@ -206,8 +305,41 @@ export default async function UserProfilePage({ params }: UserProfilePageProps) 
 **Create**: `src/app/@[username]/locations/page.tsx`
 
 ```typescript
-// User's public locations page
-export default async function UserLocationsPage({ params }: { params: { username: string } }) {
+import { notFound } from 'next/navigation';
+import prisma from '@/lib/prisma';
+import { normalizeUsername } from '@/lib/username-utils';
+
+interface UserLocationsPageProps {
+  params: { username: string };
+}
+
+async function getUserByUsername(username: string) {
+  return await prisma.user.findUnique({
+    where: { username: normalizeUsername(username) },
+    select: {
+      id: true,
+      username: true,
+      avatar: true,
+    }
+  });
+}
+
+async function getUserPublicLocations(userId: number) {
+  return await prisma.userSave.findMany({
+    where: {
+      userId,
+      visibility: 'public'
+    },
+    include: {
+      location: true
+    },
+    orderBy: {
+      savedAt: 'desc'
+    }
+  });
+}
+
+export default async function UserLocationsPage({ params }: UserLocationsPageProps) {
   const user = await getUserByUsername(params.username);
   if (!user) notFound();
   
@@ -224,51 +356,47 @@ export default async function UserLocationsPage({ params }: { params: { username
 }
 ```
 
-### 1.4 Database Queries
+### 1.4 Update Registration
 
-**File**: `src/lib/queries/users.ts`
+**Update**: `src/app/api/auth/register/route.ts`
+
+Add username validation:
 
 ```typescript
-import { db } from '@/lib/db';
+import { isUsernameAvailable, validateUsername } from '@/lib/username-utils';
 
-export async function getUserByUsername(username: string) {
-  const slug = username.toLowerCase();
-  
-  const result = await db.query(
-    `SELECT 
-      id, 
-      username, 
-      username_slug,
-      email,
-      avatar,
-      bio,
-      created_at
-    FROM users 
-    WHERE username_slug = $1`,
-    [slug]
-  );
-  
-  return result.rows[0] || null;
+// In your registration handler:
+const usernameValidation = validateUsername(username);
+if (!usernameValidation.valid) {
+  return apiError(usernameValidation.error!, 400, 'VALIDATION_ERROR');
 }
 
-export async function getUserPublicLocations(userId: number) {
-  const result = await db.query(
-    `SELECT 
-      l.*,
-      us.is_favorite,
-      us.personal_rating,
-      us.caption
-    FROM locations l
-    INNER JOIN user_saves us ON l.id = us.location_id
-    WHERE us.user_id = $1
-      AND us.visibility = 'public'
-    ORDER BY us.saved_at DESC`,
-    [userId]
-  );
-  
-  return result.rows;
+const available = await isUsernameAvailable(username);
+if (!available) {
+  return apiError('Username is taken or reserved', 409, 'USERNAME_TAKEN');
 }
+
+// Create user with lowercase username for consistency
+await prisma.user.create({
+  data: {
+    username: username.toLowerCase(),
+    // ... other fields
+  }
+});
 ```
+
+### 1.5 Add Visibility Toggle to Location Save UI
+
+**Update**: Location save form to include visibility option
+
+```typescript
+<select name="visibility" defaultValue="private">
+  <option value="private">Private (Only me)</option>
+  <option value="unlisted">Unlisted (Anyone with link)</option>
+  <option value="public">Public (Visible on profile)</option>
+</select>
+```
+
 
 ---
 
