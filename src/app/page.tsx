@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { MapPin, Save, Image as ImageIcon, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -34,11 +35,22 @@ export default function Home() {
         {/* Content - 100px from top */}
         <div className="relative z-10 w-full px-4 md:px-6 lg:px-8 pt-[100px]">
           <div className="mx-auto max-w-3xl text-center w-full">
+            {/* Logo */}
+            <div className="mb-6 flex justify-center">
+              <Image
+                src="/logo.png"
+                alt="fotolokashen"
+                width={1200}
+                height={196}
+                className="w-auto"
+                priority
+              />
+            </div>
             <h1 className="mb-6 text-4xl font-bold tracking-tight sm:text-6xl text-white">
               Coordinate with Purpose{" "}
             </h1>
-            <p className="mb-8 text-lg sm:text-xl text-gray-200">
-              Use Fotolokashen with Google Maps to orginize your Photos, Locations, Projects, and Teams.</p>
+            <p className="mb-8 text-lg sm:text-xl text-gray-200 text-center">
+              Use Fotolokashen with Google Maps to organize your Photos, Locations, Projects, and Teams.</p>
             {/* Buttons - Reduced width by ~50% */}
             <div className="flex flex-col gap-4 sm:flex-row sm:justify-center items-center">
               {user ? (
