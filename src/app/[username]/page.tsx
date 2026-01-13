@@ -13,8 +13,14 @@ async function getUserByUsername(username: string) {
   // Remove @ prefix if present
   const cleanUsername = username.startsWith('@') ? username.slice(1) : username;
   
-  return await prisma.user.findUnique({
-    where: { username: normalizeUsername(cleanUsername) },
+  // Case-insensitive lookup
+  return await prisma.user.findFirst({
+    where: { 
+      username: {
+        equals: normalizeUsername(cleanUsername),
+        mode: 'insensitive'
+      }
+    },
     select: {
       id: true,
       username: true,
