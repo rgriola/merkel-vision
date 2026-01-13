@@ -23,6 +23,7 @@ export default function BannerEditor({ isOpen, onClose, imageUrl, onSave }: Bann
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const imageRef = useRef<HTMLImageElement | null>(null);
     const containerRef = useRef<HTMLDivElement>(null);
+    const rafRef = useRef<number | null>(null);
 
     const drawCanvas = useCallback(() => {
         const canvas = canvasRef.current;
@@ -49,6 +50,30 @@ export default function BannerEditor({ isOpen, onClose, imageUrl, onSave }: Bann
 
         // Clear canvas
         ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // Draw dotted grid background
+        ctx.save();
+        ctx.strokeStyle = 'rgba(0, 0, 0, 0.1)';
+        ctx.lineWidth = 1;
+        ctx.setLineDash([5, 5]);
+        
+        // Vertical lines every 100px
+        for (let x = 0; x <= canvas.width; x += 100) {
+            ctx.beginPath();
+            ctx.moveTo(x, 0);
+            ctx.lineTo(x, canvas.height);
+            ctx.stroke();
+        }
+        
+        // Horizontal lines every 100px
+        for (let y = 0; y <= canvas.height; y += 100) {
+            ctx.beginPath();
+            ctx.moveTo(0, y);
+            ctx.lineTo(canvas.width, y);
+            ctx.stroke();
+        }
+        
+        ctx.restore();
 
         // Save context state
         ctx.save();
@@ -115,20 +140,37 @@ export default function BannerEditor({ isOpen, onClose, imageUrl, onSave }: Bann
         };
     }, [imageUrl, drawCanvas]);
 
-    // Redraw canvas when zoom, rotation, or position changes
+    // Redraw canvas when zoom, rotation, or position changes (with RAF for smooth rendering)
     useEffect(() => {
         if (imageRef.current) {
-            drawCanvas();
+            // Cancel any pending RAF
+            if (rafRef.current !== null) {
+                cancelAnimationFrame(rafRef.current);
+            }
+            // Schedule redraw on next animation frame for smooth updates
+            rafRef.current = requestAnimationFrame(() => {
+                drawCanvas();
+                rafRef.current = null;
+            });
         }
+        
+        // Cleanup on unmount
+        return () => {
+            if (rafRef.current !== null) {
+                cancelAnimationFrame(rafRef.current);
+            }
+        };
     }, [drawCanvas]);
 
     const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
+        e.preventDefault();
         setIsDragging(true);
         setDragStart({ x: e.clientX - position.x, y: e.clientY - position.y });
     };
 
     const handleMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
         if (!isDragging) return;
+        e.preventDefault();
         setPosition({
             x: e.clientX - dragStart.x,
             y: e.clientY - dragStart.y,
@@ -136,6 +178,28 @@ export default function BannerEditor({ isOpen, onClose, imageUrl, onSave }: Bann
     };
 
     const handleMouseUp = () => {
+        setIsDragging(false);
+    };
+
+    // Touch event handlers for mobile
+    const handleTouchStart = (e: React.TouchEvent<HTMLCanvasElement>) => {
+        e.preventDefault();
+        const touch = e.touches[0];
+        setIsDragging(true);
+        setDragStart({ x: touch.clientX - position.x, y: touch.clientY - position.y });
+    };
+
+    const handleTouchMove = (e: React.TouchEvent<HTMLCanvasElement>) => {
+        if (!isDragging) return;
+        e.preventDefault();
+        const touch = e.touches[0];
+        setPosition({
+            x: touch.clientX - dragStart.x,
+            y: touch.clientY - dragStart.y,
+        });
+    };
+
+    const handleTouchEnd = () => {
         setIsDragging(false);
     };
 
@@ -229,7 +293,11 @@ export default function BannerEditor({ isOpen, onClose, imageUrl, onSave }: Bann
                             onMouseMove={handleMouseMove}
                             onMouseUp={handleMouseUp}
                             onMouseLeave={handleMouseUp}
-                            className="cursor-move w-full h-full"
+                            onTouchStart={handleTouchStart}
+                            onTouchMove={handleTouchMove}
+                            onTouchEnd={handleTouchEnd}
+                            onTouchCancel={handleTouchEnd}
+                            className="cursor-move w-full h-full touch-none"
                         />
                         <div className="absolute bottom-2 left-2 text-xs text-gray-600 dark:text-gray-400 bg-white/80 dark:bg-black/80 px-2 py-1 rounded">
                             Drag to reposition
@@ -251,7 +319,7 @@ export default function BannerEditor({ isOpen, onClose, imageUrl, onSave }: Bann
                                 onValueChange={([value]) => setZoom(value)}
                                 min={0.5}
                                 max={3}
-                                step={0.1}
+                                step={0.01}
                                 className="w-full"
                             />
                         </div>

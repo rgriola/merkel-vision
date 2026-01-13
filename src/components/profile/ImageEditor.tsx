@@ -22,6 +22,7 @@ export function ImageEditor({ open, onClose, imageFile, onSave }: ImageEditorPro
     const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const imageRef = useRef<HTMLImageElement | null>(null);
+    const rafRef = useRef<number | null>(null);
 
     const drawCanvas = useCallback(() => {
         if (!canvasRef.current || !imageRef.current) return;
@@ -39,6 +40,30 @@ export function ImageEditor({ open, onClose, imageFile, onSave }: ImageEditorPro
 
         // Clear canvas
         ctx.clearRect(0, 0, size, size);
+
+        // Draw dotted grid background
+        ctx.save();
+        ctx.strokeStyle = 'rgba(0, 0, 0, 0.1)';
+        ctx.lineWidth = 1;
+        ctx.setLineDash([5, 5]);
+        
+        // Vertical lines every 50px
+        for (let x = 0; x <= size; x += 50) {
+            ctx.beginPath();
+            ctx.moveTo(x, 0);
+            ctx.lineTo(x, size);
+            ctx.stroke();
+        }
+        
+        // Horizontal lines every 50px
+        for (let y = 0; y <= size; y += 50) {
+            ctx.beginPath();
+            ctx.moveTo(0, y);
+            ctx.lineTo(size, y);
+            ctx.stroke();
+        }
+        
+        ctx.restore();
 
         // Save context state
         ctx.save();
@@ -100,9 +125,26 @@ export function ImageEditor({ open, onClose, imageFile, onSave }: ImageEditorPro
         }
     }, [imageFile, drawCanvas]);
 
-    // Redraw when values change
+    // Redraw when values change (with RAF for smooth rendering)
     useEffect(() => {
-        drawCanvas();
+        if (imageRef.current) {
+            // Cancel any pending RAF
+            if (rafRef.current !== null) {
+                cancelAnimationFrame(rafRef.current);
+            }
+            // Schedule redraw on next animation frame for smooth updates
+            rafRef.current = requestAnimationFrame(() => {
+                drawCanvas();
+                rafRef.current = null;
+            });
+        }
+        
+        // Cleanup on unmount
+        return () => {
+            if (rafRef.current !== null) {
+                cancelAnimationFrame(rafRef.current);
+            }
+        };
     }, [drawCanvas]);
 
     const handleRotate = () => {
@@ -114,12 +156,14 @@ export function ImageEditor({ open, onClose, imageFile, onSave }: ImageEditorPro
     };
 
     const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
+        e.preventDefault();
         setIsDragging(true);
         setDragStart({ x: e.clientX - crop.x, y: e.clientY - crop.y });
     };
 
     const handleMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
         if (!isDragging) return;
+        e.preventDefault();
         setCrop({
             x: e.clientX - dragStart.x,
             y: e.clientY - dragStart.y,
@@ -127,6 +171,28 @@ export function ImageEditor({ open, onClose, imageFile, onSave }: ImageEditorPro
     };
 
     const handleMouseUp = () => {
+        setIsDragging(false);
+    };
+
+    // Touch event handlers for mobile
+    const handleTouchStart = (e: React.TouchEvent<HTMLCanvasElement>) => {
+        e.preventDefault();
+        const touch = e.touches[0];
+        setIsDragging(true);
+        setDragStart({ x: touch.clientX - crop.x, y: touch.clientY - crop.y });
+    };
+
+    const handleTouchMove = (e: React.TouchEvent<HTMLCanvasElement>) => {
+        if (!isDragging) return;
+        e.preventDefault();
+        const touch = e.touches[0];
+        setCrop({
+            x: touch.clientX - dragStart.x,
+            y: touch.clientY - dragStart.y,
+        });
+    };
+
+    const handleTouchEnd = () => {
         setIsDragging(false);
     };
 
@@ -204,23 +270,28 @@ export function ImageEditor({ open, onClose, imageFile, onSave }: ImageEditorPro
 
     return (
         <Dialog open={open} onOpenChange={handleClose}>
-            <DialogContent className="max-w-2xl">
+            <DialogContent className="sm:max-w-[90vw] md:max-w-2xl">
                 <DialogHeader>
                     <DialogTitle>Edit Your Avatar</DialogTitle>
                 </DialogHeader>
 
                 <div className="space-y-4">
                     {/* Canvas */}
-                    <div className="flex justify-center bg-gray-100 rounded-lg p-4">
+                    <div className="flex justify-center bg-gray-100 dark:bg-gray-800 rounded-lg p-4">
                         <canvas
                             ref={canvasRef}
                             width={400}
                             height={400}
-                            className="border-2 border-gray-300 rounded-lg cursor-move"
+                            className="border-2 border-gray-300 dark:border-gray-600 rounded-lg cursor-move max-w-full h-auto touch-none"
+                            style={{ aspectRatio: '1 / 1' }}
                             onMouseDown={handleMouseDown}
                             onMouseMove={handleMouseMove}
                             onMouseUp={handleMouseUp}
                             onMouseLeave={handleMouseUp}
+                            onTouchStart={handleTouchStart}
+                            onTouchMove={handleTouchMove}
+                            onTouchEnd={handleTouchEnd}
+                            onTouchCancel={handleTouchEnd}
                         />
                     </div>
 
@@ -239,7 +310,7 @@ export function ImageEditor({ open, onClose, imageFile, onSave }: ImageEditorPro
                                     onValueChange={handleZoomChange}
                                     min={0.5}
                                     max={3}
-                                    step={0.1}
+                                    step={0.01}
                                     className="flex-1"
                                 />
                                 <ZoomIn className="w-4 h-4 text-gray-500" />
@@ -260,8 +331,8 @@ export function ImageEditor({ open, onClose, imageFile, onSave }: ImageEditorPro
                             </Button>
                         </div>
 
-                        <p className="text-sm text-gray-500">
-                            Drag the image to reposition • Scroll to zoom • Click rotate to turn
+                        <p className="text-sm text-gray-500 dark:text-gray-400">
+                            Drag the image to reposition • Use slider to zoom • Click rotate to turn
                         </p>
                     </div>
                 </div>
