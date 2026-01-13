@@ -4,6 +4,7 @@ import prisma from '@/lib/prisma';
 import { normalizeUsername } from '@/lib/username-utils';
 import Image from 'next/image';
 import Link from 'next/link';
+import { ProfileStats } from '@/components/profile/ProfileStats';
 
 interface UserProfilePageProps {
   params: Promise<{ username: string }>;
@@ -168,20 +169,24 @@ export default async function UserProfilePage({ params }: UserProfilePageProps) 
             </div>
           )}
 
-          {/* Stats */}
-          <div className="flex gap-6 mb-8 text-sm">
-            <div>
-              <span className="font-semibold">{user._count.savedLocations}</span>{' '}
-              <span className="text-muted-foreground">Public Locations</span>
-            </div>
-            <div>
-              <span className="text-muted-foreground">
-                Joined {new Date(user.createdAt).toLocaleDateString('en-US', { 
-                  month: 'long', 
-                  year: 'numeric' 
-                })}
-              </span>
-            </div>
+          {/* Stats & Follow Button */}
+          <ProfileStats
+            username={user.username}
+            isOwnProfile={false} // TODO: Check if current user
+            stats={{
+              publicLocations: user._count.savedLocations,
+              followers: 0, // TODO: Add to query
+              following: 0, // TODO: Add to query
+            }}
+          />
+
+          <div className="mb-8">
+            <p className="text-sm text-muted-foreground">
+              Joined {new Date(user.createdAt).toLocaleDateString('en-US', { 
+                month: 'long', 
+                year: 'numeric' 
+              })}
+            </p>
           </div>
 
           {/* Locations Grid */}
