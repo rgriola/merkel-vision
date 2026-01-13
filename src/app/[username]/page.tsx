@@ -1,10 +1,28 @@
 import { notFound } from 'next/navigation';
 import { Metadata } from 'next';
+import { cookies } from 'next/headers';
+import jwt from 'jsonwebtoken';
 import prisma from '@/lib/prisma';
 import { normalizeUsername } from '@/lib/username-utils';
 import Image from 'next/image';
 import Link from 'next/link';
 import { ProfileStats } from '@/components/profile/ProfileStats';
+
+const JWT_SECRET = process.env.JWT_SECRET || 'fallback-secret-for-development';
+
+async function getCurrentUserId(): Promise<number | null> {
+  try {
+    const cookieStore = await cookies();
+    const token = cookieStore.get('auth_token')?.value;
+    
+    if (!token) return null;
+    
+    const decoded = jwt.verify(token, JWT_SECRET) as { userId: number };
+    return decoded.userId;
+  } catch {
+    return null;
+  }
+}
 
 interface UserProfilePageProps {
   params: Promise<{ username: string }>;
@@ -111,6 +129,10 @@ export default async function UserProfilePage({ params }: UserProfilePageProps) 
     notFound();
   }
 
+  // Get current logged-in user to check if viewing own profile
+  const currentUserId = await getCurrentUserId();
+  const isOwnProfile = currentUserId === user.id;
+
   const locations = await getUserPublicLocations(user.id);
   const displayName = user.firstName && user.lastName 
     ? `${user.firstName} ${user.lastName}` 
@@ -172,7 +194,7 @@ export default async function UserProfilePage({ params }: UserProfilePageProps) 
           {/* Stats & Follow Button */}
           <ProfileStats
             username={user.username}
-            isOwnProfile={false} // TODO: Check if current user
+            isOwnProfile={isOwnProfile}
             stats={{
               publicLocations: user._count.savedLocations,
               followers: 0, // TODO: Add to query

@@ -27,11 +27,6 @@ async function getUserByUsername(username: string) {
       firstName: true,
       lastName: true,
       avatar: true,
-      _count: {
-        select: {
-          following: true,
-        }
-      }
     },
   });
 }
@@ -83,7 +78,7 @@ export default async function FollowingPage({ params }: FollowingPageProps) {
 
             <h1 className="text-3xl font-bold mb-2">Following</h1>
             <p className="text-muted-foreground">
-              People {displayName} follows ({user._count.following})
+              People {displayName} follows
             </p>
           </div>
 

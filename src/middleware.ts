@@ -4,11 +4,11 @@ import type { NextRequest } from 'next/server';
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Handle @username URLs (e.g., /@johndoe → /johndoe)
+  // Handle @username URLs (e.g., /@johndoe → /johndoe, /@johndoe/following → /johndoe/following)
   if (pathname.startsWith('/@')) {
-    const username = pathname.slice(2); // Remove /@
+    const pathWithoutAt = pathname.slice(2); // Remove /@ to get username/rest/of/path
     const url = request.nextUrl.clone();
-    url.pathname = `/${username}`;
+    url.pathname = `/${pathWithoutAt}`;
     return NextResponse.rewrite(url);
   }
 
