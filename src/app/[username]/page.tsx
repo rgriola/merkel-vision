@@ -9,6 +9,7 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Settings } from 'lucide-react';
 import { ProfileStats } from '@/components/profile/ProfileStats';
+import PrivateProfileMessage from '@/components/profile/PrivateProfileMessage';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'fallback-secret-for-development';
 
@@ -51,6 +52,13 @@ async function getUserByUsername(username: string) {
       bannerImage: true,
       bio: true,
       createdAt: true,
+      // Privacy settings
+      profileVisibility: true,
+      showLocation: true,
+      showSavedLocations: true,
+      allowFollowRequests: true,
+      city: true,
+      country: true,
       _count: {
         select: {
           savedLocations: {
@@ -62,6 +70,56 @@ async function getUserByUsername(username: string) {
       }
     },
   });
+}
+
+// Check if current user can view this profile
+async function canViewProfile(
+  profileUserId: number,
+  currentUserId: number | null,
+  profileVisibility: string
+): Promise<{ canView: boolean; reason?: 'private' | 'followers' }> {
+  // Public profiles are always visible
+  if (profileVisibility === 'public') {
+    return { canView: true };
+  }
+
+  // Not authenticated
+  if (!currentUserId) {
+    return { 
+      canView: false, 
+      reason: profileVisibility === 'private' ? 'private' : 'followers' 
+    };
+  }
+
+  // Viewing own profile
+  if (profileUserId === currentUserId) {
+    return { canView: true };
+  }
+
+  // Private profiles only visible to owner
+  if (profileVisibility === 'private') {
+    return { canView: false, reason: 'private' };
+  }
+
+  // Followers-only: check if current user follows this profile
+  if (profileVisibility === 'followers') {
+    const isFollowing = await prisma.userFollow.findUnique({
+      where: {
+        followerId_followingId: {
+          followerId: currentUserId,
+          followingId: profileUserId,
+        },
+      },
+    });
+
+    if (isFollowing) {
+      return { canView: true };
+    }
+
+    return { canView: false, reason: 'followers' };
+  }
+
+  return { canView: true };
 }
 
 async function getUserPublicLocations(userId: number, limit: number = 6) {
@@ -134,6 +192,29 @@ export default async function UserProfilePage({ params }: UserProfilePageProps) 
   // Get current logged-in user to check if viewing own profile
   const currentUserId = await getCurrentUserId();
   const isOwnProfile = currentUserId === user.id;
+
+  // Check privacy settings
+  const { canView, reason } = await canViewProfile(
+    user.id,
+    currentUserId,
+    user.profileVisibility
+  );
+
+  // If cannot view, show private profile message
+  if (!canView && reason) {
+    return (
+      <PrivateProfileMessage
+        user={{
+          username: user.username,
+          avatar: user.avatar,
+          firstName: user.firstName,
+          lastName: user.lastName,
+        }}
+        visibility={reason}
+        isAuthenticated={currentUserId !== null}
+      />
+    );
+  }
 
   const locations = await getUserPublicLocations(user.id);
   const displayName = user.firstName && user.lastName 
@@ -209,6 +290,7 @@ export default async function UserProfilePage({ params }: UserProfilePageProps) 
           <ProfileStats
             username={user.username}
             isOwnProfile={isOwnProfile}
+            allowFollowRequests={user.allowFollowRequests}
             stats={{
               publicLocations: user._count.savedLocations,
               followers: 0, // TODO: Add to query
@@ -216,7 +298,14 @@ export default async function UserProfilePage({ params }: UserProfilePageProps) 
             }}
           />
 
-          <div className="mb-8">
+          <div className="mb-8 space-y-2">
+            {/* Location (with privacy check) */}
+            {user.showLocation && user.city && user.country && (
+              <p className="text-sm text-muted-foreground">
+                📍 {user.city}, {user.country}
+              </p>
+            )}
+            
             <p className="text-sm text-muted-foreground">
               Joined {new Date(user.createdAt).toLocaleDateString('en-US', { 
                 month: 'long', 

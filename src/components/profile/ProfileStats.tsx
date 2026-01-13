@@ -6,6 +6,7 @@ import { FollowButton } from '@/components/social';
 interface ProfileStatsProps {
   username: string;
   isOwnProfile: boolean;
+  allowFollowRequests?: boolean;
   stats: {
     publicLocations: number;
     followers: number;
@@ -13,13 +14,19 @@ interface ProfileStatsProps {
   };
 }
 
-export function ProfileStats({ username, isOwnProfile, stats }: ProfileStatsProps) {
+export function ProfileStats({ username, isOwnProfile, allowFollowRequests = true, stats }: ProfileStatsProps) {
   return (
     <div className="space-y-4">
       {/* Follow Button */}
       {!isOwnProfile && (
         <div className="mb-4">
-          <FollowButton username={username} variant="default" />
+          {allowFollowRequests ? (
+            <FollowButton username={username} variant="default" />
+          ) : (
+            <div className="text-sm text-muted-foreground p-3 bg-muted rounded-md">
+              This user is not accepting follow requests
+            </div>
+          )}
         </div>
       )}
 
