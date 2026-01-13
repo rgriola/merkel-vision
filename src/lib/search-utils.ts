@@ -53,6 +53,7 @@ export async function searchByUsername(
       WHERE 
         username ILIKE ${`%${normalizedQuery}%`}
         AND "deletedAt" IS NULL
+        AND "showInSearch" = true
       ORDER BY 
         score DESC,
         username ASC
@@ -74,6 +75,7 @@ export async function searchByUsername(
           mode: 'insensitive',
         },
         deletedAt: null,
+        showInSearch: true,
       },
       select: {
         id: true,
@@ -132,6 +134,7 @@ export async function searchByBio(
       WHERE 
         to_tsvector('english', COALESCE(bio, '')) @@ to_tsquery('english', ${normalizedKeywords.replace(/\s+/g, ' & ')})
         AND "deletedAt" IS NULL
+        AND "showInSearch" = true
       ORDER BY score DESC
       LIMIT ${limit}
     `;
@@ -184,12 +187,30 @@ export async function searchByGeography(
     return [];
   }
 
+  const orConditions: Prisma.UserWhereInput[] = [];
+  
+  if (city) {
+    orConditions.push({
+      city: {
+        equals: city,
+        mode: 'insensitive' as Prisma.QueryMode,
+      },
+    });
+  }
+  
+  if (country) {
+    orConditions.push({
+      country: {
+        equals: country,
+        mode: 'insensitive' as Prisma.QueryMode,
+      },
+    });
+  }
+
   const where: Prisma.UserWhereInput = {
     deletedAt: null,
-    OR: [
-      city ? { city: { equals: city, mode: 'insensitive' } } : {},
-      country ? { country: { equals: country, mode: 'insensitive' } } : {},
-    ].filter(obj => Object.keys(obj).length > 0),
+    showInSearch: true,
+    OR: orConditions,
   };
 
   const users = await prisma.user.findMany({

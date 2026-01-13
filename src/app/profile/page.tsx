@@ -1,7 +1,7 @@
 'use client';
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { User, Shield, Settings } from 'lucide-react';
+import { User, Shield, Settings, Lock } from 'lucide-react';
 import { ProfileHeader } from '@/components/profile/ProfileHeader';
 import { AccountSettingsForm } from '@/components/profile/AccountSettingsForm';
 import { ChangeUsernameForm } from '@/components/profile/ChangeUsernameForm';
@@ -10,6 +10,7 @@ import { ChangeEmailForm } from '@/components/profile/ChangeEmailForm';
 import { SecurityActivityLog } from '@/components/profile/SecurityActivityLog';
 import { DeleteAccountSection } from '@/components/profile/DeleteAccountSection';
 import { PreferencesForm } from '@/components/profile/PreferencesForm';
+import PrivacySettingsPanel from '@/components/profile/PrivacySettingsPanel';
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
 
 function ProfilePageInner() {
@@ -23,10 +24,14 @@ function ProfilePageInner() {
             </div>
 
             <Tabs defaultValue="account" className="space-y-4">
-                <TabsList className="grid w-full grid-cols-3">
+                <TabsList className="grid w-full grid-cols-4">
                     <TabsTrigger value="account" className="flex items-center gap-2">
                         <User className="w-4 h-4" />
                         <span className="hidden sm:inline">Account</span>
+                    </TabsTrigger>
+                    <TabsTrigger value="privacy" className="flex items-center gap-2">
+                        <Lock className="w-4 h-4" />
+                        <span className="hidden sm:inline">Privacy</span>
                     </TabsTrigger>
                     <TabsTrigger value="security" className="flex items-center gap-2">
                         <Shield className="w-4 h-4" />
@@ -41,6 +46,10 @@ function ProfilePageInner() {
                 <TabsContent value="account" className="space-y-4">
                     <ProfileHeader />
                     <AccountSettingsForm />
+                </TabsContent>
+
+                <TabsContent value="privacy" className="space-y-4">
+                    <PrivacySettingsPanel />
                 </TabsContent>
 
                 <TabsContent value="security" className="space-y-4">
