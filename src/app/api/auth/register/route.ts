@@ -4,6 +4,11 @@ import prisma from '@/lib/prisma';
 import { hashPassword, generateToken, generateVerificationToken } from '@/lib/auth';
 import { sendVerificationEmail } from '@/lib/email';
 import { apiResponse, apiError, setAuthCookie } from '@/lib/api-middleware';
+import {
+  validateUsername,
+  isUsernameAvailable,
+  normalizeUsername,
+} from '@/lib/username-utils';
 
 // Validation schema for registration
 const registerSchema = z.object({
@@ -43,18 +48,33 @@ export async function POST(request: NextRequest) {
 
     const { email, username, password, firstName, lastName } = validation.data;
 
-    // Check if user already exists
-    const existingUser = await prisma.user.findFirst({
-      where: {
-        OR: [{ email }, { username }],
-      },
+    // Validate username format
+    const usernameValidation = validateUsername(username);
+    if (!usernameValidation.valid) {
+      return apiError(
+        usernameValidation.error!,
+        400,
+        'INVALID_USERNAME'
+      );
+    }
+
+    // Check if username is available (not reserved or taken)
+    const available = await isUsernameAvailable(username);
+    if (!available) {
+      return apiError(
+        'Username is taken or reserved',
+        409,
+        'USERNAME_TAKEN'
+      );
+    }
+
+    // Check if email already exists
+    const existingEmail = await prisma.user.findUnique({
+      where: { email },
     });
 
-    if (existingUser) {
-      if (existingUser.email === email) {
-        return apiError('Email already registered', 409, 'EMAIL_EXISTS');
-      }
-      return apiError('Username already taken', 409, 'USERNAME_EXISTS');
+    if (existingEmail) {
+      return apiError('Email already registered', 409, 'EMAIL_EXISTS');
     }
 
     // Hash password

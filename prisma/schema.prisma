@@ -132,13 +132,16 @@ model UserSave {
   color          String?
   isFavorite     Boolean   @default(false)
   personalRating Float?
+  caption        String?   // User's personal caption/note for this location
   tags           Json?
   visitedAt      DateTime?
+  visibility     String    @default("private") // 'public', 'unlisted', 'private'
   location       Location  @relation(fields: [locationId], references: [id], onDelete: Cascade)
   user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, locationId])
   @@index([locationId])
+  @@index([visibility]) // For filtering public/unlisted locations
   @@map("user_saves")
 }
 
@@ -326,4 +329,12 @@ model UsernameChangeRequest {
   @@index([userId])
   @@index([createdAt])
   @@map("username_change_requests")
+}
+
+model ReservedUsername {
+  username  String   @id
+  reason    String
+  createdAt DateTime @default(now())
+
+  @@map("reserved_usernames")
 }
