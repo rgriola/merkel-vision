@@ -21,9 +21,14 @@ export async function GET(
     const limit = Math.min(100, Math.max(1, parseInt(searchParams.get('limit') || '20', 10)));
     const offset = (page - 1) * limit;
 
-    // Verify user exists
-    const user = await prisma.user.findUnique({
-      where: { username: normalizeUsername(cleanUsername) },
+    // Verify user exists (case-insensitive lookup)
+    const user = await prisma.user.findFirst({
+      where: { 
+        username: {
+          equals: normalizeUsername(cleanUsername),
+          mode: 'insensitive'
+        }
+      },
       select: { id: true, username: true },
     });
 

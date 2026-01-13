@@ -15,8 +15,14 @@ export async function GET(
     const { username } = await params;
     const cleanUsername = username.startsWith('@') ? username.slice(1) : username;
 
-    const user = await prisma.user.findUnique({
-      where: { username: normalizeUsername(cleanUsername) },
+    // Case-insensitive lookup
+    const user = await prisma.user.findFirst({
+      where: { 
+        username: {
+          equals: normalizeUsername(cleanUsername),
+          mode: 'insensitive'
+        }
+      },
       select: {
         id: true,
         username: true,
