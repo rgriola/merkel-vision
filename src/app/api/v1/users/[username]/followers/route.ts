@@ -4,7 +4,7 @@ import prisma from '@/lib/prisma';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { username: string } }
+  { params }: { params: Promise<{ username: string }> }
 ) {
   try {
     const { searchParams } = new URL(request.url);
@@ -12,8 +12,11 @@ export async function GET(
     const limit = Math.min(parseInt(searchParams.get('limit') || '20'), 100);
     const offset = (page - 1) * limit;
 
+    // Await params (Next.js 15+)
+    const { username } = await params;
+
     // Get target user (case-insensitive)
-    const normalizedUsername = params.username.toLowerCase().trim();
+    const normalizedUsername = username.toLowerCase().trim();
     const targetUser = await prisma.user.findFirst({
       where: {
         username: {

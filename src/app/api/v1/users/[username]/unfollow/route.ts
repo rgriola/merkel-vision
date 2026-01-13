@@ -4,7 +4,7 @@ import prisma from '@/lib/prisma';
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { username: string } }
+  { params }: { params: Promise<{ username: string }> }
 ) {
   try {
     // Authenticate user
@@ -16,8 +16,11 @@ export async function POST(
 
     const currentUser = authResult.user;
 
+    // Await params (Next.js 15+)
+    const { username } = await params;
+
     // Get target user (case-insensitive)
-    const normalizedUsername = params.username.toLowerCase().trim();
+    const normalizedUsername = username.toLowerCase().trim();
     const targetUser = await prisma.user.findFirst({
       where: {
         username: {
