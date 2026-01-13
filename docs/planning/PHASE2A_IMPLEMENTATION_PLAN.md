@@ -636,7 +636,7 @@ async function isFollowing(
 |-----|-------|-------|--------|
 | 1 | Database schema | 4-5h | ✅ Complete |
 | 2 | Follow APIs | 6-8h | ✅ Complete |
-| 3 | Follow UI | 6-8h | ⏳ Planned |
+| 3 | Follow UI | 6-8h | ✅ Complete |
 | 4-5 | Search backend | 10-12h | ⏳ Planned |
 | 6 | Search UI | 6-8h | ⏳ Planned |
 | 7 | Visibility & privacy | 6-8h | ⏳ Planned |
