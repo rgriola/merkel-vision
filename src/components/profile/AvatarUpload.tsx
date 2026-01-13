@@ -183,9 +183,9 @@ export function AvatarUpload({ currentAvatar }: AvatarUploadProps) {
                     </div>
 
                     {/* Content Overlay */}
-                    <div className="relative h-full flex items-center justify-between px-6 md:px-8">
-                        {/* Left Side - User Info */}
-                        <div className="text-white space-y-1 z-10">
+                    <div className="relative h-full flex items-center px-6 md:px-8">
+                        {/* User Info - Centered */}
+                        <div className="text-white space-y-1 z-10 flex-1">
                             <h2 className="text-2xl md:text-3xl font-bold tracking-tight">
                                 {user?.firstName && user?.lastName
                                     ? `${user.firstName} ${user.lastName}`
@@ -199,17 +199,39 @@ export function AvatarUpload({ currentAvatar }: AvatarUploadProps) {
                             </p>
                         </div>
 
-                        {/* Right Side - Camera Upload Button */}
-                        <div className="relative z-10">
-                            {/* File selection button */}
-                            <label
-                                htmlFor="avatar-file-select"
-                                className={`flex-shrink-0 w-12 h-12 md:w-15 md:h-15 rounded-full bg-blue-600 hover:bg-blue-700 flex items-center justify-center shadow-xl transition-all hover:scale-105 cursor-pointer ${isUploading ? 'opacity-50 cursor-not-allowed' : ''
-                                    }`}
-                                title="Change profile image"
-                            >
-                                <Camera className="w-6 h-6 md:w-7 md:h-7 text-white" />
-                            </label>
+                        {/* Hover-triggered upload - Avatar-style circular area on right */}
+                        <label
+                            htmlFor="avatar-file-select"
+                            className={`relative group flex-shrink-0 w-24 h-24 md:w-32 md:h-32 rounded-full overflow-hidden cursor-pointer z-10 ${
+                                isUploading ? 'cursor-not-allowed' : ''
+                            }`}
+                            title="Change profile image"
+                        >
+                            {/* Avatar preview */}
+                            <div className="w-full h-full bg-gradient-to-br from-blue-400 to-purple-600 relative">
+                                {previewUrl && !imageError ? (
+                                    <Image
+                                        src={getOptimizedAvatarUrl(previewUrl, 256) || previewUrl}
+                                        alt="Profile"
+                                        fill
+                                        className="object-cover"
+                                        priority
+                                        onError={() => setImageError(true)}
+                                        unoptimized={previewUrl.startsWith('data:')}
+                                    />
+                                ) : (
+                                    <div className="w-full h-full flex items-center justify-center">
+                                        <User className="w-12 h-12 md:w-16 md:h-16 text-white" />
+                                    </div>
+                                )}
+
+                                {/* Hover overlay with camera icon */}
+                                <div className={`absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center ${
+                                    isUploading ? 'opacity-100' : ''
+                                }`}>
+                                    <Camera className="w-8 h-8 md:w-10 md:h-10 text-white" />
+                                </div>
+                            </div>
 
                             {/* Hidden file input for initial selection */}
                             <input
@@ -220,35 +242,35 @@ export function AvatarUpload({ currentAvatar }: AvatarUploadProps) {
                                 className="hidden"
                                 disabled={isUploading}
                             />
+                        </label>
 
-                            {/* Hidden ImageKit upload component (triggered after editing) */}
-                            <IKContext
-                                publicKey={process.env.NEXT_PUBLIC_IMAGEKIT_PUBLIC_KEY || ''}
-                                urlEndpoint={IMAGEKIT_URL_ENDPOINT}
-                                authenticator={authenticator}
-                            >
-                                <IKUpload
-                                    ref={ikUploadRef}
-                                    fileName={`avatar-${user?.id}-${Date.now()}`}
-                                    folder={getImageKitFolder(`users/${user?.id}/avatars`)}
-                                    tags={['avatar', 'profile']}
-                                    useUniqueFileName={true}
-                                    onError={onError}
-                                    onSuccess={onSuccess}
-                                    onUploadStart={onUploadStart}
-                                    className="hidden"
-                                    accept="image/*"
-                                    transformation={{
-                                        post: [
-                                            {
-                                                type: 'transformation',
-                                                value: 'w-400,h-400,c-at_max',
-                                            },
-                                        ],
-                                    }}
-                                />
-                            </IKContext>
-                        </div>
+                        {/* Hidden ImageKit upload component (triggered after editing) */}
+                        <IKContext
+                            publicKey={process.env.NEXT_PUBLIC_IMAGEKIT_PUBLIC_KEY || ''}
+                            urlEndpoint={IMAGEKIT_URL_ENDPOINT}
+                            authenticator={authenticator}
+                        >
+                            <IKUpload
+                                ref={ikUploadRef}
+                                fileName={`avatar-${user?.id}-${Date.now()}`}
+                                folder={getImageKitFolder(`users/${user?.id}/avatars`)}
+                                tags={['avatar', 'profile']}
+                                useUniqueFileName={true}
+                                onError={onError}
+                                onSuccess={onSuccess}
+                                onUploadStart={onUploadStart}
+                                className="hidden"
+                                accept="image/*"
+                                transformation={{
+                                    post: [
+                                        {
+                                            type: 'transformation',
+                                            value: 'w-400,h-400,c-at_max',
+                                        },
+                                    ],
+                                }}
+                            />
+                        </IKContext>
                     </div>
                 </div>
             </CardContent>

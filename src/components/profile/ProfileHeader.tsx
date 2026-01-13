@@ -188,7 +188,10 @@ export function ProfileHeader() {
         <>
             <Card className="overflow-hidden">
                 {/* Banner Section */}
-                <div className="relative w-full h-[240px] md:h-[300px] group">
+                <label 
+                    htmlFor="banner-file-select"
+                    className="relative w-full h-[240px] md:h-[300px] group block cursor-pointer"
+                >
                     {/* Banner Image */}
                     {bannerPreview && !bannerError ? (
                         <Image
@@ -204,67 +207,64 @@ export function ProfileHeader() {
                         <div className="w-full h-full bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500" />
                     )}
 
-                    {/* Banner Overlay */}
-                    <div className="absolute inset-0 bg-black/10 group-hover:bg-black/30 transition-colors" />
-
-                    {/* Banner Upload Button */}
-                    <div className="absolute bottom-4 right-4 z-10">
-                        <label
-                            htmlFor="banner-file-select"
-                            className={`flex items-center gap-2 px-4 py-2 bg-white/90 hover:bg-white text-gray-900 rounded-lg shadow-lg transition-all cursor-pointer ${
-                                isUploadingBanner ? 'opacity-50 cursor-not-allowed' : ''
-                            }`}
-                        >
-                            <Camera className="w-4 h-4" />
-                            <span className="text-sm font-medium">
-                                {isUploadingBanner ? 'Uploading...' : 'Edit Cover'}
+                    {/* Banner Overlay - shows on hover */}
+                    <div className={`absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center ${
+                        isUploadingBanner ? 'opacity-100' : ''
+                    }`}>
+                        <div className="flex flex-col items-center gap-3">
+                            <Camera className="w-10 h-10 md:w-12 md:h-12 text-white" />
+                            <span className="text-base md:text-lg text-white font-semibold">
+                                {isUploadingBanner ? 'Uploading...' : 'Edit'}
                             </span>
-                        </label>
-                        
-                        {/* Hidden file input for banner selection */}
-                        <input
-                            id="banner-file-select"
-                            type="file"
-                            accept="image/*"
-                            onChange={handleBannerSelect}
-                            className="hidden"
-                            disabled={isUploadingBanner}
-                        />
-                        
-                        {/* Hidden ImageKit upload (triggered after editing) */}
-                        <IKContext
-                            publicKey={process.env.NEXT_PUBLIC_IMAGEKIT_PUBLIC_KEY || ''}
-                            urlEndpoint={IMAGEKIT_URL_ENDPOINT}
-                            authenticator={authenticator}
-                        >
-                            <IKUpload
-                                ref={bannerUploadRef}
-                                fileName={`banner-${user?.id}-${Date.now()}`}
-                                folder={getImageKitFolder(`users/${user?.id}/banners`)}
-                                tags={['banner', 'profile']}
-                                useUniqueFileName={true}
-                                onError={onBannerError}
-                                onSuccess={onBannerSuccess}
-                                onUploadStart={() => {
-                                    setIsUploadingBanner(true);
-                                    toast.info('Uploading banner...');
-                                }}
-                                className="hidden"
-                                accept="image/*"
-                                transformation={{
-                                    post: [{ type: 'transformation', value: 'w-1200,h-400,c-at_max' }],
-                                }}
-                            />
-                        </IKContext>
+                        </div>
                     </div>
-                </div>
+
+                    {/* Hidden file input for banner selection */}
+                    <input
+                        id="banner-file-select"
+                        type="file"
+                        accept="image/*"
+                        onChange={handleBannerSelect}
+                        className="hidden"
+                        disabled={isUploadingBanner}
+                    />
+                </label>
+
+                {/* Hidden ImageKit upload (triggered after editing) */}
+                <IKContext
+                    publicKey={process.env.NEXT_PUBLIC_IMAGEKIT_PUBLIC_KEY || ''}
+                    urlEndpoint={IMAGEKIT_URL_ENDPOINT}
+                    authenticator={authenticator}
+                >
+                    <IKUpload
+                        ref={bannerUploadRef}
+                        fileName={`banner-${user?.id}-${Date.now()}`}
+                        folder={getImageKitFolder(`users/${user?.id}/banners`)}
+                        tags={['banner', 'profile']}
+                        useUniqueFileName={true}
+                        onError={onBannerError}
+                        onSuccess={onBannerSuccess}
+                        onUploadStart={() => {
+                            setIsUploadingBanner(true);
+                            toast.info('Uploading banner...');
+                        }}
+                        className="hidden"
+                        accept="image/*"
+                        transformation={{
+                            post: [{ type: 'transformation', value: 'w-1200,h-400,c-at_max' }],
+                        }}
+                    />
+                </IKContext>
 
                 {/* Avatar and User Info Section */}
                 <div className="relative px-6 md:px-8 pb-6">
                     {/* Avatar positioned overlapping the banner */}
                     <div className="flex flex-col sm:flex-row sm:items-end gap-4 -mt-16 sm:-mt-20">
                         {/* Avatar */}
-                        <div className="relative group">
+                        <label 
+                            htmlFor="avatar-file-select"
+                            className="relative group cursor-pointer"
+                        >
                             <div className="relative w-32 h-32 sm:w-40 sm:h-40 rounded-full border-4 border-background bg-background overflow-hidden shadow-xl">
                                 {avatarPreview && !avatarError ? (
                                     <Image
@@ -283,9 +283,11 @@ export function ProfileHeader() {
                                     </div>
                                 )}
 
-                                {/* Avatar upload overlay */}
-                                <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                                    <Camera className="w-8 h-8 text-white" />
+                                {/* Avatar upload overlay - shows on hover */}
+                                <div className={`absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center ${
+                                    isUploadingAvatar ? 'opacity-100' : ''
+                                }`}>
+                                    <Camera className="w-8 h-8 sm:w-10 sm:h-10 text-white" />
                                 </div>
                             </div>
 
@@ -298,43 +300,33 @@ export function ProfileHeader() {
                                 className="hidden"
                                 disabled={isUploadingAvatar}
                             />
+                        </label>
 
-                            {/* Avatar upload button */}
-                            <label
-                                htmlFor="avatar-file-select"
-                                className={`absolute bottom-0 right-0 w-10 h-10 bg-blue-600 hover:bg-blue-700 rounded-full flex items-center justify-center shadow-lg cursor-pointer transition-all ${
-                                    isUploadingAvatar ? 'opacity-50 cursor-not-allowed' : ''
-                                }`}
-                            >
-                                <Camera className="w-5 h-5 text-white" />
-                            </label>
-
-                            {/* Hidden ImageKit upload (triggered after editing) */}
-                            <IKContext
-                                publicKey={process.env.NEXT_PUBLIC_IMAGEKIT_PUBLIC_KEY || ''}
-                                urlEndpoint={IMAGEKIT_URL_ENDPOINT}
-                                authenticator={authenticator}
-                            >
-                                <IKUpload
-                                    ref={avatarUploadRef}
-                                    fileName={`avatar-${user?.id}-${Date.now()}`}
-                                    folder={getImageKitFolder(`users/${user?.id}/avatars`)}
-                                    tags={['avatar', 'profile']}
-                                    useUniqueFileName={true}
-                                    onError={onAvatarError}
-                                    onSuccess={onAvatarSuccess}
-                                    onUploadStart={() => {
-                                        setIsUploadingAvatar(true);
-                                        toast.info('Uploading avatar...');
-                                    }}
-                                    className="hidden"
-                                    accept="image/*"
-                                    transformation={{
-                                        post: [{ type: 'transformation', value: 'w-400,h-400,c-at_max' }],
-                                    }}
-                                />
-                            </IKContext>
-                        </div>
+                        {/* Hidden ImageKit upload (triggered after editing) */}
+                        <IKContext
+                            publicKey={process.env.NEXT_PUBLIC_IMAGEKIT_PUBLIC_KEY || ''}
+                            urlEndpoint={IMAGEKIT_URL_ENDPOINT}
+                            authenticator={authenticator}
+                        >
+                            <IKUpload
+                                ref={avatarUploadRef}
+                                fileName={`avatar-${user?.id}-${Date.now()}`}
+                                folder={getImageKitFolder(`users/${user?.id}/avatars`)}
+                                tags={['avatar', 'profile']}
+                                useUniqueFileName={true}
+                                onError={onAvatarError}
+                                onSuccess={onAvatarSuccess}
+                                onUploadStart={() => {
+                                    setIsUploadingAvatar(true);
+                                    toast.info('Uploading avatar...');
+                                }}
+                                className="hidden"
+                                accept="image/*"
+                                transformation={{
+                                    post: [{ type: 'transformation', value: 'w-400,h-400,c-at_max' }],
+                                }}
+                            />
+                        </IKContext>
 
                         {/* User Info */}
                         <div className="flex-1 sm:mb-4">
