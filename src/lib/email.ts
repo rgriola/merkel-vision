@@ -243,3 +243,145 @@ export async function sendAccountDeletionEmail(
     accountDeletionEmailTemplate(username, email)
   );
 }
+
+/**
+ * Send email change verification to NEW email
+ * @param newEmail - New email address
+ * @param username - User's username
+ * @param token - Verification token
+ * @param oldEmail - Old email address (for reference)
+ */
+export async function sendEmailChangeVerification(
+  newEmail: string,
+  username: string,
+  token: string,
+  oldEmail: string
+): Promise<boolean> {
+  const verifyUrl = `${APP_URL}/verify-email-change?token=${token}`;
+
+  // In development mode, just log to console
+  if (EMAIL_MODE === 'development') {
+    console.log('\n' + '='.repeat(80));
+    console.log('📧 EMAIL CHANGE VERIFICATION (Development Mode)');
+    console.log('='.repeat(80));
+    console.log(`To: ${newEmail}`);
+    console.log(`Subject: Verify Your New Email Address`);
+    console.log(`\nHi ${username},\n`);
+    console.log(`You requested to change your email from ${oldEmail} to ${newEmail}.`);
+    console.log(`\nVerify URL: ${verifyUrl}`);
+    console.log(`\nThis link expires in 30 minutes.`);
+    console.log('='.repeat(80) + '\n');
+    return true;
+  }
+
+  // Send actual email
+  const html = `
+    <h2>Verify Your New Email Address</h2>
+    <p>Hi ${username},</p>
+    <p>You requested to change your email address from <strong>${oldEmail}</strong> to <strong>${newEmail}</strong>.</p>
+    <p>Click the button below to confirm this change:</p>
+    <a href="${verifyUrl}" style="display: inline-block; padding: 12px 24px; background-color: #4F46E5; color: white; text-decoration: none; border-radius: 6px; margin: 16px 0;">Verify New Email</a>
+    <p>This link expires in 30 minutes.</p>
+    <p>If you didn't request this change, please ignore this email.</p>
+  `;
+
+  return sendEmail(newEmail, 'Verify Your New Email Address', html);
+}
+
+/**
+ * Send email change alert to OLD email
+ * @param oldEmail - Old email address
+ * @param username - User's username
+ * @param newEmail - New email address
+ * @param cancelToken - Cancellation token
+ * @param ipAddress - IP address of request
+ */
+export async function sendEmailChangeAlert(
+  oldEmail: string,
+  username: string,
+  newEmail: string,
+  cancelToken: string,
+  ipAddress: string | null
+): Promise<boolean> {
+  const cancelUrl = `${APP_URL}/cancel-email-change?token=${cancelToken}`;
+
+  // In development mode, just log to console
+  if (EMAIL_MODE === 'development') {
+    console.log('\n' + '='.repeat(80));
+    console.log('⚠️  EMAIL CHANGE ALERT (Development Mode)');
+    console.log('='.repeat(80));
+    console.log(`To: ${oldEmail}`);
+    console.log(`Subject: ⚠️ Email Change Request`);
+    console.log(`\nHi ${username},\n`);
+    console.log(`Someone requested to change your email to ${newEmail}.`);
+    if (ipAddress) console.log(`Request from IP: ${ipAddress}`);
+    console.log(`\nCancel URL: ${cancelUrl}`);
+    console.log(`\nThis link expires in 30 minutes.`);
+    console.log('='.repeat(80) + '\n');
+    return true;
+  }
+
+  // Send actual email
+  const html = `
+    <h2>⚠️ Email Change Request</h2>
+    <p>Hi ${username},</p>
+    <p>Someone requested to change your email address to <strong>${newEmail}</strong>.</p>
+    ${ipAddress ? `<p>Request from IP: ${ipAddress}</p>` : ''}
+    <p><strong>If this was you:</strong> Check your new email (${newEmail}) for a verification link.</p>
+    <p><strong>If this wasn't you:</strong> Click the button below to cancel this request immediately:</p>
+    <a href="${cancelUrl}" style="display: inline-block; padding: 12px 24px; background-color: #DC2626; color: white; text-decoration: none; border-radius: 6px; margin: 16px 0;">Cancel Email Change</a>
+    <p>This link expires in 30 minutes.</p>
+    <p>If you didn't request this change, we recommend changing your password immediately.</p>
+  `;
+
+  return sendEmail(oldEmail, '⚠️ Email Change Request', html);
+}
+
+/**
+ * Send confirmation after email change
+ * @param email - Email address (new or old)
+ * @param username - User's username
+ * @param emailType - 'new' or 'old'
+ */
+export async function sendEmailChangeConfirmation(
+  email: string,
+  username: string,
+  emailType: 'old' | 'new'
+): Promise<boolean> {
+  // In development mode, just log to console
+  if (EMAIL_MODE === 'development') {
+    console.log('\n' + '='.repeat(80));
+    console.log(`✅ EMAIL CHANGE CONFIRMATION - ${emailType.toUpperCase()} (Development Mode)`);
+    console.log('='.repeat(80));
+    console.log(`To: ${email}`);
+    console.log(`Subject: Email Changed`);
+    console.log(`\nHi ${username},\n`);
+    if (emailType === 'new') {
+      console.log(`Your email address has been successfully changed to ${email}.`);
+      console.log(`You can now log in with your new email address.`);
+    } else {
+      console.log(`Your email address has been changed.`);
+      console.log(`This email address is no longer associated with your account.`);
+    }
+    console.log('='.repeat(80) + '\n');
+    return true;
+  }
+
+  // Send actual email
+  const html = emailType === 'new'
+    ? `
+      <h2>✅ Email Changed Successfully</h2>
+      <p>Hi ${username},</p>
+      <p>Your email address has been successfully changed to <strong>${email}</strong>.</p>
+      <p>You can now log in with your new email address.</p>
+      <p>All active sessions have been logged out for security.</p>
+    `
+    : `
+      <h2>Email Address Changed</h2>
+      <p>Hi ${username},</p>
+      <p>Your email address has been changed. This email address is no longer associated with your account.</p>
+      <p>If you didn't make this change, please contact support immediately.</p>
+    `;
+
+  return sendEmail(email, 'Email Changed', html);
+}

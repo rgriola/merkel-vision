@@ -66,5 +66,6 @@ export function useMarkerClusterer({ map, markers }: UseMarkerClustererOptions) 
         };
     }, [map, markers]);
 
-    return clustererRef.current;
+    // Return the clusterer instance - safe to access after effect runs
+    return clustererRef;
 }

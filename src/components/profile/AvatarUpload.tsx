@@ -1,174 +1,269 @@
 'use client';
 
-import { useState, useRef } from 'react';
-import Image from 'next/image';
+import { useState, useEffect, useRef } from 'react';
+import { IKContext, IKUpload } from 'imagekitio-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { toast } from 'sonner';
 import { Camera, User } from 'lucide-react';
 import { useAuth } from '@/lib/auth-context';
-import { getOptimizedAvatarUrl } from '@/lib/imagekit';
+import { getOptimizedAvatarUrl, IMAGEKIT_URL_ENDPOINT, getImageKitFolder } from '@/lib/imagekit';
+import Image from 'next/image';
+import { ImageEditor } from './ImageEditor';
 
 interface AvatarUploadProps {
     currentAvatar?: string | null;
 }
 
+// ImageKit authenticator
+const authenticator = async () => {
+    try {
+        console.log('Fetching ImageKit auth...');
+        const response = await fetch('/api/imagekit/auth');
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error('Auth response error:', response.status, errorText);
+            throw new Error(`Authentication failed: ${response.status}`);
+        }
+
+        const data = await response.json();
+        console.log('ImageKit auth successful:', { ...data, signature: '***' });
+        return data;
+    } catch (error) {
+        console.error('ImageKit auth error:', error);
+        throw error;
+    }
+};
+
 export function AvatarUpload({ currentAvatar }: AvatarUploadProps) {
     const { user, refetchUser } = useAuth();
-    const [isUploading, setIsUploading] = useState(false);
     const [previewUrl, setPreviewUrl] = useState<string | null>(currentAvatar || null);
-    const fileInputRef = useRef<HTMLInputElement>(null);
+    const [imageError, setImageError] = useState(false);
+    const [isUploading, setIsUploading] = useState(false);
+    const [selectedFile, setSelectedFile] = useState<File | null>(null);
+    const [editorOpen, setEditorOpen] = useState(false);
+    const ikUploadRef = useRef<HTMLInputElement | null>(null);
 
-    const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
-        const file = event.target.files?.[0];
-        if (!file) return;
+    // Sync preview with prop changes
+    useEffect(() => {
+        setPreviewUrl(currentAvatar || null);
+        setImageError(false);
+    }, [currentAvatar]);
 
-        // Validate file type
-        if (!file.type.startsWith('image/')) {
-            toast.error('Please select an image file');
-            return;
+    const onError = (err: any) => {
+        console.error('ImageKit upload error:', err);
+        console.error('Error type:', typeof err);
+        console.error('Error keys:', Object.keys(err || {}));
+        console.error('Error details:', JSON.stringify(err, null, 2));
+        console.error('Error message:', err?.message);
+        console.error('Error response:', err?.response);
+        console.error('Error help:', err?.help);
+
+        // Determine error message
+        let errorMessage = 'Failed to upload image';
+        
+        if (err?.message) {
+            errorMessage = err.message;
+        } else if (err?.help) {
+            errorMessage = err.help;
+        } else if (err?.response?.data?.message) {
+            errorMessage = err.response.data.message;
+        } else if (typeof err === 'string') {
+            errorMessage = err;
         }
 
-        // Validate file size (max 5MB)
-        if (file.size > 5 * 1024 * 1024) {
-            toast.error('Image must be less than 5MB');
-            return;
-        }
-
-        // Show preview
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            setPreviewUrl(e.target?.result as string);
-        };
-        reader.readAsDataURL(file);
-
-        // Upload to server
-        await uploadAvatar(file);
+        toast.error(errorMessage);
+        setIsUploading(false);
     };
 
-    const uploadAvatar = async (file: File) => {
-        setIsUploading(true);
+    const onSuccess = async (res: any) => {
+        console.log('ImageKit upload success:', res);
 
         try {
-            const formData = new FormData();
-            formData.append('avatar', file);
-
+            // Update user's avatar in database
             const response = await fetch('/api/auth/avatar', {
                 method: 'POST',
-                body: formData,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    avatarUrl: res.url,
+                    fileId: res.fileId,
+                }),
             });
 
             const result = await response.json();
 
             if (!response.ok) {
-                toast.error(result.error || 'Failed to upload avatar');
-                // Reset preview on error
-                setPreviewUrl(currentAvatar || null);
+                toast.error(result.error || 'Failed to update avatar');
                 return;
             }
 
             toast.success('Avatar updated successfully');
-
-            // Refresh user data to get new avatar URL
-            await refetchUser();
-        } catch (error) {
-            console.error('Avatar upload error:', error);
-            toast.error('Failed to upload avatar');
-            setPreviewUrl(currentAvatar || null);
-        } finally {
-            setIsUploading(false);
-        }
-    };
-
-    const handleRemoveAvatar = async () => {
-        if (!currentAvatar) return;
-
-        setIsUploading(true);
-
-        try {
-            const response = await fetch('/api/auth/avatar', {
-                method: 'DELETE',
-            });
-
-            const result = await response.json();
-
-            if (!response.ok) {
-                toast.error(result.error || 'Failed to remove avatar');
-                return;
-            }
-
-            toast.success('Avatar removed successfully');
-            setPreviewUrl(null);
+            setPreviewUrl(res.url);
 
             // Refresh user data
             await refetchUser();
         } catch (error) {
-            console.error('Avatar removal error:', error);
-            toast.error('Failed to remove avatar');
+            console.error('Avatar update error:', error);
+            toast.error('Failed to update avatar');
         } finally {
             setIsUploading(false);
         }
     };
 
+    const onUploadStart = () => {
+        setIsUploading(true);
+        toast.info('Uploading image...');
+    };
+
+    const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            // Validate file type
+            if (!file.type.startsWith('image/')) {
+                toast.error('Please select an image file');
+                return;
+            }
+
+            // Validate file size (max 5MB)
+            if (file.size > 5 * 1024 * 1024) {
+                toast.error('Image must be less than 5MB');
+                return;
+            }
+
+            setSelectedFile(file);
+            setEditorOpen(true);
+        }
+    };
+
+    const handleEditorSave = async (croppedBlob: Blob, fileName: string) => {
+        try {
+            // Convert blob to file
+            const file = new File([croppedBlob], fileName, { type: 'image/jpeg' });
+
+            // Trigger ImageKit upload programmatically
+            if (ikUploadRef.current) {
+                const dataTransfer = new DataTransfer();
+                dataTransfer.items.add(file);
+                ikUploadRef.current.files = dataTransfer.files;
+
+                // Trigger change event to start upload
+                const event = new Event('change', { bubbles: true });
+                ikUploadRef.current.dispatchEvent(event);
+            }
+        } catch (error) {
+            console.error('Error uploading edited image:', error);
+            toast.error('Failed to upload edited image');
+        }
+    };
+
     return (
-        <Card>
-            <CardContent className="py-4 px-6">
-                <div className="flex flex-col md:flex-row items-center gap-6">
-                    {/* User Info - Left side on desktop */}
-                    <div className="flex-1 text-center md:text-left order-2 md:order-1">
-                        <p className="font-semibold text-lg">
-                            {user?.firstName && user?.lastName
-                                ? `${user.firstName} ${user.lastName}`
-                                : user?.username}
-                        </p>
-                        <p className="text-sm text-muted-foreground">{user?.email}</p>
-                        <p className="text-xs text-muted-foreground mt-2">
-                            Square image, at least 400x400px • Max 5MB
-                        </p>
+        <>
+        <Card className="overflow-hidden">
+            <CardContent className="p-0">
+                <div className="relative h-[200px] md:h-[240px]">
+                    {/* Background Image / Banner */}
+                    <div className="absolute inset-0">
+                        {previewUrl && !imageError ? (
+                            <Image
+                                src={getOptimizedAvatarUrl(previewUrl, 256) || previewUrl}
+                                alt="Profile banner"
+                                fill
+                                className="object-cover"
+                                priority
+                                onError={() => {
+                                    setImageError(true);
+                                }}
+                                unoptimized={previewUrl.startsWith('data:')}
+                            />
+                        ) : (
+                            <div className="w-full h-full bg-gradient-to-br from-blue-500 to-purple-600" />
+                        )}
+                        {/* Overlay for better text readability */}
+                        <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/40 to-transparent" />
                     </div>
 
-                    {/* Avatar Display - Right side on desktop */}
-                    <div className="relative flex-shrink-0 order-1 md:order-2">
-                        <div className="w-[106px] h-[106px] md:w-[120px] md:h-[120px] rounded-full overflow-hidden bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center border-4 border-white shadow-lg">
-                            {previewUrl ? (
-                                <Image
-                                    src={getOptimizedAvatarUrl(previewUrl, 128) || previewUrl}
-                                    alt="Profile avatar"
-                                    width={120}
-                                    height={120}
-                                    className="w-full h-full object-cover"
-                                    priority
-                                    onError={() => {
-                                        // If image fails to load, show fallback
-                                        setPreviewUrl(null);
-                                    }}
-                                />
-                            ) : (
-                                <User className="w-14 h-14 md:w-16 md:h-16 text-white" />
-                            )}
+                    {/* Content Overlay */}
+                    <div className="relative h-full flex items-center justify-between px-6 md:px-8">
+                        {/* Left Side - User Info */}
+                        <div className="text-white space-y-1 z-10">
+                            <h2 className="text-2xl md:text-3xl font-bold tracking-tight">
+                                {user?.firstName && user?.lastName
+                                    ? `${user.firstName} ${user.lastName}`
+                                    : user?.username}
+                            </h2>
+                            <p className="text-base md:text-lg font-medium opacity-90">
+                                @{user?.username}
+                            </p>
+                            <p className="text-sm md:text-base opacity-80">
+                                {user?.email}
+                            </p>
                         </div>
 
-                        {/* Camera Icon Overlay - Upload button */}
-                        <button
-                            onClick={() => fileInputRef.current?.click()}
-                            disabled={isUploading}
-                            className="absolute bottom-0 right-0 bg-blue-600 hover:bg-blue-700 text-white rounded-full p-2 shadow-lg transition-colors disabled:opacity-50"
-                            title="Change avatar"
-                        >
-                            <Camera className="w-4 h-4" />
-                        </button>
-                    </div>
+                        {/* Right Side - Camera Upload Button */}
+                        <div className="relative z-10">
+                            {/* File selection button */}
+                            <label
+                                htmlFor="avatar-file-select"
+                                className={`flex-shrink-0 w-12 h-12 md:w-15 md:h-15 rounded-full bg-blue-600 hover:bg-blue-700 flex items-center justify-center shadow-xl transition-all hover:scale-105 cursor-pointer ${isUploading ? 'opacity-50 cursor-not-allowed' : ''
+                                    }`}
+                                title="Change profile image"
+                            >
+                                <Camera className="w-6 h-6 md:w-7 md:h-7 text-white" />
+                            </label>
 
-                    {/* Hidden File Input */}
-                    <input
-                        ref={fileInputRef}
-                        type="file"
-                        accept="image/*"
-                        onChange={handleFileSelect}
-                        className="hidden"
-                        disabled={isUploading}
-                    />
+                            {/* Hidden file input for initial selection */}
+                            <input
+                                id="avatar-file-select"
+                                type="file"
+                                accept="image/*"
+                                onChange={handleFileSelect}
+                                className="hidden"
+                                disabled={isUploading}
+                            />
+
+                            {/* Hidden ImageKit upload component (triggered after editing) */}
+                            <IKContext
+                                publicKey={process.env.NEXT_PUBLIC_IMAGEKIT_PUBLIC_KEY || ''}
+                                urlEndpoint={IMAGEKIT_URL_ENDPOINT}
+                                authenticator={authenticator}
+                            >
+                                <IKUpload
+                                    ref={ikUploadRef}
+                                    fileName={`avatar-${user?.id}-${Date.now()}`}
+                                    folder={getImageKitFolder(`users/${user?.id}/avatars`)}
+                                    tags={['avatar', 'profile']}
+                                    useUniqueFileName={true}
+                                    onError={onError}
+                                    onSuccess={onSuccess}
+                                    onUploadStart={onUploadStart}
+                                    className="hidden"
+                                    accept="image/*"
+                                    transformation={{
+                                        post: [
+                                            {
+                                                type: 'transformation',
+                                                value: 'w-400,h-400,c-at_max',
+                                            },
+                                        ],
+                                    }}
+                                />
+                            </IKContext>
+                        </div>
+                    </div>
                 </div>
             </CardContent>
         </Card>
+
+        {/* Image Editor Modal */}
+        <ImageEditor
+            open={editorOpen}
+            onClose={() => {
+                setEditorOpen(false);
+                setSelectedFile(null);
+            }}
+            imageFile={selectedFile}
+            onSave={handleEditorSave}
+        />
+        </>
     );
 }

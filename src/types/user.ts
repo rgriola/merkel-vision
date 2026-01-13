@@ -25,6 +25,7 @@ export interface User {
 
     // Profile fields
     avatar: string | null
+    bannerImage: string | null
     bio: string | null
     phoneNumber: string | null
     city: string | null
@@ -65,6 +66,7 @@ export interface PublicUser {
 
     // Profile fields (public)
     avatar: string | null
+    bannerImage: string | null
     city: string | null
     country: string | null
     language: string | null

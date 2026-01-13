@@ -1,14 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { PhotoUploadWithGPS } from "@/components/photos/PhotoUploadWithGPS";
 import { PhotoLocationForm } from "@/components/locations/PhotoLocationForm";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Camera, MapPin } from "lucide-react";
-import Link from "next/link";
 import type { PhotoMetadata } from "@/lib/photo-utils";
 
 function CreateWithPhotoPageInner() {
@@ -18,14 +18,18 @@ function CreateWithPhotoPageInner() {
         file: File;
         preview: string;
         gpsData: PhotoMetadata;
-        addressData?: any;
+        addressData?: Record<string, unknown>;
     } | null>(null);
+
+    // Generate stable placeId once on mount
+    // eslint-disable-next-line react-hooks/purity
+    const fallbackPlaceIdRef = useRef(`photo-${Date.now()}`);
 
     const handlePhotoProcessed = (data: {
         file: File;
         preview: string;
         gpsData: PhotoMetadata;
-        addressData?: any;
+        addressData?: Record<string, unknown>;
     }) => {
         setPhotoData(data);
         setStep('location');
@@ -111,11 +115,12 @@ function CreateWithPhotoPageInner() {
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="grid md:grid-cols-2 gap-6">
-                            <div>
-                                <img
+                            <div className="relative w-full h-48">
+                                <Image
                                     src={photoData.preview}
                                     alt="Location photo"
-                                    className="rounded-lg w-full h-48 object-cover"
+                                    fill
+                                    className="rounded-lg object-cover"
                                 />
                             </div>
                             <div className="space-y-3">
@@ -134,7 +139,7 @@ function CreateWithPhotoPageInner() {
                                             <div>
                                                 <p className="text-sm font-medium">Address</p>
                                                 <p className="text-sm text-muted-foreground">
-                                                    {photoData.addressData.address}
+                                                    {photoData.addressData.address as string}
                                                 </p>
                                             </div>
                                         )}
@@ -163,16 +168,16 @@ function CreateWithPhotoPageInner() {
                         <CardContent>
                             <PhotoLocationForm
                                 initialData={{
-                                    placeId: photoData.addressData?.placeId || `photo-${Date.now()}`,
-                                    name: photoData.addressData?.name || 'Photo Location',
-                                    address: photoData.addressData?.address,
+                                    placeId: (photoData.addressData?.placeId as string) || fallbackPlaceIdRef.current,
+                                    name: (photoData.addressData?.name as string) || 'Photo Location',
+                                    address: photoData.addressData?.address as string,
                                     lat: photoData.gpsData.lat,
                                     lng: photoData.gpsData.lng,
-                                    street: photoData.addressData?.street,
-                                    number: photoData.addressData?.number,
-                                    city: photoData.addressData?.city,
-                                    state: photoData.addressData?.state,
-                                    zipcode: photoData.addressData?.zipcode,
+                                    street: photoData.addressData?.street as string,
+                                    number: photoData.addressData?.number as string,
+                                    city: photoData.addressData?.city as string,
+                                    state: photoData.addressData?.state as string,
+                                    zipcode: photoData.addressData?.zipcode as string,
                                 }}
                                 photoMetadata={photoData.gpsData}
                                 photoFile={photoData.file}

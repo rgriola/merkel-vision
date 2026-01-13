@@ -8,30 +8,31 @@ datasource db {
 }
 
 model User {
-  id                      Int                 @id @default(autoincrement())
-  email                   String              @unique
-  username                String              @unique
+  id                      Int                      @id @default(autoincrement())
+  email                   String                   @unique
+  username                String                   @unique
   passwordHash            String
   firstName               String?
   lastName                String?
-  emailVerified           Boolean             @default(false)
+  emailVerified           Boolean                  @default(false)
   verificationToken       String?
   resetToken              String?
   resetTokenExpiry        DateTime?
-  isActive                Boolean             @default(true)
-  isAdmin                 Boolean             @default(false)
-  createdAt               DateTime            @default(now())
-  updatedAt               DateTime            @updatedAt
-  appleId                 String?             @unique
+  isActive                Boolean                  @default(true)
+  isAdmin                 Boolean                  @default(false)
+  createdAt               DateTime                 @default(now())
+  updatedAt               DateTime                 @updatedAt
+  appleId                 String?                  @unique
   avatar                  String?
+  bannerImage             String?
   city                    String?
   country                 String?
-  googleId                String?             @unique
-  language                String?             @default("en")
+  googleId                String?                  @unique
+  language                String?                  @default("en")
   lastLoginAt             DateTime?
   phoneNumber             String?
   timezone                String?
-  gpsPermission           String?             @default("not_asked")
+  gpsPermission           String?                  @default("not_asked")
   gpsPermissionUpdated    DateTime?
   homeLocationName        String?
   homeLocationLat         Float?
@@ -40,21 +41,23 @@ model User {
   verificationTokenExpiry DateTime?
   bio                     String?
   deletedAt               DateTime?
-  emailNotifications      Boolean             @default(true)
-  twoFactorEnabled        Boolean             @default(false)
+  emailNotifications      Boolean                  @default(true)
+  twoFactorEnabled        Boolean                  @default(false)
   twoFactorSecret         String?
-  failedLoginAttempts     Int                 @default(0)
+  failedLoginAttempts     Int                      @default(0)
   lockedUntil             DateTime?
   phoneVerification       PhoneVerification[]
-  createdLocations        Location[]          @relation("LocationCreator")
-  modifiedLocations       Location[]          @relation("LocationModifier")
-  uploadedPhotos          Photo[]             @relation("PhotoUploader")
+  createdLocations        Location[]               @relation("LocationCreator")
+  modifiedLocations       Location[]               @relation("LocationModifier")
+  uploadedPhotos          Photo[]                  @relation("PhotoUploader")
   projects                Project[]
   securityLogs            SecurityLog[]
   sessions                Session[]
-  invitedTeamMembers      TeamMember[]        @relation("TeamInviter")
-  teamMemberships         TeamMember[]        @relation("TeamMember")
+  invitedTeamMembers      TeamMember[]             @relation("TeamInviter")
+  teamMemberships         TeamMember[]             @relation("TeamMember")
   savedLocations          UserSave[]
+  emailChangeRequests     EmailChangeRequest[]
+  usernameChangeRequests  UsernameChangeRequest[]
 
   @@map("users")
 }
@@ -283,4 +286,42 @@ model SecurityLog {
   @@index([userId, createdAt])
   @@index([eventType, createdAt])
   @@map("security_logs")
+}
+
+model EmailChangeRequest {
+  id           Int       @id @default(autoincrement())
+  userId       Int
+  oldEmail     String
+  newEmail     String
+  token        String    @unique
+  expiresAt    DateTime
+  cancelToken  String    @unique
+  ipAddress    String?
+  userAgent    String?
+  createdAt    DateTime  @default(now())
+  completedAt  DateTime?
+  cancelledAt  DateTime?
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([token])
+  @@index([cancelToken])
+  @@index([createdAt])
+  @@map("email_change_requests")
+}
+
+model UsernameChangeRequest {
+  id            Int       @id @default(autoincrement())
+  userId        Int
+  oldUsername   String
+  newUsername   String
+  ipAddress     String?
+  userAgent     String?
+  createdAt     DateTime  @default(now())
+  completedAt   DateTime?
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([createdAt])
+  @@map("username_change_requests")
 }

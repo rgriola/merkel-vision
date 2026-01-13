@@ -117,6 +117,7 @@ export async function PATCH(request: NextRequest) {
                 homeLocationLng: true,
                 homeLocationUpdated: true,
                 avatar: true,
+                bannerImage: true,
                 createdAt: true,
             },
         });

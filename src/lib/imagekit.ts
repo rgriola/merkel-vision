@@ -6,10 +6,23 @@
 // ImageKit URL Endpoint - must match IMAGEKIT_URL_ENDPOINT in .env.local
 export const IMAGEKIT_URL_ENDPOINT = 'https://ik.imagekit.io/rgriola';
 
+// Environment-based folder prefix
+const ENV_FOLDER = process.env.NODE_ENV === 'production' ? '/production' : '/development';
+
+/**
+ * Get ImageKit folder path with environment prefix
+ * @param path - Path relative to environment (e.g., 'users/123/avatars')
+ * @returns Full folder path with environment prefix
+ */
+export function getImageKitFolder(path: string): string {
+    const cleanPath = path.startsWith('/') ? path.slice(1) : path;
+    return `${ENV_FOLDER}/${cleanPath}`;
+}
+
 /**
  * Constructs full ImageKit URL from file path
  * This is CLIENT-SAFE - no SDK initialization required
- * @param filePath - ImageKit file path (e.g., /locations/abc/photo.jpg)
+ * @param filePath - ImageKit file path (e.g., /development/locations/abc/photo.jpg)
  * @returns Full ImageKit URL
  */
 export function getImageKitUrl(filePath: string): string {
@@ -45,6 +58,7 @@ export function getOptimizedAvatarUrl(
  */
 function getImageKitInstance() {
     // Dynamic import to ensure this only runs on server
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     const ImageKit = require('imagekit');
 
     return new ImageKit({
@@ -85,11 +99,11 @@ export async function uploadToImageKit({
             url: result.url,
             fileId: result.fileId,
         };
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error('ImageKit upload error:', error);
         return {
             success: false,
-            error: error.message || 'Upload failed',
+            error: error instanceof Error ? error.message : 'Upload failed',
         };
     }
 }
@@ -103,11 +117,11 @@ export async function deleteFromImageKit(fileId: string): Promise<{ success: boo
         const imagekit = getImageKitInstance();
         await imagekit.deleteFile(fileId);
         return { success: true };
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error('ImageKit delete error:', error);
         return {
             success: false,
-            error: error.message || 'Delete failed',
+            error: error instanceof Error ? error.message : 'Delete failed',
         };
     }
 }

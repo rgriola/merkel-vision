@@ -91,6 +91,7 @@ export async function POST(request: NextRequest) {
         isActive: true,
         isAdmin: true,
         avatar: true,
+        bannerImage: true,
         city: true,
         country: true,
         language: true,
@@ -117,6 +118,7 @@ export async function POST(request: NextRequest) {
     // Generate JWT token
     const token = generateToken({
       ...user,
+      bannerImage: user.bannerImage,
       gpsPermissionUpdated: user.gpsPermissionUpdated?.toISOString() || null,
       homeLocationUpdated: user.homeLocationUpdated?.toISOString() || null,
       createdAt: user.createdAt.toISOString(),

@@ -118,6 +118,7 @@ export async function requireAuth(request: NextRequest): Promise<{
                 isActive: true,
                 isAdmin: true,
                 avatar: true,
+                bannerImage: true,
                 city: true,
                 country: true,
                 language: true,

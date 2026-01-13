@@ -2,9 +2,11 @@
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { User, Shield, Settings } from 'lucide-react';
-import { AvatarUpload } from '@/components/profile/AvatarUpload';
+import { ProfileHeader } from '@/components/profile/ProfileHeader';
 import { AccountSettingsForm } from '@/components/profile/AccountSettingsForm';
+import { ChangeUsernameForm } from '@/components/profile/ChangeUsernameForm';
 import { ChangePasswordForm } from '@/components/profile/ChangePasswordForm';
+import { ChangeEmailForm } from '@/components/profile/ChangeEmailForm';
 import { SecurityActivityLog } from '@/components/profile/SecurityActivityLog';
 import { DeleteAccountSection } from '@/components/profile/DeleteAccountSection';
 import { PreferencesForm } from '@/components/profile/PreferencesForm';
@@ -39,11 +41,13 @@ export default function ProfilePage() {
                 </TabsList>
 
                 <TabsContent value="account" className="space-y-4">
-                    <AvatarUpload currentAvatar={user?.avatar} />
+                    <ProfileHeader />
                     <AccountSettingsForm />
                 </TabsContent>
 
                 <TabsContent value="security" className="space-y-4">
+                    <ChangeUsernameForm />
+                    <ChangeEmailForm />
                     <ChangePasswordForm />
                     <SecurityActivityLog />
                     <DeleteAccountSection />

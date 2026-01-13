@@ -1,12 +1,12 @@
 import { NextRequest } from 'next/server';
 import { requireAuth, apiResponse, apiError } from '@/lib/api-middleware';
-import { uploadToImageKit, deleteFromImageKit } from '@/lib/imagekit';
+import { uploadToImageKit, getImageKitFolder } from '@/lib/imagekit';
 import prisma from '@/lib/prisma';
 import { FOLDER_PATHS } from '@/lib/constants/upload';
 
 /**
- * POST /api/auth/avatar
- * Upload user avatar
+ * POST /api/auth/banner
+ * Upload user banner image
  */
 export async function POST(request: NextRequest) {
     try {
@@ -17,23 +17,23 @@ export async function POST(request: NextRequest) {
         }
 
         const contentType = request.headers.get('content-type');
-        let avatarUrl: string;
+        let bannerUrl: string;
         let fileId: string | undefined;
 
-        // Handle ImageKit direct upload (JSON with avatarUrl)
+        // Handle ImageKit direct upload (JSON with bannerUrl)
         if (contentType?.includes('application/json')) {
             const body = await request.json();
-            avatarUrl = body.avatarUrl;
+            bannerUrl = body.bannerUrl;
             fileId = body.fileId;
 
-            if (!avatarUrl) {
-                return apiError('No avatar URL provided', 400, 'NO_URL');
+            if (!bannerUrl) {
+                return apiError('No banner URL provided', 400, 'NO_URL');
             }
         }
         // Handle traditional FormData upload
         else {
             const formData = await request.formData();
-            const file = formData.get('avatar') as File;
+            const file = formData.get('banner') as File;
 
             if (!file) {
                 return apiError('No file provided', 400, 'NO_FILE');
@@ -44,9 +44,9 @@ export async function POST(request: NextRequest) {
                 return apiError('File must be an image', 400, 'INVALID_FILE_TYPE');
             }
 
-            // Validate file size (5MB max)
-            if (file.size > 5 * 1024 * 1024) {
-                return apiError('File size must be less than 5MB', 400, 'FILE_TOO_LARGE');
+            // Validate file size (10MB max for banners - larger than avatars)
+            if (file.size > 10 * 1024 * 1024) {
+                return apiError('File size must be less than 10MB', 400, 'FILE_TOO_LARGE');
             }
 
             // Convert file to buffer
@@ -56,51 +56,47 @@ export async function POST(request: NextRequest) {
             // Upload to ImageKit
             const uploadResult = await uploadToImageKit({
                 file: buffer,
-                fileName: `avatar-${authResult.user.id}-${Date.now()}`,
-                folder: FOLDER_PATHS.userAvatars(authResult.user.id),
-                tags: ['avatar', `user-${authResult.user.id}`],
+                fileName: `banner-${authResult.user.id}-${Date.now()}`,
+                folder: getImageKitFolder(`users/${authResult.user.id}/banners`),
+                tags: ['banner', `user-${authResult.user.id}`],
             });
 
             if (!uploadResult.success || !uploadResult.url) {
                 return apiError('Failed to upload image', 500, 'UPLOAD_FAILED');
             }
 
-            avatarUrl = uploadResult.url;
+            bannerUrl = uploadResult.url;
             fileId = uploadResult.fileId;
         }
 
-        // Get current avatar to delete old one
-        const currentUser = await prisma.user.findUnique({
-            where: { id: authResult.user.id },
-            select: { avatar: true },
+        console.log('[Banner API] Saving banner to database:', {
+            userId: authResult.user.id,
+            bannerUrl,
+            fileId
         });
 
-        // Update user avatar in database
+        // Update user banner in database
         await prisma.user.update({
             where: { id: authResult.user.id },
-            data: { avatar: avatarUrl },
+            data: { bannerImage: bannerUrl },
         });
 
-        // Delete old avatar from ImageKit (if exists)
-        if (currentUser?.avatar && fileId) {
-            // Extract fileId from old avatar URL if needed
-            // For now, we'll just keep old avatars (can clean up later)
-        }
+        console.log('[Banner API] Banner saved successfully');
 
         return apiResponse({
             success: true,
-            message: 'Avatar uploaded successfully',
-            avatarUrl: avatarUrl,
+            message: 'Banner uploaded successfully',
+            bannerUrl: bannerUrl,
         });
     } catch (error: any) {
-        console.error('Avatar upload error:', error);
-        return apiError('Failed to upload avatar', 500, 'SERVER_ERROR');
+        console.error('Banner upload error:', error);
+        return apiError('Failed to upload banner', 500, 'SERVER_ERROR');
     }
 }
 
 /**
- * DELETE /api/auth/avatar
- * Remove user avatar
+ * DELETE /api/auth/banner
+ * Remove user banner image
  */
 export async function DELETE(request: NextRequest) {
     try {
@@ -110,18 +106,18 @@ export async function DELETE(request: NextRequest) {
             return apiError(authResult.error || 'Unauthorized', 401, 'UNAUTHORIZED');
         }
 
-        // Update user avatar to null
+        // Remove banner from database
         await prisma.user.update({
             where: { id: authResult.user.id },
-            data: { avatar: null },
+            data: { bannerImage: null },
         });
 
         return apiResponse({
             success: true,
-            message: 'Avatar removed successfully',
+            message: 'Banner removed successfully',
         });
     } catch (error: any) {
-        console.error('Avatar removal error:', error);
-        return apiError('Failed to remove avatar', 500, 'SERVER_ERROR');
+        console.error('Banner delete error:', error);
+        return apiError('Failed to remove banner', 500, 'SERVER_ERROR');
     }
 }

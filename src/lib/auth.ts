@@ -45,6 +45,8 @@ export function generateToken(
         email: user.email,
         username: user.username,
         isAdmin: user.isAdmin,
+        avatar: user.avatar,
+        bannerImage: user.bannerImage,
     };
 
     return jwt.sign(payload, JWT_SECRET, {

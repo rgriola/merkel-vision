@@ -105,8 +105,8 @@ export function ChangePasswordForm() {
 
     return (
         <Card>
-            <CardHeader>
-                <CardTitle className="flex items-center gap-2">
+            <CardHeader className="text-center">
+                <CardTitle className="flex items-center justify-center gap-2">
                     <Shield className="w-5 h-5" />
                     Change Password
                 </CardTitle>
@@ -115,7 +115,7 @@ export function ChangePasswordForm() {
                 </CardDescription>
             </CardHeader>
             <CardContent>
-                <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+                <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 max-w-md mx-auto">
                     {/* Current Password */}
                     <div className="space-y-2">
                         <Label htmlFor="currentPassword">Current Password</Label>
@@ -219,12 +219,12 @@ export function ChangePasswordForm() {
                                 {...register('confirmPassword')}
                                 disabled={isLoading}
                                 className={`pl-9 pr-20 ${errors.confirmPassword
-                                        ? 'border-red-500 focus-visible:ring-red-500'
-                                        : passwordsMatch
-                                            ? 'border-green-500 focus-visible:ring-green-500'
-                                            : passwordsDontMatch
-                                                ? 'border-red-500 focus-visible:ring-red-500'
-                                                : ''
+                                    ? 'border-red-500 focus-visible:ring-red-500'
+                                    : passwordsMatch
+                                        ? 'border-green-500 focus-visible:ring-green-500'
+                                        : passwordsDontMatch
+                                            ? 'border-red-500 focus-visible:ring-red-500'
+                                            : ''
                                     }`}
                                 aria-invalid={errors.confirmPassword ? 'true' : 'false'}
                             />

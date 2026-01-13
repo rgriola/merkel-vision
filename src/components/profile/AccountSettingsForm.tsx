@@ -121,8 +121,8 @@ export function AccountSettingsForm() {
 
     return (
         <Card>
-            <CardHeader>
-                <CardTitle className="flex items-center gap-2">
+            <CardHeader className="text-center">
+                <CardTitle className="flex items-center justify-center gap-2">
                     <User className="w-5 h-5" />
                     Account Information
                 </CardTitle>
@@ -131,7 +131,7 @@ export function AccountSettingsForm() {
                 </CardDescription>
             </CardHeader>
             <CardContent>
-                <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+                <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 max-w-md mx-auto">
                     {/* Email and Username (Read-only) - Side by Side */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {/* Email (Read-only) */}
