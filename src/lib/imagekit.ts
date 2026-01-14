@@ -125,3 +125,49 @@ export async function deleteFromImageKit(fileId: string): Promise<{ success: boo
         };
     }
 }
+
+/**
+ * Generate signed upload parameters for ImageKit
+ * SERVER-SIDE ONLY
+ * 
+ * Returns authentication parameters that allow a mobile client to upload
+ * directly to ImageKit with a time-limited signature (5 minutes)
+ */
+export async function generateSignedUploadUrl({
+    folder,
+    fileName,
+}: {
+    folder: string;
+    fileName: string;
+}): Promise<{
+    uploadUrl: string;
+    uploadToken: string;
+    signature: string;
+    expire: number;
+    fileName: string;
+    folder: string;
+    publicKey: string;
+}> {
+    try {
+        const imagekit = getImageKitInstance();
+
+        // Generate authentication parameters from ImageKit SDK
+        const authParams = imagekit.getAuthenticationParameters();
+
+        // Calculate expiry (5 minutes from now)
+        const expire = Math.floor(Date.now() / 1000) + 300;
+
+        return {
+            uploadUrl: 'https://upload.imagekit.io/api/v1/files/upload',
+            uploadToken: authParams.token,
+            signature: authParams.signature,
+            expire: authParams.expire,
+            fileName,
+            folder: getImageKitFolder(folder),
+            publicKey: process.env.NEXT_PUBLIC_IMAGEKIT_PUBLIC_KEY || '',
+        };
+    } catch (error: unknown) {
+        console.error('ImageKit signed URL generation error:', error);
+        throw new Error(error instanceof Error ? error.message : 'Failed to generate upload URL');
+    }
+}

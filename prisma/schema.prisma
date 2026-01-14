@@ -4,7 +4,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
+  url      = env("DATABASE_OAUTH_DEV_URL")
 }
 
 model User {
@@ -69,6 +69,8 @@ model User {
   usernameChangeRequests  UsernameChangeRequest[]
   following               UserFollow[]             @relation("Following")
   followers               UserFollow[]             @relation("Followers")
+  oauthAuthorizationCodes OAuthAuthorizationCode[]
+  oauthRefreshTokens      OAuthRefreshToken[]
 
   @@index([city])
   @@index([country])
@@ -363,4 +365,74 @@ model UserFollow {
   @@index([followerId])
   @@index([followingId])
   @@map("user_follows")
+}
+
+model OAuthClient {
+  id                     String                   @id @default(cuid())
+  clientId               String                   @unique
+  clientSecret           String?                  // Null for public clients (mobile apps)
+  name                   String
+  redirectUris           String[]                 // Array of allowed redirect URIs
+  scopes                 String[]                 // Array of allowed scopes
+  grantTypes             String[]                 // ['authorization_code', 'refresh_token']
+  isPublic               Boolean                  @default(true) // Public clients don't have secrets
+  createdAt              DateTime                 @default(now())
+  updatedAt              DateTime                 @updatedAt
+  
+  authorizationCodes     OAuthAuthorizationCode[]
+  refreshTokens          OAuthRefreshToken[]
+  
+  @@map("oauth_clients")
+}
+
+model OAuthAuthorizationCode {
+  id                    String      @id @default(cuid())
+  code                  String      @unique
+  clientId              String
+  userId                Int
+  redirectUri           String
+  codeChallenge         String      // PKCE code challenge
+  codeChallengeMethod   String      // 'S256' or 'plain'
+  scopes                String[]
+  expiresAt             DateTime    // Short-lived: 10 minutes
+  used                  Boolean     @default(false)
+  usedAt                DateTime?
+  createdAt             DateTime    @default(now())
+  
+  client                OAuthClient @relation(fields: [clientId], references: [clientId], onDelete: Cascade)
+  user                  User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([code])
+  @@index([userId])
+  @@index([clientId])
+  @@index([expiresAt])
+  @@map("oauth_authorization_codes")
+}
+
+model OAuthRefreshToken {
+  id           String      @id @default(cuid())
+  token        String      @unique
+  clientId     String
+  userId       Int
+  scopes       String[]
+  expiresAt    DateTime    // Long-lived: 30 days
+  revoked      Boolean     @default(false)
+  revokedAt    DateTime?
+  createdAt    DateTime    @default(now())
+  lastUsedAt   DateTime    @default(now())
+  
+  // Device tracking for security
+  deviceName   String?
+  deviceType   String?     // 'ios', 'android', 'web'
+  userAgent    String?
+  ipAddress    String?
+  
+  client       OAuthClient @relation(fields: [clientId], references: [clientId], onDelete: Cascade)
+  user         User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([token])
+  @@index([userId])
+  @@index([clientId])
+  @@index([expiresAt])
+  @@map("oauth_refresh_tokens")
 }
