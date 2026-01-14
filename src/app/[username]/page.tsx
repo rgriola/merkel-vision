@@ -65,7 +65,9 @@ async function getUserByUsername(username: string) {
             where: {
               visibility: 'public'
             }
-          }
+          },
+          followers: true,
+          following: true,
         }
       }
     },
@@ -341,8 +343,8 @@ export default async function UserProfilePage({ params }: UserProfilePageProps) 
             allowFollowRequests={user.allowFollowRequests}
             stats={{
               publicLocations: user._count.savedLocations,
-              followers: 0, // TODO: Add to query
-              following: 0, // TODO: Add to query
+              followers: user._count.followers,
+              following: user._count.following,
             }}
           />
 
