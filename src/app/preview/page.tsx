@@ -72,8 +72,11 @@ export default function PreviewPage() {
                 const response = await fetch('/api/locations');
                 if (response.ok) {
                     const data = await response.json();
+                    console.log('Fetched locations:', data);
                     setLocations(data.locations || []);
                 } else {
+                    const errorData = await response.json().catch(() => ({}));
+                    console.error('Failed to fetch locations:', response.status, errorData);
                     toast.error('Failed to load locations');
                 }
             } catch (error) {
@@ -143,7 +146,7 @@ export default function PreviewPage() {
                                             <div className="flex-1 min-w-0">
                                                 <h4 className="font-semibold truncate">{location.name}</h4>
                                                 <p className="text-sm text-muted-foreground truncate">
-                                                    {location.address || `${location.lat.toFixed(4)}, ${location.lng.toFixed(4)}`}
+                                                    {location.address || (location.lat && location.lng ? `${location.lat.toFixed(4)}, ${location.lng.toFixed(4)}` : 'No address')}
                                                 </p>
                                             </div>
                                             <div className="flex gap-2 ml-4">
