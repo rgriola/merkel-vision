@@ -1,8 +1,29 @@
 # fotolokashen - Project Status
 
-**Last Updated**: 2026-01-13  
+**Last Updated**: 2026-01-15  
 **Production URL**: https://fotolokashen.com  
-**Status**: ✅ Live in Production - **Phase 2A Complete!** 🎉
+**Status**: ✅ Live in Production | 📱 iOS App in Active Development
+
+## Current Focus
+
+### 📱 iOS Companion App (January 2026)
+**Status**: Active Development  
+**Location**: `/fotolokashen-ios/` workspace
+
+The fotolokashen iOS app is a camera-first mobile companion for location scouting and photo management. Development is underway with focus on:
+
+- **Tech Stack**: SwiftUI, MVVM Architecture, Swift Concurrency
+- **Core Features**: Camera-first workflow, GPS tagging, offline support
+- **Backend Integration**: OAuth2 + PKCE authentication, mobile-optimized APIs
+- **Phase**: Backend gap analysis complete, mobile development in progress
+
+**Documentation**:
+- Main README: `/fotolokashen-ios/README.md`
+- iOS Development Stack: `/fotolokashen-ios/docs/IOS_DEVELOPMENT_STACK.md`
+- Backend Evaluation: `/fotolokashen-ios/docs/IOS_APP_EVALUATION.md`
+- API Specification: `/fotolokashen-ios/docs/API.md`
+
+---
 
 ## Recent Major Updates
 
@@ -385,14 +406,28 @@ vercel --prod
 
 ## Quick References
 
-- **Admin Quick Start**: `ADMIN_QUICK_START.md`
-- **Deployment Guide**: `DEPLOYMENT_QUICK_REF.md`
-- **Environment Setup**: `ENV_TEMPLATE.md`
-- **Phone Verification**: `PHONE_VERIFICATION_GUIDE.md`
-- **Photo Testing**: `PHOTO_FEATURE_TESTING_GUIDE.md`
-- **Security Features**: `SECURITY_IMPLEMENTATION.md`
-- **Avatar System**: `AVATAR_UPLOAD_FLOW.md`
-- **Historical Docs**: `/docs/README.md`
+### Essential Documentation (Root Level)
+- **PROJECT_STATUS.md** (this file) - Current project status and updates
+- **README.md** - Project overview, setup instructions, and technology stack
+
+### Organized Documentation (`/docs/`)
+- **completed-features/** - Feature implementation summaries and completion reports
+- **deployment/** - Deployment guides, build fixes, and production checklists
+- **summaries/** - Implementation summaries, reviews, and technical updates
+- **features/** - Feature specifications and guides
+- **guides/** - Development and technical guides
+- **user-guides/** - End-user documentation and privacy guides
+- **troubleshooting/** - Issue resolution guides
+- **api/** - API documentation (Follow System, Search System)
+- **implementation/** - Phase completion reports
+- **archive/** - Historical documentation
+
+### iOS App Documentation (`/fotolokashen-ios/docs/`)
+- **API.md** - Mobile API specifications and endpoints
+- **IOS_APP_EVALUATION.md** - Backend gap analysis and implementation strategy
+- **IOS_DEVELOPMENT_STACK.md** - Tech stack and architecture decisions
+
+---
 
 ## File Structure
 
@@ -417,8 +452,26 @@ fotolokashen/
 │       └── auth-context.tsx   # Auth state management
 ├── prisma/
 │   └── schema.prisma          # Database schema
-├── docs/                      # Historical documentation
-└── *.md                       # Project documentation
+├── docs/                      # Organized documentation
+│   ├── completed-features/    # Feature completion summaries
+│   ├── deployment/            # Deployment documentation
+│   └── summaries/             # Implementation summaries
+├── README.md                  # Main project documentation
+└── PROJECT_STATUS.md          # This file
+
+fotolokashen-ios/
+├── fotolokashen/              # iOS app source
+│   ├── App/                   # App entry point & config
+│   ├── Models/                # Data models
+│   ├── ViewModels/            # Business logic (MVVM)
+│   ├── Views/                 # SwiftUI views
+│   ├── Services/              # API & auth services
+│   └── Utilities/             # Helpers & extensions
+├── docs/                      # iOS documentation
+│   ├── API.md                 # Mobile API specs
+│   ├── IOS_APP_EVALUATION.md  # Backend analysis
+│   └── IOS_DEVELOPMENT_STACK.md # Architecture guide
+└── README.md                  # iOS app overview
 ```
 
 ---

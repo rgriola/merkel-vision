@@ -1,6 +1,6 @@
 # 📚 Fotolokashen Documentation Index
 
-**Last Updated:** January 7, 2026
+**Last Updated:** January 15, 2026
 
 Welcome to the Fotolokashen documentation hub! All project documentation is organized here for easy navigation.
 
@@ -11,8 +11,8 @@ Welcome to the Fotolokashen documentation hub! All project documentation is orga
 New to the project? Start here:
 
 1. **[../README.md](../README.md)** - Main project overview
-2. **[../DEPLOYMENT.md](../DEPLOYMENT.md)** - How to deploy
-3. **[../PROJECT_STATUS.md](../PROJECT_STATUS.md)** - Current status
+2. **[../PROJECT_STATUS.md](../PROJECT_STATUS.md)** - Current status & iOS app development
+3. **[deployment/DEPLOYMENT.md](deployment/DEPLOYMENT.md)** - How to deploy
 
 ---
 
@@ -20,54 +20,130 @@ New to the project? Start here:
 
 ```
 docs/
-├── features/           # Feature specifications and guides
-├── guides/             # Development and technical guides
-├── setup/              # Setup and configuration
-├── troubleshooting/    # Issue resolution guides
-├── ui-ux/              # Design and UX documentation
-├── planning/           # Planning documents
-├── process/            # Process and workflow guides
-├── development-history/# Historical development records
-├── archive/            # Deprecated/old documentation
-└── database/           # Database migrations and schemas
+├── completed-features/  # Feature completion reports & summaries
+├── deployment/          # Deployment guides, checklists, build fixes  
+├── summaries/           # Implementation summaries & reviews
+├── features/            # Feature specifications and guides
+├── guides/              # Development and technical guides
+├── user-guides/         # End-user documentation
+├── api/                 # API documentation
+├── implementation/      # Phase completion reports
+├── setup/               # Setup and configuration
+├── troubleshooting/     # Issue resolution guides
+├── ui-ux/               # Design and UX documentation
+├── planning/            # Planning documents
+├── process/             # Process and workflow guides
+├── development-history/ # Historical development records
+├── database/            # Database migrations and schemas
+└── archive/             # Deprecated/old documentation
 ```
 
 ---
 
-## ✨ **Feature Documentation**
+## ✅ **Completed Features**
 
-Detailed guides for major features:
+Feature implementation summaries and completion reports:
 
-- **[social-collaboration.md](./features/social-collaboration.md)** - User invites, friends, teams (planned)
-- **[avatar-upload.md](./features/avatar-upload.md)** - Avatar upload system
-- **[phone-verification.md](./features/phone-verification.md)** - Phone verification setup
-- **[photo-testing.md](./features/photo-testing.md)** - Photo upload and testing
+- **[completed-features/AVATAR_CROP_ROTATE_SUMMARY.md](completed-features/AVATAR_CROP_ROTATE_SUMMARY.md)** - Avatar crop/rotate
+- **[completed-features/CODE_REBRANDING_COMPLETE.md](completed-features/CODE_REBRANDING_COMPLETE.md)** - Rebranding to fotolokashen
+- **[completed-features/EMAIL_CHANGE_COMPLETE.md](completed-features/EMAIL_CHANGE_COMPLETE.md)** - Email change feature
+- **[completed-features/PROFILE_CONSISTENCY_COMPLETE.md](completed-features/PROFILE_CONSISTENCY_COMPLETE.md)** - Profile consistency
+- **[completed-features/SHARE_FEATURE_COMPLETE.md](completed-features/SHARE_FEATURE_COMPLETE.md)** - Location sharing
+- **[completed-features/USERNAME_CHANGE_COMPLETE.md](completed-features/USERNAME_CHANGE_COMPLETE.md)** - Username changes
 
 ---
 
-## 🛠️ **Development Guides**
+## 🚀 **Deployment Documentation**
+
+All deployment-related guides and checklists:
+
+- **[deployment/DEPLOYMENT.md](deployment/DEPLOYMENT.md)** - Main deployment guide
+- **[deployment/DATABASE_DEPLOYMENT_GUIDE.md](deployment/DATABASE_DEPLOYMENT_GUIDE.md)** - Database deployment
+- **[deployment/PRODUCTION_CHECKLIST.md](deployment/PRODUCTION_CHECKLIST.md)** - Production checklist
+- **[deployment/PRODUCTION_DEPLOYMENT_CHECKLIST_PHASE2A.md](deployment/PRODUCTION_DEPLOYMENT_CHECKLIST_PHASE2A.md)** - Phase 2A checklist
+- **[deployment/MIGRATION_BASELINE_FIX.md](deployment/MIGRATION_BASELINE_FIX.md)** - Prisma migration setup
+- **[deployment/VERCEL_BUILD_FIX.md](deployment/VERCEL_BUILD_FIX.md)** - Build fixes
+
+---
+
+## 📝 **Implementation Summaries**
+
+Technical implementation details and reviews:
+
+- **[summaries/DAY_10_SUMMARY.md](summaries/DAY_10_SUMMARY.md)** - Phase 2A completion
+- **[summaries/IMAGEKIT_INTEGRATION.md](summaries/IMAGEKIT_INTEGRATION.md)** - ImageKit setup
+- **[summaries/MOBILE_LAYOUT_IMPROVEMENTS.md](summaries/MOBILE_LAYOUT_IMPROVEMENTS.md)** - Mobile UI
+- **[summaries/PROJECT_STRUCTURE_REVIEW.md](summaries/PROJECT_STRUCTURE_REVIEW.md)** - Structure analysis
+- **[summaries/REBRANDING_SUMMARY.md](summaries/REBRANDING_SUMMARY.md)** - Rebranding process
+
+---
+
+## ✨ **Active Features**
+
+Current feature documentation:
+
+- **[features/social-collaboration.md](./features/social-collaboration.md)** - User invites, friends, teams (planned)
+- **[features/avatar-upload.md](./features/avatar-upload.md)** - Avatar upload system
+- **[features/phone-verification.md](./features/phone-verification.md)** - Phone verification setup
+- **[features/photo-testing.md](./features/photo-testing.md)** - Photo upload and testing
+- **[features/PRIVACY_ENFORCEMENT.md](./features/PRIVACY_ENFORCEMENT.md)** - Privacy controls
+- **[features/INTEGRATION_TESTING.md](./features/INTEGRATION_TESTING.md)** - Integration tests
+
+---
+
+## 📱 **iOS App Documentation**
+
+The iOS companion app documentation is in a separate workspace:
+
+**Location**: `/fotolokashen-ios/docs/`
+
+- **[../fotolokashen-ios/README.md](../../fotolokashen-ios/README.md)** - iOS app overview
+- **[../fotolokashen-ios/docs/API.md](../../fotolokashen-ios/docs/API.md)** - Mobile API specifications
+- **[../fotolokashen-ios/docs/IOS_APP_EVALUATION.md](../../fotolokashen-ios/docs/IOS_APP_EVALUATION.md)** - Backend gap analysis
+- **[../fotolokashen-ios/docs/IOS_DEVELOPMENT_STACK.md](../../fotolokashen-ios/docs/IOS_DEVELOPMENT_STACK.md)** - Tech stack guide
+
+---
+
+## �️ **Development Guides**
 
 Technical guides for developers:
 
-- **[icon-management.md](./guides/icon-management.md)** - Icon system guide
-- **[prisma-naming.md](./guides/prisma-naming.md)** - Database naming conventions
-- **[map-repositioning.md](./guides/map-repositioning.md)** - Map UX improvements
-- **[security.md](./guides/security.md)** - Security implementation
+- **[guides/icon-management.md](./guides/icon-management.md)** - Icon system guide
+- **[guides/prisma-naming.md](./guides/prisma-naming.md)** - Database naming conventions
+- **[guides/map-repositioning.md](./guides/map-repositioning.md)** - Map UX improvements
+- **[guides/security.md](./guides/security.md)** - Security implementation
 
 ---
 
-## 🗄️ **Database**
+## 👥 **User Guides**
+
+End-user documentation:
+
+- **[user-guides/PRIVACY_GUIDE.md](./user-guides/PRIVACY_GUIDE.md)** - Privacy settings and controls
+
+---
+
+## 🔌 **API Documentation**
+
+API specifications and system documentation:
+
+- **[api/FOLLOW_SYSTEM.md](./api/FOLLOW_SYSTEM.md)** - Follow system API
+- **[api/SEARCH_SYSTEM.md](./api/SEARCH_SYSTEM.md)** - User search API
+
+---
+
+## �️ **Database**
 
 Database-related documentation:
 
-- **[make-locations-user-specific.sql](./database/make-locations-user-specific.sql)** - Location migration script
+- **[database/make-locations-user-specific.sql](./database/make-locations-user-specific.sql)** - Location migration script
 
 ---
 
-## 📦 **Setup & Configuration**
+## �📦 **Setup & Configuration**
 
 - **[setup/](./setup/)** - Initial setup guides
-- **[../DEPLOYMENT.md](../DEPLOYMENT.md)** - Deployment instructions
+- **[deployment/DEPLOYMENT.md](deployment/DEPLOYMENT.md)** - Deployment instructions
 
 ---
 
@@ -84,6 +160,37 @@ Database-related documentation:
 ---
 
 ## 📋 **Planning & Process**
+
+- **[planning/](./planning/)** - Project planning documents
+- **[process/](./process/)** - Development workflows
+- **[process/DOCUMENTATION_CLEANUP_JAN_2026.md](./process/DOCUMENTATION_CLEANUP_JAN_2026.md)** - Latest cleanup (Jan 15, 2026)
+
+---
+
+## 📜 **Historical Records**
+
+- **[development-history/](./development-history/)** - Development timeline
+- **[archive/](./archive/)** - Deprecated documentation
+
+---
+
+## 🔍 **Finding Documentation**
+
+### By Topic
+
+- **Authentication & Security**: `guides/security.md`, `features/phone-verification.md`
+- **Database**: `database/`, `guides/prisma-naming.md`
+- **Deployment**: `deployment/DEPLOYMENT.md`, `deployment/PRODUCTION_CHECKLIST.md`
+- **Features**: `features/`, `completed-features/`
+- **Mobile/iOS**: `../fotolokashen-ios/docs/`
+- **UI/UX**: `ui-ux/`, `summaries/MOBILE_LAYOUT_IMPROVEMENTS.md`
+
+### By Status
+
+- **Active Development**: `../PROJECT_STATUS.md` (iOS app)
+- **Completed**: `completed-features/`
+- **Planned**: `planning/`, `features/social-collaboration.md`
+- **Archived**: `archive/`
 
 - **[planning/](./planning/)** - Project planning documents
 - **[process/](./process/)** - Development workflows
