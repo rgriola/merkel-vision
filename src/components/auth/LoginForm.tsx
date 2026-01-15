@@ -1,11 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -24,8 +24,31 @@ type LoginFormData = z.infer<typeof loginSchema>;
 
 export function LoginForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  
+  // OAuth parameters from URL
+  const [oauthParams, setOauthParams] = useState<{
+    clientId?: string;
+    redirectUri?: string;
+    codeChallenge?: string;
+    codeChallengeMethod?: string;
+    scope?: string;
+    responseType?: string;
+  }>({});
+
+  useEffect(() => {
+    // Capture OAuth parameters from URL
+    setOauthParams({
+      clientId: searchParams.get('client_id') || undefined,
+      redirectUri: searchParams.get('redirect_uri') || undefined,
+      codeChallenge: searchParams.get('code_challenge') || undefined,
+      codeChallengeMethod: searchParams.get('code_challenge_method') || undefined,
+      scope: searchParams.get('scope') || undefined,
+      responseType: searchParams.get('response_type') || undefined,
+    });
+  }, [searchParams]);
 
   const {
     register,
@@ -85,7 +108,47 @@ export function LoginForm() {
 
       toast.success('Login successful!');
 
-      // Small delay to ensure cookie is fully set, then hard redirect
+      // Check if this is an OAuth login (mobile app)
+      if (oauthParams.clientId && oauthParams.redirectUri && oauthParams.codeChallenge) {
+        console.log('[OAuth] Mobile app login detected, requesting authorization code...');
+        
+        // Request authorization code from OAuth endpoint
+        try {
+          const oauthResponse = await fetch('/api/auth/oauth/authorize', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              client_id: oauthParams.clientId,
+              response_type: oauthParams.responseType || 'code',
+              redirect_uri: oauthParams.redirectUri,
+              code_challenge: oauthParams.codeChallenge,
+              code_challenge_method: oauthParams.codeChallengeMethod || 'S256',
+              scope: oauthParams.scope || 'read write',
+            }),
+          });
+
+          const oauthResult = await oauthResponse.json();
+
+          if (!oauthResponse.ok) {
+            console.error('[OAuth] Authorization failed:', oauthResult);
+            toast.error('OAuth authorization failed');
+            return;
+          }
+
+          console.log('[OAuth] Authorization code received, redirecting to app...');
+          
+          // Redirect back to mobile app with authorization code
+          const redirectUrl = `${oauthParams.redirectUri}?code=${oauthResult.authorization_code}`;
+          window.location.href = redirectUrl;
+          return;
+        } catch (oauthError) {
+          console.error('[OAuth] Error during OAuth flow:', oauthError);
+          toast.error('Failed to complete OAuth flow');
+          return;
+        }
+      }
+
+      // Normal web login - redirect to map
       setTimeout(() => {
         window.location.href = '/map';
       }, 200);
