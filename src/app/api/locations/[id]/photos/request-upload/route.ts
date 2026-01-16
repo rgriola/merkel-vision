@@ -123,9 +123,10 @@ export async function POST(
             },
         });
 
-        // Generate signed upload URL
+        // Generate signed upload URL with correct folder structure
+        // Path will be: production/users/{userId}/photos/{filename}
         const uploadParams = await generateSignedUploadUrl({
-            folder: `locations/${locationId}`,
+            folder: `users/${authResult.user.id}/photos`,
             fileName: serverFileName,
         });
 
