@@ -3,8 +3,12 @@
  * Centralized configuration for ImageKit CDN
  */
 
-// ImageKit URL Endpoint - must match IMAGEKIT_URL_ENDPOINT in .env.local
-export const IMAGEKIT_URL_ENDPOINT = 'https://ik.imagekit.io/rgriola';
+// ImageKit URL Endpoint - reads from environment variable
+// Fallback to rgriola endpoint for backward compatibility
+export const IMAGEKIT_URL_ENDPOINT =
+    process.env.IMAGEKIT_URL_ENDPOINT ||
+    process.env.NEXT_PUBLIC_IMAGEKIT_URL_ENDPOINT ||
+    'https://ik.imagekit.io/rgriola';
 
 // Environment-based folder prefix
 const ENV_FOLDER = process.env.NODE_ENV === 'production' ? '/production' : '/development';
