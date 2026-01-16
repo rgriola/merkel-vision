@@ -58,9 +58,20 @@ export async function POST(
             return apiError('Photo already confirmed', 400);
         }
 
+
         // Extract file path from URL
+        // URL format: https://ik.imagekit.io/rgriola/production/users/4/photos/file.jpg
+        // We want: /production/users/4/photos/file.jpg (without /rgriola)
         const urlObj = new URL(imagekitUrl);
-        const imagekitFilePath = urlObj.pathname;
+        let imagekitFilePath = urlObj.pathname;
+
+        // Remove the ImageKit account name from the path (e.g., /rgriola)
+        // The path should start with /production or /development
+        const pathParts = imagekitFilePath.split('/').filter(Boolean);
+        if (pathParts.length > 0 && !pathParts[0].startsWith('production') && !pathParts[0].startsWith('development')) {
+            // Remove the first part (account name)
+            imagekitFilePath = '/' + pathParts.slice(1).join('/');
+        }
 
         // Update photo record with ImageKit details
         const updatedPhoto = await prisma.photo.update({
