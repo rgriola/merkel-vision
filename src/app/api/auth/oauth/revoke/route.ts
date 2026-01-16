@@ -51,6 +51,15 @@ export async function POST(request: NextRequest) {
             },
         });
 
+        // CRITICAL: Delete all sessions for this user (logout from all devices)
+        // This ensures a clean state when logging back in
+        await prisma.session.deleteMany({
+            where: { 
+                userId: refreshToken.userId,
+                deviceType: 'ios' // Only delete iOS sessions, leave web sessions active
+            },
+        });
+
         return apiResponse({ success: true });
 
     } catch (error) {
