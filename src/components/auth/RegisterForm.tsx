@@ -32,9 +32,25 @@ const registerSchema = z.object({
   confirmPassword: z.string(),
   firstName: z.string().optional(),
   lastName: z.string().optional(),
+  dateOfBirth: z.string().min(1, 'Date of birth is required'),
 }).refine((data) => data.password === data.confirmPassword, {
   message: "Passwords don't match",
   path: ['confirmPassword'],
+}).refine((data) => {
+  // Check if user is at least 18 years old
+  const birthDate = new Date(data.dateOfBirth);
+  const today = new Date();
+  const age = today.getFullYear() - birthDate.getFullYear();
+  const monthDiff = today.getMonth() - birthDate.getMonth();
+  const dayDiff = today.getDate() - birthDate.getDate();
+  
+  // Adjust age if birthday hasn't occurred this year
+  const actualAge = monthDiff < 0 || (monthDiff === 0 && dayDiff < 0) ? age - 1 : age;
+  
+  return actualAge >= 18;
+}, {
+  message: "You must be at least 18 years old to create an account. This service is not available to users under 18.",
+  path: ['dateOfBirth'],
 });
 
 type RegisterFormData = z.infer<typeof registerSchema>;
@@ -79,7 +95,7 @@ export function RegisterForm() {
     setIsLoading(true);
 
     try {
-      const { confirmPassword, ...registerData } = data;
+      const { confirmPassword, dateOfBirth, ...registerData } = data;
 
       const response = await fetch('/api/auth/register', {
         method: 'POST',
@@ -183,6 +199,24 @@ export function RegisterForm() {
             />
             {errors.username && (
               <p className="text-sm text-red-500 font-medium">{errors.username.message}</p>
+            )}
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="dateOfBirth">Date of Birth</Label>
+            <Input
+              id="dateOfBirth"
+              type="date"
+              autoComplete="bday"
+              max={new Date().toISOString().split('T')[0]}
+              {...register('dateOfBirth')}
+              disabled={isLoading}
+              className={errors.dateOfBirth ? 'border-red-500 focus-visible:ring-red-500' : ''}
+              aria-invalid={errors.dateOfBirth ? 'true' : 'false'}
+            />
+            <p className="text-xs text-muted-foreground">You must be at least 18 years old to register.</p>
+            {errors.dateOfBirth && (
+              <p className="text-sm text-red-500 font-medium">{errors.dateOfBirth.message}</p>
             )}
           </div>
 
