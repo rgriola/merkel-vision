@@ -18,7 +18,25 @@ export function CustomMapControls({ map, rightPanelOpen }: CustomMapControlsProp
     const handleZoomIn = () => {
         if (map) {
             const currentZoom = map.getZoom() || 12;
-            map.setZoom(currentZoom + 1);
+            const mapTypeId = map.getMapTypeId();
+            
+            // Satellite/Hybrid views have a lower max zoom
+            const satelliteMaxZoom = 19;
+            const roadmapMaxZoom = 22;
+            
+            // Determine max zoom based on current map type
+            // Check both string literals and MapTypeId constants
+            const isSatelliteView = mapTypeId === 'satellite' || 
+                                   mapTypeId === google.maps.MapTypeId.SATELLITE ||
+                                   mapTypeId === 'hybrid' ||
+                                   mapTypeId === google.maps.MapTypeId.HYBRID;
+            
+            const maxZoom = isSatelliteView ? satelliteMaxZoom : roadmapMaxZoom;
+            
+            // Only zoom in if we haven't reached the max
+            if (currentZoom < maxZoom) {
+                map.setZoom(currentZoom + 1);
+            }
         }
     };
 
@@ -36,7 +54,12 @@ export function CustomMapControls({ map, rightPanelOpen }: CustomMapControlsProp
             
             // Satellite view has a lower max zoom (typically ~19-20) compared to roadmap (~21-22)
             // If switching to satellite and current zoom is too high, reduce it
-            if (mapTypeId === 'satellite' || mapTypeId === 'hybrid') {
+            const isSatelliteView = mapTypeId === 'satellite' || 
+                                   mapTypeId === google.maps.MapTypeId.SATELLITE ||
+                                   mapTypeId === 'hybrid' ||
+                                   mapTypeId === google.maps.MapTypeId.HYBRID;
+            
+            if (isSatelliteView) {
                 const satelliteMaxZoom = 19; // Safe max for satellite imagery
                 if (currentZoom > satelliteMaxZoom) {
                     map.setZoom(satelliteMaxZoom);
