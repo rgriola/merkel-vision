@@ -4,12 +4,14 @@ import type { NextRequest } from 'next/server';
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Handle @username URLs (e.g., /@johndoe → /johndoe, /@johndoe/following → /johndoe/following)
+  // Redirect @username URLs to clean URLs (e.g., /@johndoe → /johndoe)
+  // Using 301 (permanent redirect) for SEO and backwards compatibility
   if (pathname.startsWith('/@')) {
     const pathWithoutAt = pathname.slice(2); // Remove /@ to get username/rest/of/path
-    const url = request.nextUrl.clone();
-    url.pathname = `/${pathWithoutAt}`;
-    return NextResponse.rewrite(url);
+    return NextResponse.redirect(
+      new URL(`/${pathWithoutAt}`, request.url),
+      { status: 301 } // Permanent redirect
+    );
   }
 
   return NextResponse.next();

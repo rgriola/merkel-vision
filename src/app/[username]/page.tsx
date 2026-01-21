@@ -33,14 +33,11 @@ interface UserProfilePageProps {
 }
 
 async function getUserByUsername(username: string) {
-  // Remove @ prefix if present
-  const cleanUsername = username.startsWith('@') ? username.slice(1) : username;
-  
   // Case-insensitive lookup
   return await prisma.user.findFirst({
     where: { 
       username: {
-        equals: normalizeUsername(cleanUsername),
+        equals: normalizeUsername(username),
         mode: 'insensitive'
       }
     },
@@ -373,7 +370,7 @@ export default async function UserProfilePage({ params }: UserProfilePageProps) 
                   <h2 className="text-2xl font-bold">Public Locations</h2>
                   {user._count.savedLocations > 6 && (
                     <Link
-                      href={`/@${user.username}/locations`}
+                      href={`/${user.username}/locations`}
                       className="text-primary hover:underline"
                     >
                       View all ({user._count.savedLocations})
@@ -385,7 +382,7 @@ export default async function UserProfilePage({ params }: UserProfilePageProps) 
                   {locations.map((save) => (
                     <Link
                       key={save.id}
-                      href={`/@${user.username}/locations/${save.location.id}`}
+                      href={`/${user.username}/locations/${save.location.id}`}
                       className="group block bg-card rounded-lg border overflow-hidden hover:shadow-lg transition-shadow"
                     >
                       {/* Location Image */}

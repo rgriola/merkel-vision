@@ -54,7 +54,7 @@ export function ShareLocationDialog({
   const getShareLink = () => {
     if (typeof window === 'undefined' || !user?.username) return '';
     const baseUrl = window.location.origin;
-    return `${baseUrl}/@${user.username}/locations/${location.id}`;
+    return `${baseUrl}/${user.username}/locations/${location.id}`;
   };
 
   const handleCopyLink = async () => {

@@ -130,7 +130,7 @@ function LocationListItem({
         e.stopPropagation();
         if (!user?.username) return;
         
-        const link = `${window.location.origin}/@${user.username}/locations/${location.id}`;
+        const link = `${window.location.origin}/${user.username}/locations/${location.id}`;
         try {
             await navigator.clipboard.writeText(link);
             setCopied(true);

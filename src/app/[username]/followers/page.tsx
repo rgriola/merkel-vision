@@ -12,12 +12,10 @@ interface FollowersPageProps {
 }
 
 async function getUserByUsername(username: string) {
-  const cleanUsername = username.startsWith('@') ? username.slice(1) : username;
-  
   return await prisma.user.findFirst({
     where: { 
       username: {
-        equals: normalizeUsername(cleanUsername),
+        equals: normalizeUsername(username),
         mode: 'insensitive'
       }
     },
@@ -69,7 +67,7 @@ export default async function FollowersPage({ params }: FollowersPageProps) {
         <div className="max-w-2xl mx-auto">
           {/* Header */}
           <div className="mb-6">
-            <Link href={`/@${user.username}`}>
+            <Link href={`/${user.username}`}>
               <Button variant="ghost" size="sm" className="mb-4">
                 <ChevronLeft className="mr-2 h-4 w-4" />
                 Back to Profile

@@ -98,7 +98,7 @@ export default async function UserLocationsPage({ params }: UserLocationsPagePro
           {/* Header */}
           <div className="flex items-center gap-4 mb-8">
             <Link
-              href={`/@${user.username}`}
+              href={`/${user.username}`}
               className="hover:opacity-80 transition-opacity"
             >
               {user.avatar ? (
@@ -118,7 +118,7 @@ export default async function UserLocationsPage({ params }: UserLocationsPagePro
             <div>
               <h1 className="text-3xl font-bold">{displayName}'s Locations</h1>
               <Link
-                href={`/@${user.username}`}
+                href={`/${user.username}`}
                 className="text-muted-foreground hover:text-foreground transition-colors"
               >
                 @{user.username}
@@ -187,7 +187,7 @@ export default async function UserLocationsPage({ params }: UserLocationsPagePro
                 {displayName} hasn't shared any locations yet.
               </p>
               <Link
-                href={`/@${user.username}`}
+                href={`/${user.username}`}
                 className="mt-4 inline-block text-primary hover:underline"
               >
                 Back to profile

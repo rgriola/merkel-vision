@@ -117,7 +117,7 @@ export default async function PublicLocationPage({ params }: PublicLocationPageP
         {/* Back Navigation */}
         <div className="mb-6">
           <Link 
-            href={`/@${user.username}`}
+            href={`/${user.username}`}
             className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />
@@ -154,7 +154,7 @@ export default async function PublicLocationPage({ params }: PublicLocationPageP
           <div>
             <p className="font-semibold">{displayName}</p>
             <Link 
-              href={`/@${user.username}`}
+              href={`/${user.username}`}
               className="text-sm text-muted-foreground hover:text-primary"
             >
               @{user.username}
@@ -273,7 +273,7 @@ export default async function PublicLocationPage({ params }: PublicLocationPageP
         {/* View All Locations Link */}
         <div className="mt-8 text-center">
           <Link
-            href={`/@${user.username}/locations`}
+            href={`/${user.username}/locations`}
             className="text-primary hover:underline"
           >
             View all locations from {displayName} →

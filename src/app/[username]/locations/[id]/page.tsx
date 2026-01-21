@@ -15,12 +15,10 @@ interface PublicLocationPageProps {
 }
 
 async function getUserByUsername(username: string) {
-  const cleanUsername = username.startsWith('@') ? username.slice(1) : username;
-  
   return await prisma.user.findFirst({
     where: { 
       username: {
-        equals: normalizeUsername(cleanUsername),
+        equals: normalizeUsername(username),
         mode: 'insensitive'
       }
     },
@@ -441,7 +439,7 @@ export default async function PublicLocationPage({ params }: PublicLocationPageP
             size="lg"
             className="flex-1"
           >
-            <Link href={`/@${user.username}`}>
+            <Link href={`/${user.username}`}>
               View {displayName}'s Profile
             </Link>
           </Button>

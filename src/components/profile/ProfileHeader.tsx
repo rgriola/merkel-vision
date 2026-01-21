@@ -346,7 +346,7 @@ export function ProfileHeader() {
                             </div>
                             
                             {/* View Public Profile Button */}
-                            <Link href={`/@${user?.username}`} className="inline-block mt-2">
+                            <Link href={`/${user?.username}`} className="inline-block mt-2">
                                 <Button variant="outline" size="sm" className="gap-2 h-8 text-xs">
                                     <ExternalLink className="w-3 h-3" />
                                     View Public Profile

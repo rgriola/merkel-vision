@@ -188,7 +188,7 @@ export default function SearchBar({
             {suggestions.map((suggestion, index) => (
               <Link
                 key={suggestion}
-                href={`/@${suggestion}`}
+                href={`/${suggestion}`}
                 onClick={() => {
                   setQuery(suggestion);
                   setShowSuggestions(false);

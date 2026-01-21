@@ -2,6 +2,21 @@ import prisma from '@/lib/prisma';
 
 const USERNAME_REGEX = /^[a-zA-Z0-9_-]{3,50}$/;
 
+// Forbidden username patterns to prevent phishing/impersonation
+const FORBIDDEN_PATTERNS = [
+  /^admin/i,
+  /^support/i,
+  /^fotolokashen/i,
+  /^staff/i,
+  /^moderator/i,
+  /^mod/i,
+  /^help/i,
+  /^official/i,
+  /^system/i,
+  /^root/i,
+  /^api/i,
+];
+
 /**
  * Validate username format
  */
@@ -22,6 +37,16 @@ export function validateUsername(username: string): {
       valid: false,
       error: 'Username can only contain letters, numbers, hyphens, and underscores',
     };
+  }
+
+  // Check forbidden patterns to prevent phishing/impersonation
+  for (const pattern of FORBIDDEN_PATTERNS) {
+    if (pattern.test(username)) {
+      return {
+        valid: false,
+        error: 'This username pattern is reserved',
+      };
+    }
   }
 
   return { valid: true };

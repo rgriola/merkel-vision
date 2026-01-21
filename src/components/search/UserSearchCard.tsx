@@ -60,7 +60,7 @@ export default function UserSearchCard({ user }: UserSearchCardProps) {
   };
 
   return (
-    <Link href={`/@${user.username}`}>
+    <Link href={`/${user.username}`}>
       <Card className="transition-colors hover:bg-accent">
         <div className="flex items-center gap-4 p-4">
           {/* Avatar */}

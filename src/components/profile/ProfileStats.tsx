@@ -38,7 +38,7 @@ export function ProfileStats({ username, isOwnProfile, allowFollowRequests = tru
         </div>
 
         <Link 
-          href={`/@${username}/followers`}
+          href={`/${username}/followers`}
           className="hover:underline"
         >
           <span className="font-semibold">{stats.followers}</span>{' '}
@@ -46,7 +46,7 @@ export function ProfileStats({ username, isOwnProfile, allowFollowRequests = tru
         </Link>
 
         <Link 
-          href={`/@${username}/following`}
+          href={`/${username}/following`}
           className="hover:underline"
         >
           <span className="font-semibold">{stats.following}</span>{' '}

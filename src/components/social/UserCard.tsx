@@ -21,7 +21,7 @@ export function UserCard({ user, showFollowButton = true, currentUsername }: Use
   return (
     <div className="flex items-start gap-3 p-4 bg-card rounded-lg border hover:shadow-md transition-shadow">
       {/* Avatar */}
-      <Link href={`/@${user.username}`} className="flex-shrink-0">
+      <Link href={`/${user.username}`} className="flex-shrink-0">
         {user.avatar ? (
           <Image
             src={user.avatar}
@@ -39,7 +39,7 @@ export function UserCard({ user, showFollowButton = true, currentUsername }: Use
 
       {/* User Info */}
       <div className="flex-1 min-w-0">
-        <Link href={`/@${user.username}`} className="hover:underline">
+        <Link href={`/${user.username}`} className="hover:underline">
           <h3 className="font-semibold text-base truncate">{user.displayName}</h3>
           <p className="text-sm text-muted-foreground truncate">@{user.username}</p>
         </Link>

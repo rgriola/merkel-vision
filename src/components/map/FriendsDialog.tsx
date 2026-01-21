@@ -97,7 +97,7 @@ export function FriendsDialog({ open, onOpenChange }: FriendsDialogProps) {
   const renderUserCard = (userData: UserData) => (
     <Link
       key={userData.id}
-      href={`/@${userData.username}`}
+      href={`/${userData.username}`}
       onClick={() => onOpenChange(false)}
       className="flex items-center gap-3 p-3 rounded-lg hover:bg-muted/50 transition-colors"
     >
