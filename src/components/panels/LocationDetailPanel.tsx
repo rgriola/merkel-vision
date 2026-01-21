@@ -194,7 +194,7 @@ export function LocationDetailPanel({
                     </TabsList>
 
                     {/* Overview Tab */}
-                    <TabsContent value="overview" className="space-y-4 mt-4 overflow-visible">
+                    <TabsContent value="overview" className="space-y-4 mt-4">
                         {/* Address - Clickable to map */}
                         <div className="space-y-2">
                             <h3 className="font-semibold text-sm text-muted-foreground">Address</h3>
@@ -267,7 +267,7 @@ export function LocationDetailPanel({
                     </TabsContent>
 
                     {/* Production Tab */}
-                    <TabsContent value="production" className="space-y-4 mt-4 overflow-visible">
+                    <TabsContent value="production" className="space-y-4 mt-4">
                         {location.productionNotes && (
                             <div className="space-y-2">
                                 <h3 className="font-semibold text-sm text-muted-foreground">Production Notes</h3>
@@ -378,7 +378,7 @@ export function LocationDetailPanel({
                     </TabsContent>
 
                     {/* Metadata Tab */}
-                    <TabsContent value="metadata" className="space-y-4 mt-4 overflow-visible">
+                    <TabsContent value="metadata" className="space-y-4 mt-4">
                         <div className="space-y-4">
                             {location.createdAt && (
                                 <div className="space-y-2">
