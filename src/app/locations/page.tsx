@@ -342,7 +342,7 @@ function LocationsPageInner() {
 
             {/* Location Detail Panel */}
             <Sheet open={showDetailModal} onOpenChange={setShowDetailModal}>
-                <SheetContent className="w-full sm:max-w-3xl overflow-y-auto p-0">
+                <SheetContent className="w-full sm:max-w-3xl p-0">
                     <SheetHeader>
                         <VisuallyHidden>
                             <SheetTitle>{selectedLocation?.name || "Location Details"}</SheetTitle>

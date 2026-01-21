@@ -317,7 +317,7 @@ export default function PreviewPage() {
 
                     {/* Details Panel */}
                     <Sheet open={detailPanelOpen} onOpenChange={setDetailPanelOpen}>
-                        <SheetContent className="w-full sm:w-1/2 overflow-y-auto p-0">
+                        <SheetContent className="w-full sm:w-1/2 p-0">
                             <SheetHeader>
                                 <VisuallyHidden>
                                     <SheetTitle>{selectedLocation.name}</SheetTitle>

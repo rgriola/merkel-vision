@@ -1111,7 +1111,7 @@ function MapPageInner() {
 
             {/* Location Details Sheet */}
             <Sheet open={showDetailsSheet} onOpenChange={setShowDetailsSheet}>
-                <SheetContent className="w-full sm:w-1/2 overflow-y-auto p-0" hideOverlay={true}>
+                <SheetContent className="w-full sm:w-1/2 p-0" hideOverlay={true}>
                     <SheetHeader>
                         <VisuallyHidden>
                             <SheetTitle>
