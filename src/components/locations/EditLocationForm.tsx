@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Button } from "@/components/ui/button";
@@ -88,6 +88,17 @@ export function EditLocationForm({
         },
     });
 
+    // Watch form values using useWatch to avoid infinite loops
+    const watchedName = useWatch({ control: form.control, name: "name" });
+    const watchedType = useWatch({ control: form.control, name: "type" });
+    const watchedCaption = useWatch({ control: form.control, name: "caption" });
+    const watchedProductionNotes = useWatch({ control: form.control, name: "productionNotes" });
+    const watchedPersonalRating = useWatch({ control: form.control, name: "personalRating" });
+    const watchedIndoorOutdoor = useWatch({ control: form.control, name: "indoorOutdoor" });
+    const watchedParking = useWatch({ control: form.control, name: "parking" });
+    const watchedEntryPoint = useWatch({ control: form.control, name: "entryPoint" });
+    const watchedAccess = useWatch({ control: form.control, name: "access" });
+
     // Reset form and state when location changes
     useEffect(() => {
         // Recalculate photos from current location data
@@ -138,12 +149,10 @@ export function EditLocationForm({
         const changedFields: string[] = [];
 
         if (dirtyFields.name) {
-            const newName = form.watch("name");
-            changedFields.push(`Name: ${newName || '(empty)'}`);
+            changedFields.push(`Name: ${watchedName || '(empty)'}`);
         }
         if (dirtyFields.type) {
-            const newType = form.watch("type");
-            changedFields.push(`Type: ${newType}`);
+            changedFields.push(`Type: ${watchedType}`);
         }
         if (dirtyFields.caption) {
             changedFields.push('Caption updated');
@@ -152,8 +161,7 @@ export function EditLocationForm({
             changedFields.push('Production notes updated');
         }
         if (dirtyFields.personalRating) {
-            const rating = form.watch("personalRating");
-            changedFields.push(`Rating: ${rating} stars`);
+            changedFields.push(`Rating: ${watchedPersonalRating} stars`);
         }
         if (dirtyFields.parking) {
             changedFields.push('Parking info updated');
@@ -165,8 +173,7 @@ export function EditLocationForm({
             changedFields.push('Access info updated');
         }
         if (dirtyFields.indoorOutdoor) {
-            const setting = form.watch("indoorOutdoor");
-            changedFields.push(`Setting: ${setting}`);
+            changedFields.push(`Setting: ${watchedIndoorOutdoor}`);
         }
 
         // Check if tags changed (compare arrays)
@@ -183,7 +190,22 @@ export function EditLocationForm({
 
         setChanges(changedFields);
         setHasChanges(changedFields.length > 0);
-    }, [form.formState, form, tags, userSave.tags, photosToDelete.length]);
+    }, [
+        form.formState.isDirty,
+        form.formState.dirtyFields,
+        watchedName,
+        watchedType,
+        watchedCaption,
+        watchedProductionNotes,
+        watchedPersonalRating,
+        watchedParking,
+        watchedEntryPoint,
+        watchedAccess,
+        watchedIndoorOutdoor,
+        tags,
+        userSave.tags,
+        photosToDelete.length
+    ]);
 
     const handleDiscard = () => {
         // Reset form to original values
@@ -314,8 +336,8 @@ export function EditLocationForm({
         }
     };
 
-    // Character count helpers
-    const productionNotesCount = form.watch("productionNotes")?.length || 0;
+    // Character count helper using watched value
+    const productionNotesCount = watchedProductionNotes?.length || 0;
 
     return (
         <form
