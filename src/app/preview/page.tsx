@@ -4,74 +4,25 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ShareLocationDialog } from '@/components/locations/ShareLocationDialog';
-import { EditLocationDialog } from '@/components/locations/EditLocationDialog';
-import { LocationDetailModal } from '@/components/locations/LocationDetailModal';
-import { Settings, Share2, Edit, Eye, MapPin, Loader2, Save, Info, FileEdit, PanelLeft, Heart, Sun, Building, Camera, X } from 'lucide-react';
+import { LocationDetailPanel } from '@/components/panels/LocationDetailPanel';
+import { Share2, Edit, Eye, MapPin, Loader2, Save, Info, PanelLeft, Heart, Sun, Building, Camera, X } from 'lucide-react';
 import type { Location } from '@/types/location';
 import { toast } from 'sonner';
-import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetTitle, SheetHeader } from '@/components/ui/sheet';
+import { VisuallyHidden } from '@/components/ui/visually-hidden';
 import { SaveLocationPanel } from '@/components/panels/SaveLocationPanel';
 import { EditLocationPanel } from '@/components/panels/EditLocationPanel';
-import { LocationList } from '@/components/locations/LocationList';
+import { LocationCard } from '@/components/locations/LocationCard';
 import { AdminRoute } from '@/components/auth/AdminRoute';
 
-// Mock location data for testing
-const mockLocation: Location = {
-    id: 1,
-    placeId: 'test-place-id-123',
-    name: 'Test Location',
-    address: '123 Test Street, Test City, TC 12345',
-    lat: 40.7128,
-    lng: -74.0060,
-    type: 'RESTAURANT',
-    rating: 4.5,
-    street: '123 Test Street',
-    number: '123',
-    city: 'Test City',
-    state: 'TC',
-    zipcode: '12345',
-    productionNotes: null,
-    entryPoint: null,
-    parking: null,
-    access: null,
-    photoUrls: null,
-    isPermanent: true,
-    permitRequired: false,
-    permitCost: null,
-    contactPerson: null,
-    contactPhone: null,
-    operatingHours: null,
-    restrictions: null,
-    bestTimeOfDay: null,
-    createdBy: 1,
-    lastModifiedBy: null,
-    lastModifiedAt: null,
-    createdAt: new Date(),
-    updatedAt: new Date(),
-    indoorOutdoor: 'outdoor',
-    userSave: {
-        id: 1,
-        userId: 1,
-        locationId: 1,
-        isFavorite: true,
-        personalRating: 5,
-        visitedAt: new Date(),
-        savedAt: new Date(),
-        caption: 'Great place to visit!',
-        tags: ['favorite', 'tested'],
-        color: '#FF5733',
-        visibility: 'public',
-    },
-};
-
 export default function PreviewPage() {
+    // Component visibility states
     const [shareDialogOpen, setShareDialogOpen] = useState(false);
-    const [editDialogOpen, setEditDialogOpen] = useState(false);
-    const [saveDialogOpen, setSaveDialogOpen] = useState(false);
-    const [detailModalOpen, setDetailModalOpen] = useState(false);
+    const [detailPanelOpen, setDetailPanelOpen] = useState(false);
     const [savePanelOpen, setSavePanelOpen] = useState(false);
     const [editPanelOpen, setEditPanelOpen] = useState(false);
-    const [showGridView, setShowGridView] = useState(false);
+    
+    // Data states
     const [locations, setLocations] = useState<Location[]>([]);
     const [selectedLocation, setSelectedLocation] = useState<Location | null>(null);
     const [isLoading, setIsLoading] = useState(true);
@@ -92,7 +43,20 @@ export default function PreviewPage() {
                     
                     // The API returns userSaves with nested location objects
                     // We need to transform them to extract the location data
-                    const transformedLocations = (data.locations || []).map((userSave: any) => ({
+                    const transformedLocations = (data.locations || []).map((userSave: {
+                        id: number;
+                        userId: number;
+                        locationId: number;
+                        isFavorite: boolean;
+                        personalRating: number | null;
+                        visitedAt: Date | null;
+                        savedAt: Date;
+                        caption: string | null;
+                        tags: string[] | null;
+                        color: string | null;
+                        visibility: string;
+                        location: Location;
+                    }) => ({
                         ...userSave.location,
                         userSave: {
                             id: userSave.id,
@@ -130,383 +94,272 @@ export default function PreviewPage() {
     return (
         <AdminRoute>
             <div className="min-h-screen bg-background p-8">
-                <div className="container max-w-4xl mx-auto space-y-8">
-                {/* Header */}
-                <div className="space-y-2">
-                    <h1 className="text-4xl font-bold tracking-tight">Component Preview</h1>
-                    <p className="text-muted-foreground">
-                        Test and preview modals and components in isolation
-                    </p>
+                <div className="container max-w-6xl mx-auto space-y-8">
+                    {/* Header */}
+                    <div className="space-y-2">
+                        <h1 className="text-4xl font-bold tracking-tight">UX Component Preview</h1>
+                        <p className="text-muted-foreground">
+                            Test current production components with live location data
+                        </p>
+                    </div>
+
+                    {/* Component Sections */}
+                    <div className="grid gap-6">
+                        {/* Location Cards Preview */}
+                        <Card>
+                            <CardHeader>
+                                <CardTitle className="flex items-center gap-2">
+                                    <Eye className="w-5 h-5" />
+                                    Location Cards (Grid View)
+                                </CardTitle>
+                                <CardDescription>
+                                    Cards from /locations page - Shows Edit/Share buttons, no delete
+                                </CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                {isLoading ? (
+                                    <div className="flex items-center justify-center py-8">
+                                        <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+                                        <span className="ml-2 text-muted-foreground">Loading locations...</span>
+                                    </div>
+                                ) : locations.length === 0 ? (
+                                    <div className="text-center py-8 text-muted-foreground">
+                                        <MapPin className="w-12 h-12 mx-auto mb-2 opacity-50" />
+                                        <p>No saved locations found</p>
+                                        <p className="text-sm">Save locations on /map to see cards here</p>
+                                    </div>
+                                ) : (
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                        {locations.slice(0, 6).map((location) => (
+                                            <LocationCard
+                                                key={location.id}
+                                                location={location}
+                                                canEdit={true}
+                                                onClick={(loc) => {
+                                                    setSelectedLocation(loc);
+                                                    setDetailPanelOpen(true);
+                                                }}
+                                                onEdit={(loc) => {
+                                                    setSelectedLocation(loc);
+                                                    setIsFavorite(loc.userSave?.isFavorite || false);
+                                                    setIndoorOutdoor((loc.indoorOutdoor as "indoor" | "outdoor") || "outdoor");
+                                                    setShowPhotoUpload(false);
+                                                    setEditPanelOpen(true);
+                                                }}
+                                                onShare={(loc) => {
+                                                    setSelectedLocation(loc);
+                                                    setShareDialogOpen(true);
+                                                }}
+                                            />
+                                        ))}
+                                    </div>
+                                )}
+                            </CardContent>
+                        </Card>
+
+                        {/* Panel Components */}
+                        <Card>
+                            <CardHeader>
+                                <CardTitle className="flex items-center gap-2">
+                                    <PanelLeft className="w-5 h-5" />
+                                    Panel Components
+                                </CardTitle>
+                                <CardDescription>
+                                    Current production panels - Details, Edit, Save (50% viewport width)
+                                </CardDescription>
+                            </CardHeader>
+                            <CardContent className="space-y-4">
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                                    <Button
+                                        onClick={() => {
+                                            if (locations.length > 0) {
+                                                setSelectedLocation(locations[0]);
+                                                setDetailPanelOpen(true);
+                                            } else {
+                                                toast.error('No locations available');
+                                            }
+                                        }}
+                                        variant="outline"
+                                        className="gap-2 h-auto py-4 flex-col"
+                                        disabled={locations.length === 0}
+                                    >
+                                        <Info className="w-6 h-6" />
+                                        <span className="font-semibold">Details Panel</span>
+                                        <span className="text-xs text-muted-foreground">LocationDetailPanel</span>
+                                    </Button>
+
+                                    <Button
+                                        onClick={() => {
+                                            if (locations.length > 0) {
+                                                const loc = locations[0];
+                                                setSelectedLocation(loc);
+                                                setIsFavorite(loc.userSave?.isFavorite || false);
+                                                setIndoorOutdoor((loc.indoorOutdoor as "indoor" | "outdoor") || "outdoor");
+                                                setShowPhotoUpload(false);
+                                                setEditPanelOpen(true);
+                                            } else {
+                                                toast.error('No locations available');
+                                            }
+                                        }}
+                                        variant="outline"
+                                        className="gap-2 h-auto py-4 flex-col"
+                                        disabled={locations.length === 0}
+                                    >
+                                        <Edit className="w-6 h-6" />
+                                        <span className="font-semibold">Edit Panel</span>
+                                        <span className="text-xs text-muted-foreground">EditLocationPanel</span>
+                                    </Button>
+
+                                    <Button
+                                        onClick={() => {
+                                            setIsFavorite(false);
+                                            setIndoorOutdoor("outdoor");
+                                            setShowPhotoUpload(false);
+                                            setSavePanelOpen(true);
+                                        }}
+                                        variant="outline"
+                                        className="gap-2 h-auto py-4 flex-col"
+                                    >
+                                        <Save className="w-6 h-6" />
+                                        <span className="font-semibold">Save Panel</span>
+                                        <span className="text-xs text-muted-foreground">SaveLocationPanel</span>
+                                    </Button>
+                                </div>
+                            </CardContent>
+                        </Card>
+
+                        {/* Dialog Components */}
+                        <Card>
+                            <CardHeader>
+                                <CardTitle className="flex items-center gap-2">
+                                    <Share2 className="w-5 h-5" />
+                                    Dialog Components
+                                </CardTitle>
+                                <CardDescription>
+                                    Quick action dialogs for immediate user attention
+                                </CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                    <Button
+                                        onClick={() => {
+                                            if (locations.length > 0) {
+                                                setSelectedLocation(locations[0]);
+                                                setShareDialogOpen(true);
+                                            } else {
+                                                toast.error('No locations available');
+                                            }
+                                        }}
+                                        variant="outline"
+                                        className="gap-2 h-auto py-4 flex-col"
+                                        disabled={locations.length === 0}
+                                    >
+                                        <Share2 className="w-6 h-6" />
+                                        <span className="font-semibold">Share Dialog</span>
+                                        <span className="text-xs text-muted-foreground">ShareLocationDialog</span>
+                                    </Button>
+
+                                    <div className="p-4 border rounded-lg bg-muted/50">
+                                        <p className="text-sm text-muted-foreground">
+                                            Other dialogs: Delete confirmations, alerts, quick actions
+                                        </p>
+                                    </div>
+                                </div>
+                            </CardContent>
+                        </Card>
+
+                        {/* UX Patterns Info */}
+                        <Card className="border-blue-200 dark:border-blue-800 bg-blue-50/50 dark:bg-blue-950/20">
+                            <CardHeader>
+                                <CardTitle className="text-blue-900 dark:text-blue-100">
+                                    Current UX Patterns
+                                </CardTitle>
+                            </CardHeader>
+                            <CardContent className="text-sm text-blue-800 dark:text-blue-200 space-y-3">
+                                <div>
+                                    <strong className="block mb-1">✅ Panels (Sheet components):</strong>
+                                    <ul className="list-disc list-inside space-y-1 ml-2">
+                                        <li>Used for: Forms (Save, Edit), Browsing content (Details)</li>
+                                        <li>Width: 50% viewport on desktop, full-width on mobile</li>
+                                        <li>Behavior: Slide from right/bottom, dismissible by swipe</li>
+                                    </ul>
+                                </div>
+                                <div>
+                                    <strong className="block mb-1">✅ Dialogs:</strong>
+                                    <ul className="list-disc list-inside space-y-1 ml-2">
+                                        <li>Used for: Quick actions (Share), Confirmations (Delete)</li>
+                                        <li>Behavior: Center overlay, requires user response</li>
+                                    </ul>
+                                </div>
+                                <div>
+                                    <strong className="block mb-1">✅ Location Cards:</strong>
+                                    <ul className="list-disc list-inside space-y-1 ml-2">
+                                        <li>Edit/Share buttons at top for easy access</li>
+                                        <li>No delete button (prevents accidental deletion)</li>
+                                        <li>Consistent layout regardless of data</li>
+                                    </ul>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </div>
                 </div>
-
-                {/* Preview Section */}
-                <div className="grid gap-6">
-                    {/* My Locations List */}
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="flex items-center gap-2">
-                                <MapPin className="w-5 h-5" />
-                                My Locations
-                            </CardTitle>
-                            <CardDescription>
-                                Select a location to test the Share or Edit dialogs
-                            </CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            {isLoading ? (
-                                <div className="flex items-center justify-center py-8">
-                                    <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
-                                    <span className="ml-2 text-muted-foreground">Loading locations...</span>
-                                </div>
-                            ) : locations.length === 0 ? (
-                                <div className="text-center py-8 text-muted-foreground">
-                                    <MapPin className="w-12 h-12 mx-auto mb-2 opacity-50" />
-                                    <p>No saved locations found</p>
-                                    <p className="text-sm">Go to the map or locations page to save some locations</p>
-                                </div>
-                            ) : (
-                                <div className="space-y-2 max-h-96 overflow-y-auto">
-                                    {locations.map((location) => (
-                                        <div
-                                            key={location.id}
-                                            className="flex items-start justify-between p-3 border rounded-lg hover:bg-accent/50 transition-colors"
-                                        >
-                                            <div className="flex-1 min-w-0">
-                                                <h4 className="font-semibold truncate">{location.name}</h4>
-                                                <p className="text-sm text-muted-foreground truncate">
-                                                    {location.address || (location.lat && location.lng ? `${location.lat.toFixed(4)}, ${location.lng.toFixed(4)}` : 'No address')}
-                                                </p>
-                                            </div>
-                                            <div className="flex flex-col gap-1.5 ml-4 flex-shrink-0">
-                                                <div className="flex gap-1.5">
-                                                    <Button
-                                                        size="sm"
-                                                        variant="outline"
-                                                        onClick={() => {
-                                                            setSelectedLocation(location);
-                                                            setShareDialogOpen(true);
-                                                        }}
-                                                        className="gap-1 h-7 text-xs"
-                                                        title="ShareLocationDialog"
-                                                    >
-                                                        <Share2 className="w-3 h-3" />
-                                                        Share
-                                                    </Button>
-                                                    <Button
-                                                        size="sm"
-                                                        variant="outline"
-                                                        onClick={() => {
-                                                            setSelectedLocation(location);
-                                                            setDetailModalOpen(true);
-                                                        }}
-                                                        className="gap-1 h-7 text-xs"
-                                                        title="LocationDetailModal"
-                                                    >
-                                                        <Info className="w-3 h-3" />
-                                                        Detail
-                                                    </Button>
-                                                </div>
-                                                <div className="flex gap-1.5">
-                                                    <Button
-                                                        size="sm"
-                                                        variant="outline"
-                                                        onClick={() => {
-                                                            setSelectedLocation(location);
-                                                            setEditDialogOpen(true);
-                                                        }}
-                                                        className="gap-1 h-7 text-xs"
-                                                        title="EditLocationDialog"
-                                                    >
-                                                        <Edit className="w-3 h-3" />
-                                                        Edit Dialog
-                                                    </Button>
-                                                    <Button
-                                                        size="sm"
-                                                        variant="outline"
-                                                        onClick={() => {
-                                                            setSelectedLocation(location);
-                                                            setIsFavorite(location.userSave?.isFavorite || false);
-                                                            setIndoorOutdoor((location.indoorOutdoor as "indoor" | "outdoor") || "outdoor");
-                                                            setShowPhotoUpload(false);
-                                                            setEditPanelOpen(true);
-                                                        }}
-                                                        className="gap-1 h-7 text-xs"
-                                                        title="EditLocationPanel"
-                                                    >
-                                                        <PanelLeft className="w-3 h-3" />
-                                                        Edit Panel
-                                                    </Button>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
-                        </CardContent>
-                    </Card>
-
-                    {/* Location Modals */}
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="flex items-center gap-2">
-                                <Eye className="w-5 h-5" />
-                                Location Views
-                            </CardTitle>
-                            <CardDescription>
-                                Test different location view layouts and pages
-                            </CardDescription>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                            <div className="flex flex-wrap gap-3">
-                                <Button
-                                    onClick={() => setShowGridView(true)}
-                                    variant="outline"
-                                    className="gap-2"
-                                    title="/locations - Grid View"
-                                >
-                                    <Eye className="w-4 h-4" />
-                                    Grid View (/locations)
-                                </Button>
-
-                                <Button
-                                    onClick={() => {
-                                        if (locations.length > 0) {
-                                            // Use the first location to construct the URL
-                                            const firstLocation = locations[0];
-                                            const username = 'admin'; // You can replace this with actual username from session
-                                            window.open(`/${username}/locations/${firstLocation.id}`, '_blank');
-                                        } else {
-                                            toast.error('No locations available. Save a location first.');
-                                        }
-                                    }}
-                                    variant="outline"
-                                    className="gap-2"
-                                    title="/@username/locations/[id] - Public Location Page"
-                                    disabled={locations.length === 0}
-                                >
-                                    <MapPin className="w-4 h-4" />
-                                    Public Location Page
-                                    {locations.length > 0 && (
-                                        <span className="text-xs text-muted-foreground">
-                                            (opens /@admin/locations/{locations[0].id})
-                                        </span>
-                                    )}
-                                </Button>
-                            </div>
-                        </CardContent>
-                    </Card>
-
-                    {/* Save Location Components */}
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="flex items-center gap-2">
-                                <Eye className="w-5 h-5" />
-                                Save Location Components
-                            </CardTitle>
-                            <CardDescription>
-                                Test SaveLocationDialog and SaveLocationPanel
-                            </CardDescription>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                            <div className="flex flex-wrap gap-3">
-                                <Button
-                                    onClick={() => {
-                                        setIsFavorite(false);
-                                        setIndoorOutdoor("outdoor");
-                                        setShowPhotoUpload(false);
-                                        setSaveDialogOpen(true);
-                                    }}
-                                    className="gap-2"
-                                    title="SaveLocationDialog"
-                                >
-                                    <Save className="w-4 h-4" />
-                                    Save Dialog
-                                </Button>
-
-                                <Button
-                                    onClick={() => {
-                                        setIsFavorite(false);
-                                        setIndoorOutdoor("outdoor");
-                                        setShowPhotoUpload(false);
-                                        setSavePanelOpen(true);
-                                    }}
-                                    variant="outline"
-                                    className="gap-2"
-                                    title="SaveLocationPanel"
-                                >
-                                    <PanelLeft className="w-4 h-4" />
-                                    Save Panel
-                                </Button>
-                            </div>
-                        </CardContent>
-                    </Card>
-
-                    {/* Mock Data Testing */}
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="flex items-center gap-2">
-                                <FileEdit className="w-5 h-5" />
-                                Test with Mock Data
-                            </CardTitle>
-                            <CardDescription>
-                                Use mock location data for testing all modals
-                            </CardDescription>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                            <div className="grid grid-cols-2 gap-2">
-                                <Button
-                                    onClick={() => {
-                                        setSelectedLocation(mockLocation);
-                                        setShareDialogOpen(true);
-                                    }}
-                                    variant="outline"
-                                    className="gap-2"
-                                    title="ShareLocationDialog"
-                                >
-                                    <Share2 className="w-4 h-4" />
-                                    Share Dialog
-                                </Button>
-
-                                <Button
-                                    onClick={() => {
-                                        setSelectedLocation(mockLocation);
-                                        setDetailModalOpen(true);
-                                    }}
-                                    variant="outline"
-                                    className="gap-2"
-                                    title="LocationDetailModal"
-                                >
-                                    <Info className="w-4 h-4" />
-                                    Detail Modal
-                                </Button>
-
-                                <Button
-                                    onClick={() => {
-                                        setSelectedLocation(mockLocation);
-                                        setEditDialogOpen(true);
-                                    }}
-                                    variant="outline"
-                                    className="gap-2"
-                                    title="EditLocationDialog"
-                                >
-                                    <Edit className="w-4 h-4" />
-                                    Edit Dialog
-                                </Button>
-
-                                <Button
-                                    onClick={() => {
-                                        setSelectedLocation(mockLocation);
-                                        setIsFavorite(mockLocation.userSave?.isFavorite || false);
-                                        setIndoorOutdoor((mockLocation.indoorOutdoor as "indoor" | "outdoor") || "outdoor");
-                                        setShowPhotoUpload(false);
-                                        setEditPanelOpen(true);
-                                    }}
-                                    variant="outline"
-                                    className="gap-2"
-                                    title="EditLocationPanel"
-                                >
-                                    <PanelLeft className="w-4 h-4" />
-                                    Edit Panel
-                                </Button>
-                            </div>
-
-                            {/* Mock Data Display */}
-                            <div className="mt-6 p-4 bg-muted rounded-lg">
-                                <h4 className="font-semibold mb-2 text-sm">Mock Location Data:</h4>
-                                <pre className="text-xs overflow-auto">
-                                    {JSON.stringify(
-                                        {
-                                            name: mockLocation.name,
-                                            address: mockLocation.address,
-                                            type: mockLocation.type,
-                                            visibility: mockLocation.userSave?.visibility,
-                                        },
-                                        null,
-                                        2
-                                    )}
-                                </pre>
-                            </div>
-                        </CardContent>
-                    </Card>
-
-                    {/* Coming Soon Section */}
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="flex items-center gap-2">
-                                <Settings className="w-5 h-5" />
-                                More Components
-                            </CardTitle>
-                            <CardDescription>
-                                Additional components will be added here for testing
-                            </CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            <p className="text-sm text-muted-foreground">
-                                You can add more modal and component previews to this page as needed.
-                            </p>
-                        </CardContent>
-                    </Card>
-                </div>
-
-                {/* Usage Instructions */}
-                <Card className="border-blue-200 dark:border-blue-800 bg-blue-50/50 dark:bg-blue-950/20">
-                    <CardHeader>
-                        <CardTitle className="text-blue-900 dark:text-blue-100">
-                            Usage Instructions
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent className="text-sm text-blue-800 dark:text-blue-200 space-y-2">
-                        <p>
-                            <strong>Purpose:</strong> This page allows you to test modals and components
-                            without navigating through the entire application.
-                        </p>
-                        <p>
-                            <strong>How to use:</strong> Click the buttons above to open different modals.
-                            You can test functionality, styling, and behavior in isolation.
-                        </p>
-                        <p>
-                            <strong>Development:</strong> Add new component tests by importing the component
-                            and adding a button to trigger it.
-                        </p>
-                    </CardContent>
-                </Card>
-            </div>
             </div>
 
-            {/* Modal Components */}
+            {/* Component Sheets/Dialogs */}
             {selectedLocation && (
                 <>
+                    {/* Share Dialog */}
                     <ShareLocationDialog
                         location={selectedLocation}
                         open={shareDialogOpen}
                         onOpenChange={setShareDialogOpen}
                     />
 
-                    <EditLocationDialog
-                        location={selectedLocation}
-                        open={editDialogOpen}
-                        onOpenChange={setEditDialogOpen}
-                    />
+                    {/* Details Panel */}
+                    <Sheet open={detailPanelOpen} onOpenChange={setDetailPanelOpen}>
+                        <SheetContent className="w-full sm:w-1/2 overflow-y-auto p-0">
+                            <SheetHeader>
+                                <VisuallyHidden>
+                                    <SheetTitle>{selectedLocation.name}</SheetTitle>
+                                </VisuallyHidden>
+                            </SheetHeader>
+                            <LocationDetailPanel
+                                location={selectedLocation}
+                                onEdit={(loc) => {
+                                    setSelectedLocation(loc);
+                                    setIsFavorite(loc.userSave?.isFavorite || false);
+                                    setIndoorOutdoor((loc.indoorOutdoor as "indoor" | "outdoor") || "outdoor");
+                                    setShowPhotoUpload(false);
+                                    setDetailPanelOpen(false);
+                                    setEditPanelOpen(true);
+                                }}
+                                onShare={(loc) => {
+                                    setSelectedLocation(loc);
+                                    setDetailPanelOpen(false);
+                                    setShareDialogOpen(true);
+                                }}
+                                onDelete={(id) => {
+                                    toast.info(`Delete disabled in preview mode (location ID: ${id})`);
+                                }}
+                                onViewOnMap={(loc) => {
+                                    window.location.href = `/map?lat=${loc.lat}&lng=${loc.lng}&zoom=17`;
+                                }}
+                            />
+                        </SheetContent>
+                    </Sheet>
 
-                    <LocationDetailModal
-                        location={selectedLocation}
-                        isOpen={detailModalOpen}
-                        onClose={() => setDetailModalOpen(false)}
-                    />
-
+                    {/* Edit Panel */}
                     <Sheet open={editPanelOpen} onOpenChange={setEditPanelOpen}>
-                        <SheetContent className="w-full sm:max-w-2xl overflow-y-auto p-0">
+                        <SheetContent className="w-full sm:w-1/2 overflow-y-auto p-0">
                             {/* Custom Header with Controls (matching production) */}
                             <div className="flex items-center justify-between p-3 border-b sticky top-0 bg-background z-10">
-                                <SheetTitle>Edit Location Panel</SheetTitle>
+                                <SheetTitle>Edit Location</SheetTitle>
                                 <div className="flex items-center gap-1">
                                     {/* Save Button (DISABLED - Preview Mode) */}
                                     <Button
                                         variant="ghost"
                                         size="icon"
-                                        onClick={() => {
-                                            toast.info('Save disabled in preview mode');
-                                        }}
+                                        onClick={() => toast.info('Save disabled in preview mode')}
                                         disabled={false}
                                         className="shrink-0 bg-indigo-600 hover:bg-indigo-700 hover:text-white opacity-50 cursor-not-allowed"
                                         title="Save disabled in preview mode"
@@ -601,7 +454,6 @@ export default function PreviewPage() {
                                         indoorOutdoor={indoorOutdoor}
                                         showPhotoUpload={showPhotoUpload}
                                         onSuccess={() => {
-                                            // Disabled in preview mode - no actual save occurs
                                             setEditPanelOpen(false);
                                             toast.info("Save disabled in preview mode");
                                         }}
@@ -614,68 +466,18 @@ export default function PreviewPage() {
                 </>
             )}
 
-            {/* Save Location Components - REMOVED: SaveLocationDialog deleted */}
-            {/* Only SaveLocationPanel exists now (shown below in Sheet) */}
-
-            {/* Grid View Modal - /locations page */}
-            <Sheet open={showGridView} onOpenChange={setShowGridView}>
-                <SheetContent className="w-full sm:max-w-6xl overflow-y-auto p-0" side="bottom">
-                    <div className="flex items-center justify-between p-4 border-b sticky top-0 bg-background z-10">
-                        <SheetTitle>Grid View - /locations Page</SheetTitle>
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => setShowGridView(false)}
-                            className="shrink-0"
-                        >
-                            <X className="w-4 h-4" />
-                        </Button>
-                    </div>
-                    <div className="p-6">
-                        {locations.length > 0 ? (
-                            <LocationList
-                                locations={locations}
-                                onClick={(location: Location) => {
-                                    setSelectedLocation(location);
-                                    setDetailModalOpen(true);
-                                }}
-                                onShare={(location: Location) => {
-                                    setSelectedLocation(location);
-                                    setShareDialogOpen(true);
-                                }}
-                                onEdit={(location: Location) => {
-                                    setSelectedLocation(location);
-                                    setEditDialogOpen(true);
-                                }}
-                                onDelete={(_id: number) => {
-                                    toast.info('Delete disabled in preview mode');
-                                }}
-                            />
-                        ) : (
-                            <div className="text-center py-12 text-muted-foreground">
-                                <MapPin className="w-16 h-16 mx-auto mb-4 opacity-50" />
-                                <p className="text-lg">No locations to display</p>
-                                <p className="text-sm mt-2">Save some locations to see them in grid view</p>
-                            </div>
-                        )}
-                    </div>
-                </SheetContent>
-            </Sheet>
-
             {/* Save Panel */}
             <Sheet open={savePanelOpen} onOpenChange={setSavePanelOpen}>
-                <SheetContent className="w-full sm:max-w-2xl overflow-y-auto p-0">
+                <SheetContent className="w-full sm:w-1/2 overflow-y-auto p-0">
                     {/* Custom Header with Controls (matching production) */}
                     <div className="flex items-center justify-between p-3 border-b sticky top-0 bg-background z-10">
-                        <SheetTitle>Save Location Panel</SheetTitle>
+                        <SheetTitle>Save Location</SheetTitle>
                         <div className="flex items-center gap-1">
                             {/* Save Button (DISABLED - Preview Mode) */}
                             <Button
                                 variant="ghost"
                                 size="icon"
-                                onClick={() => {
-                                    toast.info('Save disabled in preview mode');
-                                }}
+                                onClick={() => toast.info('Save disabled in preview mode')}
                                 disabled={false}
                                 className="shrink-0 bg-indigo-600 hover:bg-indigo-700 hover:text-white opacity-50 cursor-not-allowed"
                                 title="Save disabled in preview mode"
@@ -763,12 +565,14 @@ export default function PreviewPage() {
                     <div className="p-3">
                         <SaveLocationPanel
                             initialData={{
-                                ...mockLocation,
+                                lat: 40.7128,
+                                lng: -74.0060,
+                                name: 'New Test Location',
+                                address: 'Click map to set location',
                                 isFavorite: isFavorite,
                                 indoorOutdoor: indoorOutdoor,
                             }}
                             onSuccess={() => {
-                                // Disabled in preview mode - no actual save occurs
                                 setSavePanelOpen(false);
                                 toast.info("Save disabled in preview mode");
                             }}
