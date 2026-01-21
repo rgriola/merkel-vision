@@ -15,7 +15,7 @@ import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { VisuallyHidden } from "@/components/ui/visually-hidden";
-import { List, LayoutGrid, X, Save, Camera, Sun, Building, Heart } from "lucide-react";
+import { List, LayoutGrid, X, Camera, Sun, Building, Heart } from "lucide-react";
 import type { Location, UserSave } from "@/types/location";
 
 function LocationsPageInner() {
@@ -233,18 +233,6 @@ function LocationsPageInner() {
                     <div className="flex items-center justify-between p-3 border-b sticky top-0 bg-background z-10">
                         <SheetTitle>Edit Location</SheetTitle>
                         <div className="flex items-center gap-1">
-                            {/* Save Button */}
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                form="edit-location-form"
-                                type="submit"
-                                className="shrink-0 bg-indigo-600 hover:bg-indigo-700 hover:text-white"
-                                title="Save changes"
-                            >
-                                <Save className="w-4 h-4 text-white" />
-                            </Button>
-                            
                             {/* Photo Upload Toggle */}
                             <Button
                                 variant="ghost"

@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { MapPin, Tag, X, Map } from "lucide-react";
+import { MapPin, Tag, X, Map, AlertCircle } from "lucide-react";
 import { ImageKitUploader } from "@/components/ui/ImageKitUploader";
 import { PhotoCarouselManager } from "@/components/ui/PhotoCarouselManager";
 import { TYPE_COLOR_MAP, getAvailableTypes } from "@/lib/location-constants";
@@ -65,7 +65,9 @@ export function EditLocationForm({
     const [tags, setTags] = useState<string[]>(userSave.tags || []);
     const [tagInput, setTagInput] = useState("");
     const [photos, setPhotos] = useState<any[]>([]);
-    const [photosToDelete, setPhotosToDelete] = useState<number[]>([]); // Track photo IDs to delete on submit
+    const [photosToDelete, setPhotosToDelete] = useState<number[]>([]);
+    const [hasChanges, setHasChanges] = useState(false);
+    const [changes, setChanges] = useState<string[]>([]);
 
     const form = useForm<EditLocationFormData>({
         resolver: zodResolver(editLocationSchema),
@@ -122,6 +124,107 @@ export function EditLocationForm({
             color: userSave.color || TYPE_COLOR_MAP[location.type || ""] || "",
         });
     }, [locationId, location, userSave, form]);
+
+    // Track changes for unsaved changes banner
+    useEffect(() => {
+        const { isDirty, dirtyFields } = form.formState;
+        
+        if (!isDirty) {
+            setHasChanges(false);
+            setChanges([]);
+            return;
+        }
+
+        const changedFields: string[] = [];
+
+        if (dirtyFields.name) {
+            const newName = form.watch("name");
+            changedFields.push(`Name: ${newName || '(empty)'}`);
+        }
+        if (dirtyFields.type) {
+            const newType = form.watch("type");
+            changedFields.push(`Type: ${newType}`);
+        }
+        if (dirtyFields.caption) {
+            changedFields.push('Caption updated');
+        }
+        if (dirtyFields.productionNotes) {
+            changedFields.push('Production notes updated');
+        }
+        if (dirtyFields.personalRating) {
+            const rating = form.watch("personalRating");
+            changedFields.push(`Rating: ${rating} stars`);
+        }
+        if (dirtyFields.parking) {
+            changedFields.push('Parking info updated');
+        }
+        if (dirtyFields.entryPoint) {
+            changedFields.push('Entry point updated');
+        }
+        if (dirtyFields.access) {
+            changedFields.push('Access info updated');
+        }
+        if (dirtyFields.indoorOutdoor) {
+            const setting = form.watch("indoorOutdoor");
+            changedFields.push(`Setting: ${setting}`);
+        }
+
+        // Check if tags changed (compare arrays)
+        const currentTags = JSON.stringify([...tags].sort());
+        const originalTags = JSON.stringify([...(userSave.tags || [])].sort());
+        if (currentTags !== originalTags) {
+            changedFields.push('Tags updated');
+        }
+
+        // Check if photos changed
+        if (photosToDelete.length > 0) {
+            changedFields.push(`${photosToDelete.length} photo(s) marked for deletion`);
+        }
+
+        setChanges(changedFields);
+        setHasChanges(changedFields.length > 0);
+    }, [form.formState, form, tags, userSave.tags, photosToDelete.length]);
+
+    const handleDiscard = () => {
+        // Reset form to original values
+        form.reset({
+            id: locationId,
+            name: location.name,
+            address: location.address || "",
+            type: location.type || "",
+            indoorOutdoor: (location.indoorOutdoor as "indoor" | "outdoor" | "both") || DEFAULT_INDOOR_OUTDOOR,
+            productionNotes: location.productionNotes || "",
+            entryPoint: location.entryPoint || "",
+            parking: location.parking || "",
+            access: location.access || "",
+            caption: userSave.caption || "",
+            isFavorite: userSave.isFavorite || false,
+            personalRating: userSave.personalRating || 0,
+            color: userSave.color || TYPE_COLOR_MAP[location.type || ""] || "",
+        });
+
+        // Reset tags
+        setTags(userSave.tags || []);
+
+        // Reset photos to delete
+        setPhotosToDelete([]);
+
+        // Reset photos to original
+        const originalPhotos = (location.photos || []).map((photo: any) => ({
+            id: photo.id,
+            imagekitFileId: photo.imagekitFileId,
+            imagekitFilePath: photo.imagekitFilePath,
+            originalFilename: photo.originalFilename,
+            fileSize: photo.fileSize || 0,
+            mimeType: photo.mimeType || 'image/jpeg',
+            width: photo.width,
+            height: photo.height,
+            url: `${IMAGEKIT_URL_ENDPOINT}${photo.imagekitFilePath}`,
+            isPrimary: photo.isPrimary,
+            caption: photo.caption,
+        }));
+        setPhotos(originalPhotos);
+    };
 
     const handleSubmit = async (data: EditLocationFormData) => {
         // Show warning if photos are marked for deletion
@@ -488,6 +591,52 @@ export function EditLocationForm({
                     </div>
                 </div>
             </div>
+
+            {/* Unsaved Changes Banner */}
+            {hasChanges && (
+                <div className="fixed bottom-0 left-0 right-0 bg-amber-50 dark:bg-amber-950/20 border-t-2 border-amber-500 p-3 sm:p-4 shadow-lg z-50 animate-in slide-in-from-bottom">
+                    <div className="container max-w-2xl mx-auto">
+                        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+                            <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-2 mb-2">
+                                    <AlertCircle className="w-4 h-4 sm:w-5 sm:h-5 text-amber-600 dark:text-amber-500 flex-shrink-0" />
+                                    <p className="font-semibold text-sm sm:text-base text-amber-900 dark:text-amber-100">
+                                        Unsaved changes
+                                    </p>
+                                </div>
+                                <ul className="text-xs sm:text-sm text-amber-800 dark:text-amber-200 space-y-1 ml-6 sm:ml-0">
+                                    {changes.slice(0, 3).map((change, i) => (
+                                        <li key={i} className="truncate">• {change}</li>
+                                    ))}
+                                    {changes.length > 3 && (
+                                        <li className="text-amber-700 dark:text-amber-300">
+                                            +{changes.length - 3} more...
+                                        </li>
+                                    )}
+                                </ul>
+                            </div>
+                            <div className="flex gap-2 sm:gap-2 sm:flex-shrink-0">
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    type="button"
+                                    onClick={handleDiscard}
+                                    className="flex-1 sm:flex-initial border-amber-300 dark:border-amber-700 text-xs sm:text-sm h-9"
+                                >
+                                    Discard
+                                </Button>
+                                <Button
+                                    size="sm"
+                                    type="submit"
+                                    className="flex-1 sm:flex-initial bg-green-600 hover:bg-green-700 text-white text-xs sm:text-sm h-9"
+                                >
+                                    Save Changes
+                                </Button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
         </form>
     );
 }
