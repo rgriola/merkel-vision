@@ -625,45 +625,43 @@ export function EditLocationForm({
 
             {/* Unsaved Changes Banner */}
             {hasChanges && (
-                <div className="fixed bottom-0 left-0 right-0 bg-amber-50 dark:bg-amber-950/20 border-t-2 border-amber-500 p-3 sm:p-4 shadow-lg z-50 animate-in slide-in-from-bottom">
-                    <div className="container max-w-2xl mx-auto">
-                        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
-                            <div className="flex-1 min-w-0">
-                                <div className="flex items-center gap-2 mb-2">
-                                    <AlertCircle className="w-4 h-4 sm:w-5 sm:h-5 text-amber-600 dark:text-amber-500 flex-shrink-0" />
-                                    <p className="font-semibold text-sm sm:text-base text-amber-900 dark:text-amber-100">
-                                        Unsaved changes
-                                    </p>
-                                </div>
-                                <ul className="text-xs sm:text-sm text-amber-800 dark:text-amber-200 space-y-1 ml-6 sm:ml-0">
-                                    {changes.slice(0, 3).map((change, i) => (
-                                        <li key={i} className="truncate">• {change}</li>
-                                    ))}
-                                    {changes.length > 3 && (
-                                        <li className="text-amber-700 dark:text-amber-300">
-                                            +{changes.length - 3} more...
-                                        </li>
-                                    )}
-                                </ul>
+                <div className="sticky bottom-0 mt-6 bg-amber-50 dark:bg-amber-950/20 border-t-2 border-amber-500 p-3 sm:p-4 shadow-lg z-10 animate-in slide-in-from-bottom">
+                    <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+                        <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 mb-2">
+                                <AlertCircle className="w-4 h-4 sm:w-5 sm:h-5 text-amber-600 dark:text-amber-500 flex-shrink-0" />
+                                <p className="font-semibold text-sm sm:text-base text-amber-900 dark:text-amber-100">
+                                    Unsaved changes
+                                </p>
                             </div>
-                            <div className="flex gap-2 sm:gap-2 sm:flex-shrink-0">
-                                <Button
-                                    variant="outline"
-                                    size="sm"
-                                    type="button"
-                                    onClick={handleDiscard}
-                                    className="flex-1 sm:flex-initial border-amber-300 dark:border-amber-700 text-xs sm:text-sm h-9"
-                                >
-                                    Discard
-                                </Button>
-                                <Button
-                                    size="sm"
-                                    type="submit"
-                                    className="flex-1 sm:flex-initial bg-green-600 hover:bg-green-700 text-white text-xs sm:text-sm h-9"
-                                >
-                                    Save Changes
-                                </Button>
-                            </div>
+                            <ul className="text-xs sm:text-sm text-amber-800 dark:text-amber-200 space-y-1 ml-6 sm:ml-0">
+                                {changes.slice(0, 3).map((change, i) => (
+                                    <li key={i} className="truncate">• {change}</li>
+                                ))}
+                                {changes.length > 3 && (
+                                    <li className="text-amber-700 dark:text-amber-300">
+                                        +{changes.length - 3} more...
+                                    </li>
+                                )}
+                            </ul>
+                        </div>
+                        <div className="flex gap-2 sm:gap-2 sm:flex-shrink-0">
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                type="button"
+                                onClick={handleDiscard}
+                                className="flex-1 sm:flex-initial border-amber-300 dark:border-amber-700 text-xs sm:text-sm h-9"
+                            >
+                                Discard
+                            </Button>
+                            <Button
+                                size="sm"
+                                type="submit"
+                                className="flex-1 sm:flex-initial bg-green-600 hover:bg-green-700 text-white text-xs sm:text-sm h-9"
+                            >
+                                Save Changes
+                            </Button>
                         </div>
                     </div>
                 </div>
