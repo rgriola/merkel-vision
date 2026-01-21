@@ -3,6 +3,7 @@
 import { useState, useCallback, useEffect, useMemo } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { GoogleMap } from '@/components/maps/GoogleMap';
+import { CustomMapControls } from '@/components/maps/CustomMapControls';
 import { CustomMarker } from '@/components/maps/CustomMarker';
 import { ClusteredMarkers } from '@/components/maps/ClusteredMarkers';
 import { InfoWindow } from '@/components/maps/InfoWindow';
@@ -763,7 +764,6 @@ function MapPageInner() {
                     onMapLoad={handleMapLoad}
                     onClick={handleMapClick}
                     className="w-full h-full"
-                    rightPanelOpen={isSidebarOpen || showDetailsSheet || showLocationsPanel}
                 >
                     {/* User location blue dot */}
 
@@ -916,12 +916,17 @@ function MapPageInner() {
                     )}
                 </GoogleMap>
 
-                {/* Map Controls - Responsive (Desktop: top-center buttons, Mobile: bottom floating menu) */}
+                {/* Custom Map Controls - Top Right (Map type + Zoom) */}
+                <CustomMapControls 
+                    map={map}
+                    rightPanelOpen={isSidebarOpen || showDetailsSheet || showLocationsPanel}
+                />
+
+                {/* Map Controls - Responsive (Desktop: left-side vertical buttons, Mobile: bottom floating menu) */}
                 <MapControls
                     userLocation={userLocation}
                     onGpsToggle={handleGPSClick}
                     onSearchClick={() => setShowSearchDialog(true)}
-                    searchOpen={showSearchDialog}
                     hideMobileButton={isSidebarOpen}
                     onFriendsClick={() => setShowFriendsDialog(true)}
                     onViewAllClick={() => {
@@ -1222,7 +1227,7 @@ function MapPageInner() {
 
             {/* Floating Search Bar - Appears above buttons */}
             {showSearchDialog && (
-                <div className="absolute top-4 left-1/2 -translate-x-1/2 w-[30%] min-w-[300px] z-20 animate-in slide-in-from-top">
+                <div className="absolute top-20 left-20 w-[400px] max-w-[calc(100vw-6rem)] z-20 animate-in slide-in-from-left">
                     <div className="bg-white rounded-lg shadow-2xl border border-gray-200 p-3">
                         <div className="flex items-center gap-2">
                             <div className="flex-1">

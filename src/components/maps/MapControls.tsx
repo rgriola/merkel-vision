@@ -17,7 +17,7 @@ interface MapControlsProps {
     onViewAllClick: () => void;
     onMyLocationsClick: () => void;
     onSearchClick: () => void;
-    searchOpen: boolean;
+    searchOpen?: boolean; // Optional now
     hideMobileButton?: boolean;
     savedLocationsCount: number;
 }
@@ -29,7 +29,6 @@ export function MapControls({
     onViewAllClick,
     onMyLocationsClick,
     onSearchClick,
-    searchOpen,
     hideMobileButton = false,
     savedLocationsCount,
 }: MapControlsProps) {
@@ -42,46 +41,42 @@ export function MapControls({
 
     return (
         <>
-            {/* Desktop View - Horizontal buttons centered at top */}
-            <div className={`hidden md:flex absolute left-1/2 -translate-x-1/2 gap-2 z-10 transition-all duration-300 ${searchOpen ? 'top-20' : 'top-4'
-                }`}>
+            {/* Desktop View - Vertical buttons stacked on left side */}
+            <div className="hidden md:flex absolute left-4 top-20 flex-col gap-2 z-10">
                 {/* Search Button */}
                 <Button
                     onClick={onSearchClick}
-                    className="bg-white hover:bg-gray-50 text-gray-900 shadow-lg border border-gray-200 h-12 px-4 gap-2"
+                    className="bg-white hover:bg-gray-50 text-gray-900 shadow-lg border border-gray-200 h-12 w-12 p-0"
                     title="Search locations"
                 >
                     <Search className="w-5 h-5" />
-                    <span className="text-sm font-medium">Search</span>
                 </Button>
 
                 {/* GPS Toggle Button */}
                 <Button
                     onClick={onGpsToggle}
-                    className={`shadow-lg border border-gray-200 transition-colors h-12 px-4 gap-2 ${userLocation
+                    className={`shadow-lg border border-gray-200 transition-colors h-12 w-12 p-0 ${userLocation
                         ? 'bg-[#4285F4] hover:bg-[#3367D6] text-white border-transparent'
                         : 'bg-slate-800 hover:bg-slate-900 text-white border-transparent'
                         }`}
                     title={userLocation ? 'Hide GPS Location' : 'Show GPS Location'}
                 >
                     <Navigation className={`w-5 h-5 ${userLocation ? 'fill-current' : ''}`} />
-                    <span className="text-sm font-medium">GPS</span>
                 </Button>
 
                 {/* Friends Button */}
                 <Button
                     onClick={onFriendsClick}
-                    className="bg-white hover:bg-gray-50 text-gray-900 shadow-lg border border-gray-200 h-12 px-4 gap-2"
+                    className="bg-white hover:bg-gray-50 text-gray-900 shadow-lg border border-gray-200 h-12 w-12 p-0"
                     title="View friends' locations"
                 >
                     <Users className="w-5 h-5" />
-                    <span className="text-sm font-medium">Friends</span>
                 </Button>
 
                 {/* View All Locations Button */}
                 <Button
                     onClick={onViewAllClick}
-                    className="bg-white hover:bg-gray-50 text-gray-900 shadow-lg border border-gray-200 h-12 px-4 gap-2"
+                    className="bg-white hover:bg-gray-50 text-gray-900 shadow-lg border border-gray-200 h-12 w-12 p-0"
                     title="View all saved locations on map"
                 >
                     <svg
@@ -99,17 +94,15 @@ export function MapControls({
                         <path d="M15 5.764v15" />
                         <path d="M9 3.236v15" />
                     </svg>
-                    <span className="text-sm font-medium">Locations</span>
                 </Button>
 
                 {/* My Locations List Button */}
                 <Button
                     onClick={onMyLocationsClick}
-                    className="bg-white hover:bg-gray-50 text-gray-900 shadow-lg border border-gray-200 relative h-12 px-4 gap-2"
+                    className="bg-white hover:bg-gray-50 text-gray-900 shadow-lg border border-gray-200 relative h-12 w-12 p-0"
                     title={`Show list of saved locations (${savedLocationsCount})`}
                 >
                     <MapPinIcon className="w-5 h-5" />
-                    <span className="text-sm font-medium">List</span>
                     {savedLocationsCount > 0 && (
                         <span className="absolute -top-1 -right-1 bg-indigo-600 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
                             {savedLocationsCount > 9 ? '9+' : savedLocationsCount}
@@ -120,11 +113,10 @@ export function MapControls({
                 {/* Photo Upload Button */}
                 <a
                     href="/create-with-photo"
-                    className="inline-flex items-center justify-center gap-2 rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 h-12 px-4 bg-green-600 hover:bg-green-700 text-white shadow-lg border border-green-700"
+                    className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 h-12 w-12 bg-green-600 hover:bg-green-700 text-white shadow-lg border border-green-700"
                     title="Create location from photo"
                 >
                     <Camera className="w-5 h-5" />
-                    <span className="text-sm font-medium">Photo</span>
                 </a>
             </div>
 
