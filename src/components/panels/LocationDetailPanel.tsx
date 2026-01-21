@@ -160,9 +160,10 @@ export function LocationDetailPanel({
             </div>
 
             {/* Content - Scrollable */}
-            <div className="flex-1 overflow-y-auto px-4 pb-4">
-                {/* Photo Gallery or Static Map */}
-                <div className="my-4">
+            <div className="flex-1 overflow-y-auto">
+                <div className="px-4 pb-4">
+                    {/* Photo Gallery or Static Map */}
+                    <div className="my-4">
                     {location.photos && location.photos.length > 0 ? (
                         <PhotoGallery photos={location.photos} />
                     ) : (
@@ -193,7 +194,7 @@ export function LocationDetailPanel({
                     </TabsList>
 
                     {/* Overview Tab */}
-                    <TabsContent value="overview" className="space-y-4 mt-4">
+                    <TabsContent value="overview" className="space-y-4 mt-4 overflow-visible">
                         {/* Address - Clickable to map */}
                         <div className="space-y-2">
                             <h3 className="font-semibold text-sm text-muted-foreground">Address</h3>
@@ -266,7 +267,7 @@ export function LocationDetailPanel({
                     </TabsContent>
 
                     {/* Production Tab */}
-                    <TabsContent value="production" className="space-y-4 mt-4">
+                    <TabsContent value="production" className="space-y-4 mt-4 overflow-visible">
                         {location.productionNotes && (
                             <div className="space-y-2">
                                 <h3 className="font-semibold text-sm text-muted-foreground">Production Notes</h3>
@@ -377,7 +378,7 @@ export function LocationDetailPanel({
                     </TabsContent>
 
                     {/* Metadata Tab */}
-                    <TabsContent value="metadata" className="space-y-4 mt-4">
+                    <TabsContent value="metadata" className="space-y-4 mt-4 overflow-visible">
                         <div className="space-y-4">
                             {location.createdAt && (
                                 <div className="space-y-2">
@@ -419,6 +420,7 @@ export function LocationDetailPanel({
                         </div>
                     </TabsContent>
                 </Tabs>
+                </div>
             </div>
         </div>
     );
