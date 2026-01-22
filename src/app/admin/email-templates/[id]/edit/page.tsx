@@ -2,6 +2,7 @@
 
 import { useState, useEffect, use, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
+import dynamic from 'next/dynamic';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -10,7 +11,6 @@ import { Card } from '@/components/ui/card';
 import { AdminRoute } from '@/components/auth/AdminRoute';
 import { ArrowLeft, Save, Send, Eye } from 'lucide-react';
 import { toast } from 'sonner';
-import Editor from '@monaco-editor/react';
 import { HexColorPicker } from 'react-colorful';
 import {
   Select,
@@ -19,6 +19,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+
+// Dynamically import Monaco Editor to avoid SSR issues
+const Editor = dynamic(() => import('@monaco-editor/react'), {
+  ssr: false,
+  loading: () => (
+    <div className="flex items-center justify-center h-[500px] border rounded-md bg-gray-900">
+      <p className="text-gray-400">Loading editor...</p>
+    </div>
+  ),
+});
 
 interface TemplateData {
   id?: number;
@@ -46,7 +56,7 @@ export default function EmailTemplateEditPage({
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [sendingTest, setSendingTest] = useState(false);
-  const [showPreview, setShowPreview] = useState(false);
+  const [activeTab, setActiveTab] = useState<'editor' | 'preview'>('editor');
   const [template, setTemplate] = useState<TemplateData>({
     key: '',
     name: '',
@@ -182,13 +192,6 @@ export default function EmailTemplateEditPage({
             </div>
           </div>
           <div className="flex gap-2">
-            <Button
-              variant="outline"
-              onClick={() => setShowPreview(!showPreview)}
-            >
-              <Eye className="w-4 h-4 mr-2" />
-              {showPreview ? 'Hide' : 'Show'} Preview
-            </Button>
             {template.id && (
               <Button
                 variant="outline"
@@ -206,9 +209,9 @@ export default function EmailTemplateEditPage({
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Editor Panel */}
-          <div className="space-y-6">
+        <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+          {/* Left Column - Settings & Colors */}
+          <div className="xl:col-span-1 space-y-6">
             <Card className="p-6">
               <h3 className="text-lg font-semibold mb-4">Template Settings</h3>
               
@@ -283,18 +286,18 @@ export default function EmailTemplateEditPage({
             <Card className="p-6">
               <h3 className="text-lg font-semibold mb-4">Brand Colors</h3>
               
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-4">
                 {[
-                  { key: 'brandColor', label: 'Primary Brand Color' },
-                  { key: 'buttonColor', label: 'Button Color' },
-                  { key: 'headerGradientStart', label: 'Header Gradient Start' },
-                  { key: 'headerGradientEnd', label: 'Header Gradient End' },
+                  { key: 'brandColor', label: 'Primary Brand' },
+                  { key: 'buttonColor', label: 'Button' },
+                  { key: 'headerGradientStart', label: 'Header Start' },
+                  { key: 'headerGradientEnd', label: 'Header End' },
                 ].map(({ key, label }) => (
                   <div key={key}>
-                    <Label>{label}</Label>
+                    <Label className="text-sm">{label}</Label>
                     <div className="flex gap-2 mt-1">
                       <div
-                        className="w-10 h-10 rounded border cursor-pointer"
+                        className="w-10 h-10 rounded border cursor-pointer flex-shrink-0"
                         style={{ backgroundColor: template[key as keyof TemplateData] as string }}
                         onClick={() => setShowColorPicker(showColorPicker === key ? null : key)}
                       />
@@ -302,6 +305,7 @@ export default function EmailTemplateEditPage({
                         value={template[key as keyof TemplateData] as string}
                         onChange={(e) => setTemplate({ ...template, [key]: e.target.value })}
                         placeholder="#4285f4"
+                        className="text-sm"
                       />
                     </div>
                     {showColorPicker === key && (
@@ -316,47 +320,88 @@ export default function EmailTemplateEditPage({
                 ))}
               </div>
             </Card>
-
-            <Card className="p-6">
-              <h3 className="text-lg font-semibold mb-4">HTML Body *</h3>
-              <div className="border rounded-md overflow-hidden" style={{ height: '500px' }}>
-                <Editor
-                  height="500px"
-                  defaultLanguage="html"
-                  value={template.htmlBody}
-                  onChange={(value) => setTemplate({ ...template, htmlBody: value || '' })}
-                  theme="vs-dark"
-                  options={{
-                    minimap: { enabled: false },
-                    fontSize: 14,
-                    wordWrap: 'on',
-                    formatOnPaste: true,
-                    formatOnType: true,
-                  }}
-                />
-              </div>
-              <p className="text-xs text-muted-foreground mt-2">
-                Use {`{{variableName}}`} for dynamic content. Available variables will depend on the template type.
-              </p>
-            </Card>
           </div>
 
-          {/* Preview Panel */}
-          {showPreview && (
-            <div className="space-y-6">
-              <Card className="p-6">
-                <h3 className="text-lg font-semibold mb-4">Live Preview</h3>
-                <div className="border rounded-md p-4 bg-gray-50 min-h-[600px]">
-                  <div className="bg-white rounded shadow-sm max-w-xl mx-auto">
+          {/* Middle Column - HTML Editor with Tabs */}
+          <div className="xl:col-span-2 space-y-6">
+            <Card className="p-6">
+              {/* Tab Headers */}
+              <div className="flex border-b mb-4">
+                <button
+                  className={`px-4 py-2 font-semibold transition-colors ${
+                    activeTab === 'editor'
+                      ? 'border-b-2 border-blue-600 text-blue-600'
+                      : 'text-gray-600 hover:text-gray-900'
+                  }`}
+                  onClick={() => setActiveTab('editor')}
+                >
+                  HTML Editor
+                </button>
+                <button
+                  className={`px-4 py-2 font-semibold transition-colors flex items-center gap-2 ${
+                    activeTab === 'preview'
+                      ? 'border-b-2 border-blue-600 text-blue-600'
+                      : 'text-gray-600 hover:text-gray-900'
+                  }`}
+                  onClick={() => setActiveTab('preview')}
+                >
+                  <Eye className="w-4 h-4" />
+                  Preview
+                </button>
+              </div>
+
+              {/* Tab Content */}
+              {activeTab === 'editor' ? (
+                <>
+                  <div className="border rounded-md overflow-hidden" style={{ height: '600px' }}>
+                    {!loading && (
+                      <Editor
+                        key={`editor-${resolvedParams.id}`}
+                        height="600px"
+                        defaultLanguage="html"
+                        defaultValue={template.htmlBody}
+                        onChange={(value) => setTemplate({ ...template, htmlBody: value || '' })}
+                        onMount={(editor) => {
+                          console.log('Monaco editor mounted');
+                          editor.setValue(template.htmlBody);
+                        }}
+                        onValidate={(markers) => {
+                          if (markers.length > 0) {
+                            console.log('Monaco validation markers:', markers);
+                          }
+                        }}
+                        theme="vs-dark"
+                        options={{
+                          minimap: { enabled: false },
+                          fontSize: 14,
+                          wordWrap: 'on',
+                          formatOnPaste: true,
+                          formatOnType: true,
+                          automaticLayout: true,
+                          scrollBeyondLastLine: false,
+                          renderWhitespace: 'selection',
+                        }}
+                      />
+                    )}
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-2">
+                    Use {`{{variableName}}`} for dynamic content. Available variables will depend on the template type.
+                  </p>
+                </>
+              ) : (
+                <div className="border rounded-md p-4 bg-gray-50 dark:bg-gray-900 overflow-auto" style={{ height: '600px' }}>
+                  <div className="bg-white dark:bg-gray-800 rounded shadow-lg max-w-2xl mx-auto">
                     <div
                       className="p-6"
-                      dangerouslySetInnerHTML={{ __html: template.htmlBody }}
+                      dangerouslySetInnerHTML={{ 
+                        __html: template.htmlBody || '<p class="text-gray-400 text-center py-8">No content to preview. Start typing in the HTML editor.</p>' 
+                      }}
                     />
                   </div>
                 </div>
-              </Card>
-            </div>
-          )}
+              )}
+            </Card>
+          </div>
         </div>
       </div>
     </AdminRoute>

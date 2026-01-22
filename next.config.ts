@@ -79,11 +79,12 @@ const nextConfig: NextConfig = {
             key: 'Content-Security-Policy',
             value: [
               "default-src 'self'",
-              "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://maps.googleapis.com https://maps.gstatic.com", // Google Maps needs inline scripts
-              "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com", // Allow Google Fonts
+              "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://maps.googleapis.com https://maps.gstatic.com https://cdn.jsdelivr.net", // Google Maps + Monaco Editor CDN
+              "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net", // Google Fonts + Monaco CSS
               "font-src 'self' https://fonts.gstatic.com data:",
               "img-src 'self' data: blob: https://ik.imagekit.io https://maps.googleapis.com https://maps.gstatic.com https://*.tile.openstreetmap.org", // ImageKit, Google Maps, OSM
-              "connect-src 'self' https://maps.googleapis.com https://upload.imagekit.io https://ik.imagekit.io https://o4510596205838336.ingest.us.sentry.io", // API, ImageKit, Sentry
+              "connect-src 'self' https://maps.googleapis.com https://upload.imagekit.io https://ik.imagekit.io https://o4510596205838336.ingest.us.sentry.io https://cdn.jsdelivr.net", // API, ImageKit, Sentry, Monaco source maps
+              "worker-src 'self' blob:", // Allow Monaco Editor web workers
               "frame-src 'none'",
               "object-src 'none'",
               "base-uri 'self'",
