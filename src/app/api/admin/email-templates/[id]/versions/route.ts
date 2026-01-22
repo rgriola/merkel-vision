@@ -42,6 +42,7 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
     return apiResponse({
       versions: template.versions,
       currentVersion: template.version as number,
+      templateName: template.name,
     });
   } catch (error) {
     console.error('Error fetching template versions:', error);

@@ -156,6 +156,14 @@ export default function EmailPreviewPage() {
                             <MailIcon className="w-4 h-4 mr-2" />
                             Email Preview
                         </Button>
+                        <Button
+                            variant="ghost"
+                            onClick={() => router.push('/admin/email-templates')}
+                            className="rounded-b-none"
+                        >
+                            <MailIcon className="w-4 h-4 mr-2" />
+                            Email Templates
+                        </Button>
                     </div>
                 </div>
 
